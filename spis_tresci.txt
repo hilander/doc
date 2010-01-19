@@ -1,0 +1,62 @@
+Analiza metod zarządzania wątkami mieszanymi.
+
+1. Wstęp
+	1.1 Motywacja
+	1.2 Cel
+
+2. Preliminaria
+	1.1 Wątki przestrzeni jądra
+	1.2 Koprocedury
+	1.3 Wątki przestrzeni użytkownika
+		1.3.1 Modele 1:1, N:1, N:M
+		1.3.2 Włókna (fibers)
+
+
+3. Strategie (Polityki) zarządzania wątkami
+	3.1 Zarządzanie wątkami przestrzeni jądra.
+		3.1.1 Strategie zaimplementowane w Linuksie.
+			- CFS (Complete Fair Strategy);
+			- ...
+		3.1.2 Strategie zaimplementowane w systemie FreeBSD.
+		3.1.3 MacOS?
+	3.2 Zarządca wątków przestrzeni użytkownika
+	3.3 Zarządca włókien
+		3.3.1 Ad Hoc
+		3.3.2 Kolejka priorytetowa (na wzór CFS)
+		3.3.3 Heurystyki?
+
+4 Mechanizmy użyte do implementacji strategii.
+	4.1 Drzewa zbalansowane
+	4.2 Drzewa samoorganizujące się
+	4.3 Kopce
+	4.4 ...
+
+5. Implementacja
+	5.1 Koprocedury - biblioteka libcoro
+	5.2 Magazyn koprocedur i kontekstów - context_manager
+	5.3 Zarządca wątków - thread_manager.
+
+6. Testowanie
+	6.1 Rodzaje testów
+		6.1.1 Testy jednostkowe
+		6.1.2 Testy wydajnościowe
+	6.2 Użyte narzędzia (uzasadnienie wyboru konkretnych narzędzi)
+		6.2.1 Valgrind jako przykład narzędzia do kontroli pamięci
+					(wycieki pamięci, pamięć podręczna procesora, race condition)
+		6.2.2 CppUnit jako przykład środowiska użytego do testów jednostkowych.
+		6.3 Opis aplikacji użytych do testów wydajnościowych.
+
+7. Podsumowanie
+
+Bibliografia
+
+- Donald E. Knuth, "The Art of Computer Programming"
+- Specyfikacja POSIX
+- An Implementation of Scheduler Activations on the NetBSD Operating System (http://web.mit.edu/nathanw/www/usenix/freenix-sa/freenix-sa.html)
+- Thomas E. Anderson, Brian N. Bershad, Edward D. Lazowska, and Henry M. Levy., 
+	"Scheduler activations: Effective kernel support for the user-level management of parallelism."
+	In Proc. 19th ACM Symposium on Operating System Principles, pages 95-109, 1991. 
+- Ralf S. Engelschall, "GNU Pth - The GNU Portable Threads"
+- Ana Lucia de Moura, Roberto Ierusalimschy, "Revisiting Coroutines", PUC-RioInf.Mcc15/02, 2004
+- MSDN (fibers)
+
