@@ -1,0 +1,16 @@
+*.[oa]
+*.lo
+.libs/
+.gitignore
+*.la
+*.aux
+*.log
+*.pdf
+cscope.out
+mktemp.sh
+
+#known executables
+libcoro_tests
+
+#all vim .swp files
+*.swp
