@@ -6,8 +6,10 @@
 *.aux
 *.log
 *.pdf
+*.toc
 cscope.out
 mktemp.sh
+doxygen/
 
 #known executables
 libcoro_tests

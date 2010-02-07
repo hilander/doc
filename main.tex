@@ -1,4 +1,4 @@
-\documentclass[a4paper]{article}
+\documentclass{mwart}
 \usepackage{polski}
 \usepackage{antpolt}
 \usepackage[utf8]{inputenc}
@@ -6,32 +6,51 @@
 %\usepackage{sfheaders}
 
 %\usepackage[layout]{tools}
+
 \setlength{\voffset}{1cm}
 \setlength{\voffset}{1cm}
 \author{Mariusz Barycz}
 \title{Analiza metod zarządzania wątkami mieszanymi}
+\date{luty 2010}
 \begin{document} 
 
 \maketitle
 \thispagestyle{empty}
+
 \newpage
-rodzina Computer Modern, często na przykład brakuje w nich kompletu
-symboli matematycznych, znaków z alfabetów niełacińskich, takich jak greka
-lub alfabet cyrylicki, albo niektórych odmian, jak na przykład kapitalików.
+\tableofcontents
+\thispagestyle{empty}
 
-    Z drugiej strony krój cm ma też wady: kreski znaków są cieńsze, a
-względna wysokość małych liter2 jest mniejsza niż w wielu innych krojach.
-Te cechy kroju cm powodują, że jest mniej czytelny w wypadku, gdy jest
-reprodukowany na nośniku o niskiej rozdzielczości, lub – mówiąc wprost –
-nie najlepiej się nadaje do dokumentów, które będą wyświetlane na ekranach
-komputerów, np. dokumentów w formacie pdf.
+\newpage
+%Akapity: bez wcięcia, za to z odstępem pionowym.
+% małe hackowanie latex-a: właściwości akapitu po spisie treści:)
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus 0.7ex minus 0.1ex}
 
-\begin{equation}
-\sum_{i=0}^{n^2}{x_i} = \frac{1}{b / 2^{k-1}}
-\end{equation}
-    Pakiet qtimes umożliwia skład dokumentu w kroju QTimes, który jest
-klonem znanego kroju Times New Roman autorstwa Stanleya Morisona.
-Jeżeli dokument zawiera wzory matematyczne, to aby znaki w formułach
-były optycznie zgodne z otaczającym je tekstem, należy także dołączyć
-pakiety txfonts oraz qtxmath:
+\input{abbrev.tex}
+
+\newpage
+\input{introduction.tex}
+
+\newpage
+\input{preliminaries.tex}
+
+\newpage
+\input{scheduling_strategies.tex}
+
+\newpage
+\input{mechanisms.tex}
+
+\newpage
+\input{implementation.tex}
+
+\newpage
+\input{testing.tex}
+
+\newpage
+\input{summary.tex}
+
+\newpage
+\input{bibliography.tex}
+
 \end{document}
