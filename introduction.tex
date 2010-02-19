@@ -1,5 +1,72 @@
 \section{Wstęp}
-
+%
+\indent 
+	W~latach 90. XX~wieku zwiększenie mocy obliczeniowej kolejnych generacji procesorów uzyskiwano poprzez zwiększenie 
+	częstotliwości taktowania. Oczywiście, nie był to jedyny sposób na osiągnięcie większej mocy obliczeniowej.
+	Oprócz zwiększonego taktowania, optymalizowano rozkazy procesora, w samym procesorze dodawano pamięć podręczną 
+	(\emph{cache}), implementowano heurystyki, które starały się przewidzieć miejsce następnego skoku warunkowego,
+	poszerzano (Intel x86) lub minimalizowano (procesory RISC) listę rozkazów procesora, zrównoleglono (\emph{pipelining})
+	wykonanie pojedynczych kroków rozkazów procesora.
+\par
+%
+\indent
+	Okazało się, że z~wymienionych sposobów najbardziej skutecznym było zwiększenie częstotliwości taktowania procesora.
+	Jednak, jak pokazują doświadczenia pierwszej dekady XXI wieku, procesory taktowane częstotliwością wyższą niż 3~GHz 
+	są drogie w~produkcji lub po prostu niestabilne w~działaniu. 
+\par
+%
+\indent
+	Obecnie rozwój procesorów nie polega więc na zwiększaniu częstotliwości ich taktowania -- zamiast tego, jednostka centralna
+	składa się z~kilku procesorów, tzw. \emph{rdzeni} (\emph{core}), z~których każdy posiada swoją pamięć podręczną, a~każdy
+	rdzeń może być taktowany inną częstotliwością.
+	Taki kierunek rozwoju procesorów został również podyktowany rozwojem oprogramowania, które jest na nich najczęściej uruchamiane:
+	Prawie każdy współczesny system operacyjny jest systemem wielozadaniowym (współbieżnym), a~więc wielordzeniowe procesory wydają się
+	być idealnie dopasowane do wymagań takich systemów.
+\par
+%
 \subsection{Motywacja}
-
+%
+\indent
+	O~ile system operacyjny jest w~stanie rozpoznać wielordzeniową jednostkę centralną i~efektywnie wykorzystać jej możliwości,
+	o~tyle aplikacje korzystające z~wielordzeniowej architektury napoykają na szereg problemów:
+	\begin{itemize}
+		\item osobne procesy mogą komunikować się między sobą tylko za pośrednictwem systemu operacyjnego: spadek wydajności aplikacji;
+		\item zadania w~obrębie jednego procesu mogą być wykonywane szeregowo: brak skalowalności, aplikacja nie wykorzystuje większej liczby
+		rdzeni w~systemie;
+		\item osobne wątki -- przestrzeni jądra, które korzystają z~wspólnych zasobów: problem wzajemnego wykluczania, który często prowadzi
+		do spadku wydajności aplikacji;
+		\item wątki przestrzeni użytkownika mogą zniwelować problemy związane z~wzajemnym wykluczaniem, jenakże w~tym wypadku znów wystąpi
+		problem braku skalowalności.
+	\end{itemize}
+\par
+%
+\indent
+	Aplikacja jest najczęściej zbiorem różnych zadań, tak więc z~punktu widzenia systemu operacyjnego powinna działać w~obrębie procesu: 
+	bytu posiadającego do własnej dyspozycji zasoby udostępniane przez system (czyli pamięć, deskryptory plików, czas wykonania, itp.).
+	Poszczególne zadania realizowane w~ramach aplikacji, ze względu na wielordzeniową architekturę obecnych jednostek centralnych, winny być wątkami.
+	Ze względu na naturę wątków, niektóre zadania wymagają wątków przestrzeni jądra (zapewniające skalowalność aplikacji), zaś inne wymagają
+	wątków przestrzeni użytkownika (wzajemne wykluczanie można zrealizować o~wiele łatwiej w~przestrzeni użytkownika).
+\par
+%
+\indent
+	Niektóre systemy operacyjne (NetBSD, OpenSolaris) udostępniają wątki mieszane, gdzie użytkownik decyduje, z~jakim rodzajem wątku 
+	chce związać konkretne zadanie.
+\par
+%
+\indent
+	W systemie Linux użytkownik ma do dyspozycji wątki przestrzeni jądra \linebreak (\emph{PThreads}), zgodne ze standardem POSIX0.1, zaś wątki przestrzeni
+	użytkownika są dostepne jako osobne biblioteki (np. \emph{GNU Pth}).
+\par
+%
+\indent
+	W systemie Windows zaimplementowane są wątki przestrzeni jądra, dodatkowo można skorzystać z~wątków przestrzeni użytkownika,
+	zwanych \emph{włóknami} (\emph{fibers}). Również tutaj decyzja o~wyborze rodzaju wątku dla zadania należy do użytkownika.
+\par
+%
 \subsection{Cel}
+%
+\indent
+	Celem głównym tej pracy było zbadanie możliwości połączenia wątków przestrzeni użytkownika z~wątkami przestrzeni jądra w~taki sposób,
+	aby zdjąć z~użytkownika ciężar decyzji co do rodzaju wątku dla zadania, a~ponadto zbadanie, czy bez dużej straty efektywności można  
+	zmieniać właściwości wątków tak, aby bardziej odpowiadały podzadaniom realizowanym w~zadaniach.
+\par
