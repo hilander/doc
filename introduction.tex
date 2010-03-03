@@ -1,18 +1,30 @@
 \section{Wstęp}
 %
 \indent 
-	W~latach 90. XX~wieku zwiększenie mocy obliczeniowej kolejnych generacji procesorów uzyskiwano poprzez zwiększenie 
-	częstotliwości taktowania. Oczywiście, nie był to jedyny sposób na osiągnięcie większej mocy obliczeniowej.
-	Oprócz zwiększonego taktowania, optymalizowano rozkazy procesora, w samym procesorze dodawano pamięć podręczną 
-	(\emph{cache}), implementowano heurystyki, które starały się przewidzieć miejsce następnego skoku warunkowego,
-	poszerzano (Intel x86) lub minimalizowano (procesory RISC) listę rozkazów procesora, zrównoleglono (\emph{pipelining})
-	wykonanie pojedynczych kroków rozkazów procesora.
+	Od połowy lat 80. XX~wieku zwiększano moc obliczeniową procesorów za pomocą \emph{równoległego wykonania rozkazów procesora}
+	(ang. \emph{instruction-level parallelism, ILP}). Wykonanie rozkazu procesora można podzielić na pewną liczbę kroków
+	(od kilku do nawet kilkudziesięciu!),	a~następnie przetwarzać je niezależnie. 
+	Stosując takie podejście, rozkazy mogą się \emph{skalować}, np. jeśli rozkazy A~i~B~wykonują się osobno w~ciągu 10 cykli każdy, to,
+	przy spełnieniu odpowiednich wymogów, wykonanie rozkazu A, a~następnie rozkazu B~może zająć procesorowi jedynie 11 cykli.
 \par
 %
 \indent
-	Okazało się, że z~wymienionych sposobów najbardziej skutecznym było zwiększenie częstotliwości taktowania procesora.
-	Jednak, jak pokazują doświadczenia pierwszej dekady XXI wieku, procesory taktowane częstotliwością wyższą niż 3~GHz 
-	są drogie w~produkcji lub po prostu niestabilne w~działaniu. 
+	Techniki, za pomocą których uzyskuje się ILP:
+	\begin{itemize}
+	\item \emph{potokowość}: każdy potok odpowiada dokładnie jednemu krokowi przetwarzania rozkazu procesora.
+	\item \emph{Superskalarność}: podobnie jak w~potokowości, każdemu krokowi odpowiada co najmniej jeden potok.
+	\item \emph{Wykonanie poza kolejnością} (ang. \emph{Out of Order execution, OoO}): technika ortogonalna do poprzednich. Polega na 
+		wykonaniu tych rozkazów procesora, które mogą użyć bieżącej wartości z~któregoś z~jego rejestrów.
+	\item \emph{Przemianowanie rejestrów} (ang. \emph{Register Renaming}): zapobieganie sekwencyjnemu wykonaniu rozkkazów poprzez użycie 
+		aktualnie dostępnych rejestrów.
+	\item \emph{Wykonanie spekulatywne} (ang. \emph{Speculative execution}): wykonanie instrukcji (lub ich części), które znajdują się
+		za skokiem warunkowym przed wynikiem sprawdzenia tego warunku.
+	\item \emph{Przewidywanie skoku} (ang. \emph{Branch prediction}): mechanizm wspomagający wykonanie spekulatywne.
+	\end{itemize}
+\par
+%
+\indent
+	Wyżej opisane techniki zrównoleglenia wykonania rozkazów napotykają jednak na szereg problemów. Oto niektóre z nich:
 \par
 %
 \indent
