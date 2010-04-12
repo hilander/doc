@@ -1,11 +1,133 @@
-\section{Preliminaria}
-
+\section{Podstawy}
+%
+%\indent
+%	\begin{itemize}
+%	\item[\emph{Wzajemne wykluczanie}] -- mechanizm synchronizacji wątków. Jeśli pewien wątek potrzebuje pewnego zasobu (lub zbioru zasobów), 
+%			może zażądać wyłącznego dostępu do niego.
+%	\item[\emph{Sekcja krytyczna}] -- ciąg instrukcji, które muszą być wykonane w~odpowiedniej kolejności, przez dokładnie jeden wątek.
+%	\item[\emph{Instrukcja atomowa}] -- instrukcja, której wykonanie nie jest przerwane przez inną instrukcję, a~zasoby do których ma dostęp są
+%			nie są zmieniane w~trakcie jej trwania.
+%	%\item[\emph{}] -- 
+%	\item[\emph{Wyścigi}] -- 
+%	\item[\emph{Synchronizacja warunkowa}] -- 
+%	\item[\emph{Zakleszczenie}] -- 
+%	\end{itemize}
+%\par
+%
+\indent
+	W wielowątkowym systemie operacyjnym, proces jest jednostką o~chronionym dostępie do 
+	procesorów, innych procesów, plików oraz innych zasobów wejścia-wyjścia. Ponadto, system
+	traktuje go jako autonomiczny byt, który posiada własną przestrzeń adresową (wirtualna 
+	przestrzeń adresowa), oraz czas wykonania.
+\par
+%
+\indent
+	W~takim systemie wątek jest przyporządkowany do dokładnie jednego procesu, a~sam proces 
+	może zawierać co najmniej jeden wątek. Wątki w~obrębie procesu dzielą tę samą przestrzeń
+	adresową, jak i~pozostałe zasoby. Czas wykonania wątków jednego procesu jest równy czasowi
+	jego wykonania. Każdemu z~nich są przyporządkowane:
+	\begin{itemize}
+	\item stan (uruchomiony, gotowy, itp.);
+	\item kontekst (gdy nie jest aktualnie wykonywany);
+	\item stos wywołań;
+	\item prywatna przestrzeń adresowa (ang. \emph{Thread Local Storage, TLS}).
+	\end{itemize}
+\par
 \subsection{Koprocedury}
+%
+\indent
+	Koprocedury są ,,uogólnionymi'' procedurami. O~ile procedury posiadają własne zmienne
+	przechowywane na stosie oraz mogą dostarczyć dokładnie jedną wartość po zakończeniu
+	działania, o~tyle koprocedury:
+	\begin{itemize}
+	\item posiadają własny stos wywołań;
+	\item mogą przekazać do strony wywołującej co najmniej jedną wartość.
+	\end{itemize}
+	Powyższe właściwości koprocedur predestynują je jako naturalna podstawę dla wątków:
+	nie są one tak ulotne jak procedury, gdyż po zwróceniu wyniku ich stan jest zapamiętywany,
+	a~kolejne wywołanie koprocedury jest jej kontynuacją od miejsca poprzedzającego przekazanie
+	ostatniego wyniku. Co więcej, koprocedura może wywoływać prcedury (jak również inne koprocedury)
+	we własnym kontekście, a~więc, przy minimalnym nakładzie ze strony programisty, możliwe jest
+	zaimplementowanie TLS dla bieżącej koprocedury.
+\par
 
 \subsection{Wątki przestrzeni jądra}
 
+%
+\indent
+	Wątki przestrzeni jądra (ang. \emph{Kernel--Level Threads, KLT}) są zarządzane w~całości przez system operacyjny. 
+	Większość obecnych systemów operacyjnych oferuje KLT użytkownikowi. Czasami wątki przestrzeni jądra są nazywane
+	\emph{procesami wagi lekkiej} (ang. \emph{Lightweight Proccess}), gdyż przełączanie pomiędzy nimi jest o~wiele
+	szybsze niż pomiędzy procesami, zaś każdy wątek otrzymuje od systemu określoną porcję czasu procesora.
+\par
+%
+\indent
+	Podstawowa korzyść, jaką można uzyskać z~tego powodu, to nieblokujący dostęp do urządzeń wejścia-wyjścia:
+	jeśli jeden z~wątków oczekuje na dane z~IO, wykonanie pozostałych wątków nie jest wstrzymywane.
+	Z~tego powodu aplikacje, które w~trakcie działania często odwołują się do urządzeń zewnętrznych, korzystają
+	z~KLT.
+\par
+%
+\indent
+	Inną korzyścią wątków przestrzeni jądra jest rozdystrybuowanie ich na wiele rdzeni. Mechanizm ten jest przezroczysty
+	dla użytkownika. Dzięki niemu, niezależne obliczenia mogą wykonywać się równocześnie, co może znacząco wpłynąć na
+	wydajność aplikacji.
+\par
+%
+\indent
+	Użytkownik korzystający z~wątków przestrzeni jądra może spotkać się z~problemem \emph{wyścigów} (ang. \emph{Race Conditions}):
+	dwa wątki w~tym samym czasie wykonują operacje na tych samych zasobach. Ponieważ system operacyjny przerywa pracę wątków w~sposób
+	niezależny od działania poszczególnych wątków, może zdarzyć się sytuacja, gdy operacje jednego wątku \emph{przeplatają się} z~operacjami
+	drugiego wątku (równie dobrze może to być o~wiele większa liczba wątków!) na tym samym zasobie. W~takiej sytuacji, wynik działania wątków
+	może prowadzić do nieprzewidywalnych wyników, które mogą wypaczyć wynik działania aplikacji, lub nawet doprowadzić do przerwania jej wykonania.
+\par
+%
+\indent
+	Aby zaradzić temu problemowi, stworzony został mechanizm \emph{wzajemnego wykluczania} (ang. \emph{Mutual Exclusion, mutex}):
+	jeśli dany zasób jest wolny, wówczas dostęp do niego otrzymuje dokładnie jeden wątek, zaś inne wątki czekają na zwolnienie tego zasobu.
+	Wątki mogą być uśpione lub oczekiwać aktywnie na przydzielenie zasobu, jednakże są one w~jakiś sposób zablokowane.  
+	Okazuje się, że mechanizm wzajemnego wykluczania wiąże się z~różnego rodzaju zagrożeniami. Najpoważniejsze z~nich to zakleszczenie 
+	(ang. \emph{deadlock}) i~zagłodzenie (ang. \emph{starvation}).
+\par
+%
+\indent
+	Zakleszczenie występuje w~momencie gdy jeden wątek wykonuje operacje na zasobie A, a~następnie (nie zwalniając A) zgłasza zapotrzebowanie
+	na zasób B, który jest zarezerwowany dla drugiego wątku, który oczekuje na zwolnienie zasobu A.
+\par
+%
+\indent
+	Zagłodzenie wątku występuje wtedy, gdy pewien wątek oczekuje na dostęp do zasobu, do którego dostęp jest udzielany innym wątkom.
+\par
+
 \subsection{Wątki przestrzeni użytkownika}
 
-\subsubsection{Modele 1:1, {\bf N}:1, {\bf N}:{\bf M}}
-
 \subsubsection{Włókna (\emph{fibers})}
+
+\subsection{Modele 1:1, {\bf N}:1, {\bf N}:{\bf M}}
+
+%
+\indent
+	Model 1:1 odzwierciedla przyporządkowanie \emph{jeden wątek użytkownika dla jednego wątku jądra}.
+	Wątki w~tym modelu są zarządzane w~całości przez system operacyjny, co może być wygodne dla programisty,
+	jednakże koszt takiego zarządzania jest stosunkowo duży ze względu na przełączanie kontekstów oraz obsługę
+	wątków korzystających z~zasobów systemowych. Wątki w~tym modelu nie blokują sie nawzajem, co jest bardzo przydatne
+	w~wypadku korzystania z~IO: wykonanie wątków nie jest przerywana, gdy jeden z~nich oczekuje na dane z~takiego źródła.
+	W~modelu 1:1 należy zwrócić szczególną uwagę na zasoby, które
+	są używane przez więcej niż jeden wątek, gdyż ich odczyt oraz zapis mogą dać wynik niezgodny z~oczekiwaniami
+	programisty (użytkownika). Do unikania takich zagrożeń stosowany jest mechanizm wzajemnego wykluczania: podczas gdy jeden
+	wątek wykonuje ciąg operacji na takim zasobie (zasobach), inne wątki oczekują na zakończenie tego ciągu, a~następnie 
+	jeden z~oczekujących wątków wykonuje właściwy sobie ciąg operacji na tym zasobie.
+\par
+%
+\indent
+	Model N:1 jest przyporządkowaniem \emph{N~wątków użytkownika dla jednego wątku jądra}. Niewątpliwą zaletą tego modelu
+	jest brak potrzeby wykorzystywania wzajemnego wykluczania wątków przestrzeni użytkownika do wykonywania operacji
+	na zasobach wykorzystywanych wyłącznie przez odpowiadający im wątek przestrzeni jądra. Jednakże, jęśli jeden z~wątków przestrzeni
+	użytkownika zostanie zablokowany (np. podczas wykonywania operacji na IO), wówczas działanie innych wątków będzie również zablokowane.
+	Aby uniknąć takich sytuacji, operacje blokujące są opakowane w~taki sposób, by nie blokować wykonania wątku (\emph{jacketing}).
+\par
+%
+\indent
+	Model N:M to przyporządkowanie \emph{N~wątków użytkownika dla M~wątków jądra}. W~zależności od implementacji,  
+\par
+

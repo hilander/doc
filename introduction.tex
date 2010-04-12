@@ -2,16 +2,51 @@
 %
 \indent 
 	Od połowy lat 80. XX~wieku zwiększano moc obliczeniową procesorów za pomocą \emph{równoległego wykonania rozkazów procesora}
-	(ang. \emph{instruction-level parallelism, ILP}). Wykonanie rozkazu procesora można podzielić na pewną liczbę kroków
-	(od kilku do nawet kilkudziesięciu!),	a~następnie przetwarzać je niezależnie. 
-	Stosując takie podejście, rozkazy mogą się \emph{skalować}, np. jeśli rozkazy A~i~B~wykonują się osobno w~ciągu 10 cykli każdy, to,
-	przy spełnieniu odpowiednich wymogów, wykonanie rozkazu A, a~następnie rozkazu B~może zająć procesorowi jedynie 11 cykli.
+	(ang. \emph{instruction-level parallelism, ILP}). Na wykonanie pojedynczego rozkazu składa się wykonanie w~ustalonej kolejności
+	określonej liczby kroków. Klasyczna sekwencja składa się z~pięciu kroków:
+	\begin{enumerate}
+	\item pobranie (ang. \emph{Instruction Fetch, IF});
+	\item dekodowanie (ang. \emph{Instruction Decode, ID});
+	\item wykonanie (ang. \emph{Execute, EX});
+	\item dostęp do pamięci (ang. \emph{Memory Access, MEM});
+	\item zapis (ang. \emph{Write Back, WB}).
+	\end{enumerate}
+	Każdy rozkaz był wykonywany oddzielnie, tj. jednostka centralna wykonywała kroki od IF do WB dla każdego rozkazu osobno, zaś
+	podejście zastosowane w ILP polegało na maksymalnym wykorzystaniu części procesora obsługujących poszczególne kroki.
+	Jet to \emph{potokowe przetwarzanie rozkazów} (ang. \emph{Pipelining}).
+	%Wykonanie rozkazu procesora można podzielić na pewną liczbę kroków
+	%(od kilku do nawet kilkudziesięciu!),	a~następnie przetwarzać je niezależnie. 
+	%Stosując takie podejście, rozkazy mogą się \emph{skalować}, np. jeśli rozkazy A~i~B~wykonują się osobno w~ciągu 10 cykli każdy, to,
+	%przy spełnieniu odpowiednich wymogów, wykonanie rozkazu A, a~następnie rozkazu B~może zająć procesorowi jedynie 11 cykli.
+	\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} \hline
+	& \multicolumn{5}{c|}{Rozkaz 1} & \multicolumn{5}{c|}{Rozkaz 2}  \\ \cline{2-11}
+	& IF & ID & \cellcolor{yellow} EX & MEM & WB & IF & ID & EX & MEM & WB\\ \cline{2-11} \cline{2-11}
+	Cykl zegara & 1 & 2 & \cellcolor{yellow} 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
+	\end{tabular}\par
+	\begin{small} Tabela 1. Brak potokowości: wykonanie dwóch rozkazów \end{small} \par
+	\end{center}\par
+
+	\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
+	Numer 		 & \multicolumn{7}{c|}{Stan potoku} \\
+	rozkazu & \multicolumn{7}{c|}{} \\ \hline
+	1 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
+	2 & & IF & ID & \cellcolor{yellow} EX & MEM & WB & \\ \hline
+	3 & & & IF & \cellcolor{yellow} ID & EX & MEM & WB \\ \hline
+	4 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
+	5 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
+	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
+	\end{tabular}\par
+	\begin{small} Tabela 2. Potokowe wykonanie 5 rozkazów \end{small}
+	%\includegraphics[scale=.7]{pipeline.png}\\
+	%\small{Rysunek 1. Potokowe wykonanie rozkazów}
+	\end{center}
 \par
 %
 \indent
-	Techniki, za pomocą których uzyskuje się ILP:
+	Poza potokowością, do ILP używa się również innych technik:
 	\begin{itemize}
-	\item \emph{potokowość}: każdy potok odpowiada dokładnie jednemu krokowi przetwarzania rozkazu procesora.
 	\item \emph{Superskalarność}: podobnie jak w~potokowości, każdemu krokowi odpowiada co najmniej jeden potok.
 	\item \emph{Wykonanie poza kolejnością} (ang. \emph{Out of Order execution, OoO}): technika ortogonalna do poprzednich. Polega na 
 		wykonaniu tych rozkazów procesora, które mogą użyć bieżącej wartości z~któregoś z~jego rejestrów.
@@ -19,45 +54,68 @@
 		aktualnie dostępnych rejestrów.
 	\item \emph{Wykonanie spekulatywne} (ang. \emph{Speculative execution}): wykonanie instrukcji (lub ich części), które znajdują się
 		za skokiem warunkowym przed wynikiem sprawdzenia tego warunku.
-	\item \emph{Przewidywanie skoku} (ang. \emph{Branch prediction}): mechanizm wspomagający wykonanie spekulatywne.
+	\item \emph{Przewidywanie skoku} (ang. \emph{Branch prediction}): mechanizm wspomagający wykonanie spekulatywne. Polega na wykonaniu
+	 ciągu rozkazów, który \emph{może} być wykonany po skoku warunkowym.
 	\end{itemize}
 \par
 %
 \indent
-	Wyżej opisane techniki zrównoleglenia wykonania rozkazów napotykają jednak na szereg problemów. Oto niektóre z nich:
+	Wyżej wymienione techniki zrównoleglenia wykonania rozkazów napotykają jednak na szereg problemów, przede wszystkim na problem
+	zależności od danych.
+	Prosty przykład, który ilustruje ten problem:
+	\begin{flushright}
+	\begin{tabular}{l l}\\
+		$x \gets y + z$ & \hspace{4.2cm} (1)\\
+		$t \gets u + v$ & \hspace{4.2cm} (2)\\
+		$l \gets x \times t$ & \hspace{4.2cm} (3)\\
+	\end{tabular}\\
+	\end{flushright}
+	Jak łatwo zauważyć, wartość komórki $l$~zależy od wyliczonych wartości komórek $x$~i~$t$, a~więc aby otrzymać prawidłowy wynik
+	instrukcji (3), jej wykonanie musi poprzedzić wyliczony wcześniej wynik instrukcji (1) i~(2).
 \par
 %
 \indent
-	Obecnie rozwój procesorów nie polega więc na zwiększaniu częstotliwości ich taktowania -- zamiast tego, jednostka centralna
-	składa się z~kilku procesorów, tzw. \emph{rdzeni} (\emph{core}), z~których każdy posiada swoją pamięć podręczną, a~każdy
-	rdzeń może być taktowany inną częstotliwością.
-	Taki kierunek rozwoju procesorów został również podyktowany rozwojem oprogramowania, które jest na nich najczęściej uruchamiane:
-	Prawie każdy współczesny system operacyjny jest systemem wielozadaniowym (współbieżnym), a~więc wielordzeniowe procesory wydają się
-	być idealnie dopasowane do wymagań takich systemów.
-\par
-%
-\subsection{Motywacja}
-%
-\indent
-	O~ile system operacyjny jest w~stanie rozpoznać wielordzeniową jednostkę centralną i~efektywnie wykorzystać jej możliwości,
-	o~tyle aplikacje korzystające z~wielordzeniowej architektury napoykają na szereg problemów:
-	\begin{itemize}
-		\item osobne procesy mogą komunikować się między sobą tylko za pośrednictwem systemu operacyjnego: spadek wydajności aplikacji;
-		\item zadania w~obrębie jednego procesu mogą być wykonywane szeregowo: brak skalowalności, aplikacja nie wykorzystuje większej liczby
-		rdzeni w~systemie;
-		\item osobne wątki -- przestrzeni jądra, które korzystają z~wspólnych zasobów: problem wzajemnego wykluczania, który często prowadzi
-		do spadku wydajności aplikacji;
-		\item wątki przestrzeni użytkownika mogą zniwelować problemy związane z~wzajemnym wykluczaniem, jenakże w~tym wypadku znów wystąpi
-		problem braku skalowalności.
-	\end{itemize}
+	Innym poważnym problemem, z~jakim można się obecnie spotkać, jest dostęp do pamięci RAM: od początku lat 90. XX~wieku różnica
+	pomiędzy częstotliwością taktowania procesora, a~pamięci RAM zwiększyła się drastycznie. Już wtedy zaczęto zauważać
+	ten problem, przyrównując go, z~punktu widzenia procesora, do uderzenia w~mur (ang. \emph{Memory Wall}). Aby ominąć ten problem,
+	w~procesorach umieszczano pamięć podręczną (ang. \emph{cache}), która była taktowana tak jak sam procesor (cache pierwszego poziomu, L1 cache),
+	lub częstotliwością niewiele odbiegającą od częstotliwości taktowania procesora (L2 cache). Oczywiście ilość pamięci podręcznej
+	była nieporównywalnie mniejsza od ilości pamięci RAM, tak więc pojawienie się pamięci cache wymusiło stosowanie technik, które nie
+	były potrzebne dotychczas.
 \par
 %
 \indent
-	Aplikacja jest najczęściej zbiorem różnych zadań, tak więc z~punktu widzenia systemu operacyjnego powinna działać w~obrębie procesu: 
-	bytu posiadającego do własnej dyspozycji zasoby udostępniane przez system (czyli pamięć, deskryptory plików, czas wykonania, itp.).
-	Poszczególne zadania realizowane w~ramach aplikacji, ze względu na wielordzeniową architekturę obecnych jednostek centralnych, winny być wątkami.
+	Okazuje się więc, że zwiększanie częstotliwości taktowania procesora nie wpływa na wzrost jego wydajności w~takim stopniu, jak ILP.
+	Co więcej, sugerowany przez producentów wzrost wydajności procesora jest traktowany jako mit (ang. \emph{megahertz myth}).
+\par
+%
+\indent
+	Stosowanie coraz bardziej zaawansowanych technik wymusiło miniaturyzację samego procesora. Następnym krokiem było umieszczenie w~jednostce
+	centralnej (CPU) kilku procesorów, zwanych \emph{rdzeniami} (ang. \emph{cores}). Wraz z~pojawieniem się wielordzeniowej jednostki centralnej,
+	w~celu efektywnego jej wykorzystania, należy uwzględnić wszystkie problemy związane z~programowaniem równoległym, w~szczególności
+	wykonanie aplikacji, w~celu efektywnego wykorzystania zasobów, powinno być zrównoleglone w~jak największym stopniu.
+\par
+%
+\subsection{Motywacja} 
+%
+\indent
+	O~ile ILP jest z~reguły przezroczyste dla programisty (optymalizacja jest dokonywana przez kompilator lub jest wykonywana \emph{w~locie}
+	przez jednostkę centralną),	o~tyle programista musi zaprojektować (i~zaimplementować) aplikację tak, aby mogła korzystać z~wielordzeniowej
+	architektury jednostki centralnej.
+\par
+%
+\indent
+	Współczesne systemy operacyjne udostępniają programiście narzędzia, które mogą być użyte do maksymalnego wykorzystania 
+	wielordzeniowej architektury CPU: są to \emph{procesy} oraz \emph{wątki}.
+\par
+%
+\indent
+	Aplikacja jest najczęściej zbiorem różnych zadań wykorzystujących wspólne zasoby, tak więc z~punktu widzenia systemu operacyjnego 
+	powinna działać w~obrębie procesu, który działa na udostępnianych przez system zasobach (pamięć, deskryptory plików, czas wykonania, itp.).
+	Poszczególne zadania realizowane w~ramach aplikacji winny być wątkami korzystającymi ze wspólnych zasobów.
 	Ze względu na naturę wątków, niektóre zadania wymagają wątków przestrzeni jądra (zapewniające skalowalność aplikacji), zaś inne wymagają
-	wątków przestrzeni użytkownika (wzajemne wykluczanie można zrealizować o~wiele łatwiej w~przestrzeni użytkownika).
+	wątków przestrzeni użytkownika (wątek jest przyporządkowany do jednego rdzenia) lub \emph{włókien} (ang. \emph{fibers}, autonomiczne fragmenty
+	aplikacji, które dobrowolnie przekazują między siebie sterowanie).
 \par
 %
 \indent
@@ -66,19 +124,20 @@
 \par
 %
 \indent
-	W systemie Linux użytkownik ma do dyspozycji wątki przestrzeni jądra \linebreak (\emph{PThreads}), zgodne ze standardem POSIX0.1, zaś wątki przestrzeni
-	użytkownika są dostepne jako osobne biblioteki (np. \emph{GNU Pth}).
+	W systemie Linux użytkownik ma do dyspozycji wątki przestrzeni jądra \linebreak (\emph{PThreads}), zgodne ze standardem POSIX0.1.
+	Dostępne są biblioteki implementujące włókna (\emph{GNU~Pth}, \emph{State~Threads}). Programista decyduje o~rodzaju użytych wątków.
 \par
 %
 \indent
-	W systemie Windows zaimplementowane są wątki przestrzeni jądra, dodatkowo można skorzystać z~wątków przestrzeni użytkownika,
-	zwanych \emph{włóknami} (\emph{fibers}). Również tutaj decyzja o~wyborze rodzaju wątku dla zadania należy do użytkownika.
+	W systemie Windows zaimplementowane są wątki przestrzeni jądra, dodatkowo można skorzystać z~włókien, które dostarcza producent systemu.
+	Niestety, ich implementacja nie jest zgodna ze standardem POSIX. Również tutaj decyzja o~wyborze rodzaju wątku dla zadania należy do użytkownika.
 \par
 %
 \subsection{Cel}
 %
 \indent
-	Celem głównym tej pracy było zbadanie możliwości połączenia wątków przestrzeni użytkownika z~wątkami przestrzeni jądra w~taki sposób,
-	aby zdjąć z~użytkownika ciężar decyzji co do rodzaju wątku dla zadania, a~ponadto zbadanie, czy bez dużej straty efektywności można  
-	zmieniać właściwości wątków tak, aby bardziej odpowiadały podzadaniom realizowanym w~zadaniach.
+	Cel tej pracy to zbadanie możliwości elastycznego zarządania wątkami w~taki sposób, aby osiągnąć jak najwyższy stopień zrównoleglenia
+	aplikacji przy jak najmniejszym obciążeniu jądra systemu operacyjnego. Innymi słowy: czy jest możliwe, aby wyspecyfikować zadanie
+	dla zarządcy wątków (zwanego również \emph{planistą}, ang. \emph{scheduler}) w~taki sposób, aby można było określić dla tego zadania
+	najbardziej odpowiadający mu w~danej chwili rodzaj wątku.
 \par
