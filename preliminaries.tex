@@ -100,9 +100,34 @@
 \par
 
 \subsection{Wątki przestrzeni użytkownika}
-
+%
+\indent
+	Wątki przestrzeni użytkownika (ang. \emph{User--Level Threads, ULT}) nie są widoczne dla systemu operacyjnego w~taki sposób,
+	jak ma to miejsce w~wypadku KLT. Podstawowa różnica pomiędzy tymi dwoma rodzajami wątków polega na podziale czasu pomiędzy
+	poszczególne wątki: uruchomienie (wznawianie) oraz przerywanie działania KLT jest dokonywane przez system operacyjny, zaś 
+	zarządzanie działaniem ULT jest zadaniem dla użytkownika. Strategie uruchamiania poszczególnych wątków przestrzeni jądra
+	(ang. \emph{scheduling}) jest również odpowiedzialnością systemu operacyjnego, co w~przypadku ULT jest także powinnością 
+	użytkownika. Wątki przestrzeni użytkownika są z~tego powodu o~wiele lżejsze: przełączanie pomiędzy nimi nie jest tak czasochłonne
+	jak w~wypadku KLT. Co więcej, zarządzanie ULT może być bardziej dopasowane do charakteru aplikacji: niektóre wątki potrzebują
+	prostego zarządzania (pierwszy wątek, drugi, \ldots, $n$-ty, pierwszy, \ldots -- algorytm \emph{Round-Robin}),
+	inne aplikacje wymagają nadawania poszczególnym wątkom priorytetów, itp. Co więcej, przezroczystość ULT dla systemu nie zakłóca
+	jego własnej polityki zarządzania wątkami.
+\par
+%
+\indent
+	Zaletą tego rozwiązania jest także łatwość uniknięcia zjawiska wyścigów. Ponieważ wszystkie ULT są wykonywane
+	w~ramach jednego procesu, wątek posiada wyłączny dostęp do wszystkich jego zasobów,
+	nie modyfikowany przez żaden inny wątek.
+\par
+%
+\indent
+	Ważną cechą ULT jest ich niezależność od systemu operacyjnego, w~jakim pracują: nie potrzebują one mechanizmu wywłaszczania
+	(ang. \emph{preemption}), gdyż kontrola nad wykonaniem wątku jest wykonywana po stronie użytkownika. Co więcej, 
+	wątki przestrzeni użytkownika mogą być zaimplementowane jako biblioteka, używana przez wiele aplikacji.
+\par
+%
 \subsubsection{Włókna (\emph{fibers})}
-
+Czy to jest niezbędne?
 \subsection{Modele 1:1, {\bf N}:1, {\bf N}:{\bf M}}
 
 %
@@ -117,6 +142,7 @@
 	programisty (użytkownika). Do unikania takich zagrożeń stosowany jest mechanizm wzajemnego wykluczania: podczas gdy jeden
 	wątek wykonuje ciąg operacji na takim zasobie (zasobach), inne wątki oczekują na zakończenie tego ciągu, a~następnie 
 	jeden z~oczekujących wątków wykonuje właściwy sobie ciąg operacji na tym zasobie.
+	Model ten jest wykorzystywany w~implementacji wirtualnej maszyny języka Java (od wersji 1.5).
 \par
 %
 \indent
@@ -125,9 +151,19 @@
 	na zasobach wykorzystywanych wyłącznie przez odpowiadający im wątek przestrzeni jądra. Jednakże, jęśli jeden z~wątków przestrzeni
 	użytkownika zostanie zablokowany (np. podczas wykonywania operacji na IO), wówczas działanie innych wątków będzie również zablokowane.
 	Aby uniknąć takich sytuacji, operacje blokujące są opakowane w~taki sposób, by nie blokować wykonania wątku (\emph{jacketing}).
+	Wątki zorganizowane według tego modelu są nazywane \emph{zielonymi wątkami} (ang. \emph{Green Threads}).
+	Model ten był wykorzystywany w~implementacji wirtualnej maszyny języka Java (do wersji 1.5).
 \par
 %
 \indent
-	Model N:M to przyporządkowanie \emph{N~wątków użytkownika dla M~wątków jądra}. W~zależności od implementacji,  
+	Model N:M to przyporządkowanie \emph{N~wątków użytkownika dla M~wątków jądra}. Wątki w~tym modelu są zarządzane zarówno 
+	przez system operacyjny, jak też użytkownika.
 \par
 
+\subsection{Wątki mieszane}
+%
+\indent
+	Wątki mieszane są implementacją modelu N:M. Ich celem jest połączenie zalet KLT i ULT. Istnieją implementacje, które
+	modyfikują system operacyjny, jak również takie, które nie ingerują w~jego strukturę. Opisana w~tej pracy implementacja
+	wątków mieszanych stosuje drugą metodę.
+\par
