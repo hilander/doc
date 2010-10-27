@@ -158,18 +158,20 @@
 	
 	Operacje wejścia i~wyjścia z~sekcji krytycznej muszą spełniać następujące warunki:
 	\begin{itemize}
-	\item Mutual exclusion. When a thread is executing in its critical section, 
-	no other threads can be executing in their critical sections. 
-	(If a thread is executing in its critical section when a context switch occurs, 
-	the thread is still considered to be in the critical section. With the assumption of fair scheduling, 
-	this thread will eventually resume execution and exit the critical section.) 
-	\item Progress. If no thread is executing in its critical section and there are threads that wish 
-	to enter their critical sections, only the threads that are executing in their entry- or exit\dywiz sections
-	can participate in the decision about which thread will enter its critical section next, and this decision cannot be postponed indefinitely. 
-	\item Bounded waiting. After a thread makes a request to enter its critical section, 
-	there is a bound on the number of times that other threads are allowed to enter 
-	their critical sections before this thread’s request is granted. 
+	\item[{\bf M}] Wzajemne wykluczanie : dokładnie jeden wątek znajduje się w~sekcji krytycznej
+	(Jeśli nastąpi przełączenie tego wątku na inny -- jest on nadal w~sekcji krytycznej, a~więc inne wątki
+	w~dalszym ciągu muszą czekać na jego wyjście z~sekcji krytycznej).
+	\item[{\bf P}] Postęp (ang. \emph{Progress}): jeśli żaden wątek nie znajduje się w~sekcji krytycznej, a~istnieją wątki oczekujące na wejście
+	do własnych sekcji krytycznych, to decyzja o~wejściu do sekcji krytycznej zapada pomiędzy wątkami, które oczekują na wejście
+	lub wychodzą z~sekcji krytycznej. Co więcej, decyzja ta musi zapaść (nie może być odraczana w~nieskończoność).
+	\item[{\bf B}] Ograniczone czekanie (ang. \emph{Bounded waiting}): wątek znajdzie się w~sekcji krytycznej najpóźniej po określonej
+	liczbie prób.
 	\end{itemize}
+\par
+\subsubsection{Algorytm Petersona}
+%
+\indent
+	Algorytm jest rozwiązaniem problemu sekcji krytycznej dla dwóch wątków. 
 \par
 
 

@@ -4,6 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage[table]{xcolor}
+\usepackage[bookmarks, pdfhighlight=/P, linkbordercolor={1 1 1}, unicode=true]{hyperref}
 %\usepackage{qswiss,qcourier}
 %\usepackage{sfheaders}
 
@@ -13,7 +14,7 @@
 %\setlength{\voffset}{1cm}
 \author{Mariusz Barycz}
 \title{Analiza metod zarządzania wątkami mieszanymi}
-\date{luty 2010}
+\date{\today}
 \begin{document} 
 
 \maketitle
@@ -29,30 +30,429 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{1ex plus 0.7ex minus 0.1ex}
 
-\input{abbrev.tex}
+\begin{center}
+
+\begin{minipage}{10cm}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus 0.7ex minus 0.1ex}
+
+\begin{center}
+\bf{Streszczenie}
+\end{center}
+
+\end{minipage}
+\end{center}
 
 \newpage
-\input{introduction.tex}
+%
+\section{Wstęp}
+%
+\indent 
+	Od połowy lat 80. XX~wieku zwiększano moc obliczeniową procesorów za pomocą \emph{równoległego wykonania rozkazów procesora}
+	(ang. \emph{instruction-level parallelism, ILP}). Na wykonanie pojedynczego rozkazu składa się wykonanie w~ustalonej kolejności
+	określonej liczby kroków. Klasyczna sekwencja składa się z~pięciu kroków:
+	\begin{enumerate}
+	\item pobranie (ang. \emph{Instruction Fetch, IF});
+	\item dekodowanie (ang. \emph{Instruction Decode, ID});
+	\item wykonanie (ang. \emph{Execute, EX});
+	\item dostęp do pamięci (ang. \emph{Memory Access, MEM});
+	\item zapis (ang. \emph{Write Back, WB}).
+	\end{enumerate}
+	Każdy rozkaz był wykonywany oddzielnie, tj. jednostka centralna wykonywała kroki od IF do WB dla każdego rozkazu osobno, zaś
+	podejście zastosowane w ILP polegało na maksymalnym wykorzystaniu części procesora obsługujących poszczególne kroki.
+	Jet to \emph{potokowe przetwarzanie rozkazów} (ang. \emph{Pipelining}).
+	\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} \hline
+	& \multicolumn{5}{c|}{Rozkaz 1} & \multicolumn{5}{c|}{Rozkaz 2}  \\ \cline{2-11}
+	& IF & ID & \cellcolor{yellow} EX & MEM & WB & IF & ID & EX & MEM & WB\\ \cline{2-11} \cline{2-11}
+	Cykl zegara & 1 & 2 & \cellcolor{yellow} 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
+	\end{tabular}\par
+	\begin{small} Tabela 1. Brak potokowości: wykonanie dwóch rozkazów \end{small} \par
+	\end{center}\par
+
+	\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
+	Numer 		 & \multicolumn{7}{c|}{Stan potoku} \\
+	rozkazu & \multicolumn{7}{c|}{} \\ \hline
+	1 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
+	2 & & IF & ID & \cellcolor{yellow} EX & MEM & WB & \\ \hline
+	3 & & & IF & \cellcolor{yellow} ID & EX & MEM & WB \\ \hline
+	4 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
+	5 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
+	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
+	\end{tabular}\par
+	\begin{small} Tabela 2. Potokowe wykonanie 5 rozkazów \end{small}
+	\end{center}
+\par
+%
+\indent
+	Poza potokowością, do ILP używa się również innych technik:
+	\begin{itemize}
+	\item \emph{Superskalarność}: podobnie jak w~potokowości, każdemu krokowi odpowiada co najmniej jeden potok.
+
+	\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
+	Numer 		 & \multicolumn{7}{c|}{Stan potoku} \\
+	rozkazu & \multicolumn{7}{c|}{} \\ \hline
+	1 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
+	2 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
+	3 & & IF & ID & \cellcolor{yellow} EX & MEM & WB & \\ \hline
+	4 & & IF & ID & \cellcolor{yellow} EX & MEM & WB & \\ \hline
+	5 & & & IF & \cellcolor{yellow} ID & EX & MEM & WB \\ \hline
+	6 & & & IF & \cellcolor{yellow} ID & EX & MEM & WB \\ \hline
+	7 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
+	8 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
+	9 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
+	10 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
+	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
+	\end{tabular}\par
+	\begin{small} Tabela 3. Potokowe wykonanie 10 rozkazów na jednostce superskalarnej\end{small}
+	\end{center}
+	Jak łatwo zauważyć, superskalarny CPU jest w~stanie przetworzyć nawet wektor instrukcji. Warunkiem koniecznym do osiągnięcia takiego
+	wyniku jest brak zależności pomiędzy wynikiem wcześniejszej a~następnej instrukcji.
+
+	\item \emph{Wykonanie poza kolejnością} (ang. \emph{Out of Order execution, OoO}): technika ortogonalna do poprzednich. Polega na 
+		wykonaniu tych rozkazów procesora, które mogą użyć bieżącej wartości z~któregoś z~jego rejestrów.
+	\item \emph{Przemianowanie rejestrów} (ang. \emph{Register Renaming}): zapobieganie sekwencyjnemu wykonaniu rozkkazów poprzez użycie 
+		aktualnie dostępnych rejestrów.
+	\item \emph{Wykonanie spekulatywne} (ang. \emph{Speculative execution}): wykonanie instrukcji (lub ich części), które znajdują się
+		za skokiem warunkowym przed wynikiem sprawdzenia tego warunku.
+	\item \emph{Przewidywanie skoku} (ang. \emph{Branch prediction}): mechanizm wspomagający wykonanie spekulatywne. Polega na wykonaniu
+	 ciągu rozkazów, który \emph{może} być wykonany po skoku warunkowym.
+	\end{itemize}
+\par
+%
+\indent
+	Wyżej wymienione techniki zrównoleglenia wykonania rozkazów napotykają jednak na szereg problemów, przede wszystkim na problem
+	zależności od danych.
+	Prosty przykład, który ilustruje ten problem:
+	\begin{flushright}
+	\begin{tabular}{l l}\\
+		$x \gets y + z$ & \hspace{4.2cm} (1)\\
+		$t \gets u + v$ & \hspace{4.2cm} (2)\\
+		$l \gets x \times t$ & \hspace{4.2cm} (3)\\
+	\end{tabular}\\
+	\end{flushright}
+	Jak łatwo zauważyć, wartość komórki $l$~zależy od wyliczonych wartości komórek $x$~i~$t$, a~więc aby otrzymać prawidłowy wynik
+	instrukcji (3), jej wykonanie musi poprzedzić wyliczony wcześniej wynik instrukcji (1) i~(2).
+\par
+%
+\indent
+	Innym poważnym problemem, z~jakim można się obecnie spotkać, jest dostęp do pamięci RAM: od początku lat 90. XX~wieku różnica
+	pomiędzy częstotliwością taktowania procesora, a~pamięci RAM zwiększyła się drastycznie. Już wtedy zaczęto zauważać
+	ten problem, przyrównując go, z~punktu widzenia procesora, do uderzenia w~mur (ang. \emph{Memory Wall}). Aby ominąć ten problem,
+	w~procesorach umieszczano pamięć podręczną (ang. \emph{cache}), która była taktowana tak jak sam procesor (cache pierwszego poziomu, L1 cache),
+	lub częstotliwością niewiele odbiegającą od częstotliwości taktowania procesora (L2 cache). Oczywiście ilość pamięci podręcznej
+	była nieporównywalnie mniejsza od ilości pamięci RAM, tak więc pojawienie się pamięci cache wymusiło stosowanie technik, które nie
+	były potrzebne dotychczas.
+\par
+%
+\indent
+	Okazuje się więc, że zwiększanie częstotliwości taktowania procesora nie wpływa na wzrost jego wydajności w~takim stopniu, jak ILP.
+	Należy również pamiętać o~zależności temperatury wydzielanej przez jednostkę centralną w~stosunku do wzrostu częstotliwości taktowania,
+	która rośnie wykładniczo.
+	%Co więcej, sugerowany przez producentów wzrost wydajności procesora jest traktowany jako mit (ang. \emph{megahertz myth}).
+\par
+%
+\indent
+	Stosowanie coraz bardziej zaawansowanych technik (jak również uniknięcie przegrzania jednostki centralnej)
+	wymusiło miniaturyzację samego procesora. Następnym krokiem było umieszczenie w~jednostce
+	centralnej (CPU) kilku procesorów, zwanych \emph{rdzeniami} (ang. \emph{cores}). Wraz z~pojawieniem się wielordzeniowej jednostki centralnej,
+	w~celu efektywnego jej wykorzystania, należy uwzględnić wszystkie problemy związane z~programowaniem równoległym, w~szczególności
+	wykonanie aplikacji, w~celu efektywnego wykorzystania zasobów, powinno być zrównoleglone w~jak największym stopniu.
+\par
+
+\subsection{Ewolucja systemów operacyjnych}
+%
+\indent
+	Michael J.~Flynn stworzył klasyfikację systemów komputerowych oraz programów, zwaną \emph{taksonomią Flynna}, w~której ze względu na liczbę
+	strumieni rozkazów oraz danych, wyróżniamy cztery klasy:
+	\begin{center}
+	\begin{tabular}{|c|c|c|} \hline
+													 & Jeden strumień instrukcji	 & Wiele strumieni instukcji \\
+													 & (\emph{Single Instruction}) & (\emph{Multiple Instruction}) \\\hline
+			Jeden                &     												 &      \\
+			strumień danych      &  SISD										   & MISD 			\\
+			(\emph{Single Data}) &                             & \\\hline
+			Wiele                &     												 &      \\
+			strumieni danych     & SIMD                        & MIMD \\
+			(\emph{Multiple Data}) & 										 & 			\\\hline
+	\end{tabular}
+	\begin{small} Tabela 4. Taksonomia Flynna \end{small}
+	\end{center}
+	Klasy te możemy scharakteryzowac w~następujący sposób:
+	\begin{itemize}
+		\item SISD jest klasą programów wykonywanych sekwencyjnie na maszynie sekwencyjnej (skalarnej);
+		\item SIMD odpowiada programom wykonywanym na maszynie wektorowej (superskalarnej) lub na procesorach przetwarzających sygnały (DSP);
+		\item MISD jest klasą maszyni i~programów, która ma zastosowanie tam, gdzie liczy się minimalizacja błędów;
+		\item MIMD odpowiada programom wykonywanym na wielu procesorach (wielordzeniowe, klastry, itp.).
+	\end{itemize}
+\par
+%
+\indent
+	Aplikację można roapztrywać jako zbiór zadań, które wykonywane są w~określonym kontekście. Może zdarzyć się również, że pewne zadania
+	mogą być wykonane po zakończeniu działania innych. Może się zdarzyć, że pewne zadania korzystają ze wspólnych zasobów.
+	Systemy operacyjne udostępniają podstawową abstrakcję dla zadań: \emph{procesy}. Wykonanie procesu odbywa się w~jednym lub wielu \emph{wątkach}
+	Systemy operacyjne można podzielić na analogiczne klasy do tych z~taksonomii Flynna, ale ze względu na sposób zarządzania zadaniami.
+\par
+%
+\subsection{Motywacja} 
+%
+\indent
+	O~ile ILP jest z~reguły przezroczyste dla programisty (optymalizacja jest dokonywana przez kompilator lub jest wykonywana w~trakcie wykonywania programu
+	przez jednostkę centralną),	o~tyle programista musi zaprojektować (i~zaimplementować) aplikację tak, aby mogła korzystać z~wielordzeniowej
+	architektury jednostki centralnej.
+\par
+%
+\indent
+	Współczesne systemy operacyjne udostępniają programiście narzędzia, które mogą być użyte do maksymalnego wykorzystania 
+	wielordzeniowej architektury CPU: są to \emph{procesy} oraz \emph{wątki}.
+\par
+%
+\indent
+	Aplikacja jest najczęściej zbiorem różnych zadań wykorzystujących wspólne zasoby, tak więc z~punktu widzenia systemu operacyjnego 
+	powinna działać w~obrębie procesu, który działa na udostępnianych przez system zasobach (pamięć, deskryptory plików, czas wykonania, itp.).
+	Poszczególne zadania realizowane w~ramach aplikacji winny być wątkami korzystającymi ze wspólnych zasobów.
+	Ze względu na naturę wątków, niektóre zadania wymagają wątków przestrzeni jądra (zapewniające skalowalność aplikacji), zaś inne wymagają
+	wątków przestrzeni użytkownika (wątek jest przyporządkowany do jednego rdzenia) lub \emph{włókien} (ang. \emph{fibers}, autonomiczne fragmenty
+	aplikacji, które dobrowolnie przekazują między siebie sterowanie).
+\par
+%
+\indent
+	Niektóre systemy operacyjne (NetBSD, OpenSolaris) udostępniają wątki mieszane, gdzie użytkownik decyduje, z~jakim rodzajem wątku 
+	chce związać konkretne zadanie.
+\par
+%
+\indent
+	W systemie Linux użytkownik ma do dyspozycji wątki przestrzeni jądra \linebreak (\emph{PThreads}), zgodne ze standardem POSIX0.1.
+	Dostępne są biblioteki implementujące włókna (\emph{GNU~Pth}, \emph{State~Threads}). Programista decyduje o~rodzaju użytych wątków.
+\par
+%
+\indent
+	W systemie Windows zaimplementowane są wątki przestrzeni jądra, dodatkowo można skorzystać z~włókien, które dostarcza producent systemu.
+	Niestety, ich implementacja nie jest zgodna ze standardem POSIX. Również tutaj decyzja o~wyborze rodzaju wątku dla zadania należy do użytkownika.
+\par
+%
+\subsection{Cel}
+%
+\indent
+	Cel tej pracy to zbadanie możliwości elastycznego zarządania wątkami mieszanymi w~taki sposób, aby zminimalizować liczbę odwołań systemowych.
+	Co więcej, wątki mają być zarządzane w~sposób przezroczysty dla użytkownika (programisty). 
+\par
+%
 
 \newpage
-\input{preliminaries.tex}
+\section{Podstawy}
 
-\newpage
-\input{scheduling_strategies.tex}
+\subsection{Koprocedury}
+%
+\indent
+	Procedurę można przedstawić jako ciąg instrukcji $P=\langle c_1,c_2,\ldots ,c_n\rangle$, zaś jej wywołanie jako 
+	$C=\langle c_1^P,\ldots,c_m^P\rangle, \mathrm{ } (m \leq n)$~--~jej
+	podciąg. Dla dwóch wywołań 
+	\begin{displaymath}
+	\begin{array}{l}
+	C_1= \langle c_1^1,c_2^1,\ldots ,c_k^1 \rangle \\
+	\mathrm{oraz}\\
+	C_2= \langle c_1^2,c_2^2,\ldots ,c_l^2 \rangle \mathrm{~} (k,l > 0), 
+	\end{array}
+	\end{displaymath}
+	mamy $c_1^1 = c_2^1$, zaś ostatnie elementy tych ciągów wcale nie muszą być równe.
+\par
+\indent
+	Każda procedura posiada specyficzne dla niej obiekty zawarte w~jej \emph{rekordzie aktywacji},
+	umieszczonym na stosie tych rekordów. Rekord aktywacji zawiera stan procedury, który znika wraz 
+	z~jej zakończeniem. Tak więc, stan procedury jest ulotny.
+\par
+	Koprocedury są ,,uogólnionymi'' procedurami. O~ile procedury posiadają własne zmienne
+	przechowywane na stosie oraz mogą dostarczyć dokładnie jedną wartość po zakończeniu
+	działania, o~tyle koprocedury:
+	\begin{itemize}
+	\item posiadają własny stos wywołań;
+	\item mogą przekazać do strony wywołującej co najmniej jedną wartość.
+	\end{itemize}
+	Powyższe właściwości koprocedur predestynują je jako naturalna podstawę dla wątków:
+	nie są one tak ulotne jak procedury, gdyż po zwróceniu wyniku ich stan jest zapamiętywany,
+	a~kolejne wywołanie koprocedury jest jej kontynuacją od miejsca poprzedzającego przekazanie
+	ostatniego wyniku. Co więcej, koprocedura może wywoływać prcedury (jak również inne koprocedury)
+	we własnym kontekście, a~więc, przy minimalnym nakładzie ze strony programisty, możliwe jest
+	zaimplementowanie TLS dla bieżącej koprocedury.
+\par
 
-\newpage
-\input{mechanisms.tex}
+\indent
+	W wielowątkowym systemie operacyjnym, proces jest jednostką o~chronionym dostępie do 
+	procesorów, innych procesów, plików oraz innych zasobów wejścia-wyjścia. Ponadto, system
+	traktuje go jako autonomiczny byt, który posiada własną przestrzeń adresową (wirtualna 
+	przestrzeń adresowa), oraz czas wykonania.
+\par
+%
+\indent
+	W~takim systemie wątek jest przyporządkowany do dokładnie jednego procesu, a~sam proces 
+	może zawierać co najmniej jeden wątek. Wątki w~obrębie procesu dzielą tę samą przestrzeń
+	adresową, jak i~pozostałe zasoby. Czas wykonania wątków jednego procesu jest równy czasowi
+	jego wykonania. Każdemu z~nich są przyporządkowane:
+	\begin{itemize}
+	\item stan (uruchomiony, gotowy, itp.);
+	\item kontekst (gdy nie jest aktualnie wykonywany);
+	\item stos wywołań;
+	\item prywatna przestrzeń adresowa (ang. \emph{Thread Local Storage, TLS}).
+	\end{itemize}
+\par
+\subsection{Wątki przestrzeni jądra}
 
-\newpage
-\input{implementation.tex}
+%
+\indent
+	Wątki przestrzeni jądra (ang. \emph{Kernel--Level Threads, KLT}) są zarządzane w~całości przez system operacyjny. 
+	Większość obecnych systemów operacyjnych oferuje KLT użytkownikowi. Czasami wątki przestrzeni jądra są nazywane
+	\emph{procesami wagi lekkiej} (ang. \emph{Lightweight Proccess}), gdyż przełączanie pomiędzy nimi jest o~wiele
+	szybsze niż pomiędzy procesami, zaś każdy wątek otrzymuje od systemu określoną porcję czasu procesora.
+	KLT realizują model 1:1. Odzwierciedla on przyporządkowanie \emph{jednego wątku użytkownika dla jednego wątku jądra}.
+\par
+%
+\indent
+	Podstawowa korzyść, jaką można uzyskać z~tego powodu, to nieblokujący dostęp do urządzeń wejścia-wyjścia:
+	jeśli jeden z~wątków oczekuje na dane z~IO, wykonanie pozostałych wątków nie jest wstrzymywane.
+	Z~tego powodu aplikacje, które w~trakcie działania często odwołują się do urządzeń zewnętrznych, korzystają
+	z~KLT.
+\par
+%
+\indent
+	Inną korzyścią wątków przestrzeni jądra jest rozdystrybuowanie ich na wiele rdzeni. Mechanizm ten jest przezroczysty
+	dla użytkownika. Dzięki niemu, niezależne obliczenia mogą wykonywać się równocześnie, co może znacząco wpłynąć na
+	wydajność aplikacji.
+\par
+%
+\indent
+	Należy pamiętać, że KLT są zarządzane w~całości przez system operacyjny. Wobec tego, zmiana stanu wątku, jego uruchomienie,
+	wstrzymanie, jak również sposób zarządzania pulą wątków jest w~pełni zależna od jądra systemu i~użytkownik jest skazany
+	na decyzje systemu operacyjnego odnośnie podstawowych operacji na wątkach. Co więcej, taki sposób zarządzania wątkami,
+	jest obarczony kosztami związanymi z~komunikacją z~jądrem systemu.
+\par
+%
+\indent
+	Użytkownik korzystający z~wątków przestrzeni jądra może spotkać się z~problemem \emph{wyścigów} (ang. \emph{Race Conditions}):
+	dwa wątki w~tym samym czasie wykonują operacje na tych samych zasobach. Ponieważ system operacyjny przerywa pracę wątków w~sposób
+	niezależny od działania poszczególnych wątków, może zdarzyć się sytuacja, gdy operacje jednego wątku \emph{przeplatają się} z~operacjami
+	drugiego wątku (równie dobrze może to być o~wiele większa liczba wątków!) na tym samym zasobie. W~takiej sytuacji, wynik działania wątków
+	może prowadzić do nieprzewidywalnych wyników, które mogą wypaczyć wynik działania aplikacji, lub nawet doprowadzić do przerwania jej wykonania.
+\par
+%
+\indent
+	Aby zaradzić temu problemowi, stworzony został mechanizm \emph{wzajemnego wykluczania} (ang. \emph{Mutual Exclusion, mutex}):
+	jeśli dany zasób jest wolny, wówczas dostęp do niego otrzymuje dokładnie jeden wątek, zaś inne wątki czekają na zwolnienie tego zasobu.
+	Wątki mogą być uśpione lub oczekiwać aktywnie na przydzielenie zasobu, jednakże są one w~jakiś sposób zablokowane.  
+	Okazuje się, że mechanizm wzajemnego wykluczania wiąże się z~różnego rodzaju zagrożeniami. Najpoważniejsze z~nich to zakleszczenie 
+	(ang. \emph{deadlock}) i~zagłodzenie (ang. \emph{starvation}).
+\par
+%
+\indent
+	Zakleszczenie występuje w~momencie gdy jeden wątek wykonuje operacje na zasobie A, a~następnie (nie zwalniając A) zgłasza zapotrzebowanie
+	na zasób B, który jest zarezerwowany dla drugiego wątku, który oczekuje na zwolnienie zasobu A.
+\par
+%
+\indent
+	Zagłodzenie wątku występuje wtedy, gdy pewien wątek oczekuje na dostęp do zasobu, lecz nie jest on do tego zasobu dopuszczony.
+\par
 
-\newpage
-\input{testing.tex}
+\subsection{Wątki przestrzeni użytkownika}
+%
+\indent
+	Wątki przestrzeni użytkownika (ang. \emph{User--Level Threads, ULT}) nie są widoczne dla systemu operacyjnego w~taki sposób,
+	jak ma to miejsce w~wypadku KLT. Podstawowa różnica pomiędzy tymi dwoma rodzajami wątków polega na podziale czasu pomiędzy
+	poszczególne wątki: uruchomienie (wznawianie) oraz przerywanie działania KLT jest dokonywane przez system operacyjny, zaś 
+	zarządzanie działaniem ULT jest zadaniem dla użytkownika. Strategie uruchamiania poszczególnych wątków przestrzeni jądra
+	(ang. \emph{scheduling}) jest również odpowiedzialnością systemu operacyjnego, co w~przypadku ULT jest także powinnością 
+	użytkownika. Wątki przestrzeni użytkownika są z~tego powodu o~wiele lżejsze: przełączanie pomiędzy nimi nie jest tak czasochłonne
+	jak w~wypadku KLT. Co więcej, zarządzanie ULT może być bardziej dopasowane do charakteru aplikacji: niektóre wątki potrzebują
+	prostego zarządzania (pierwszy wątek, drugi, \ldots, $n$-ty, pierwszy, \ldots -- algorytm \emph{Round-Robin}),
+	inne aplikacje wymagają nadawania poszczególnym wątkom priorytetów, itp. Co więcej, przezroczystość ULT dla systemu nie zakłóca
+	jego własnej polityki zarządzania wątkami. Model, który odpowiada wątkom przestrzeni użytkownika, to N:1.
+	ULT są nazywane \emph{zielonymi wątkami} (ang. \emph{Green Threads}).
+\par
+%
+\indent
+	Zaletą tego rozwiązania jest także łatwość uniknięcia zjawiska wyścigów. Ponieważ wszystkie ULT są wykonywane
+	w~ramach jednego procesu, wątek posiada wyłączny dostęp do wszystkich jego zasobów,
+	nie modyfikowany przez żaden inny wątek.
+\par
+%
+\indent
+	Jeśli jeden z~wątków przestrzeni
+	użytkownika zostanie zablokowany (np. podczas wykonywania operacji na IO), wówczas działanie innych wątków będzie również zablokowane.
+	Aby uniknąć takich sytuacji, operacje blokujące są często opakowane w~taki sposób, by nie blokować wykonania wątku (\emph{jacketing}).
+\par
+%
+\indent
+	Ważną cechą ULT jest ich niezależność od systemu operacyjnego, w~jakim pracują: nie potrzebują one mechanizmu wywłaszczania
+	(ang. \emph{preemption}), gdyż kontrola nad wykonaniem wątku jest wykonywana po stronie użytkownika.
+\par
+%
+\subsection{Wątki mieszane}
+%
+\indent
+	Wątki mieszane są implementacją modelu N:M. Wątki w~tym modelu są zarządzane zarówno 
+	przez system operacyjny, jak też użytkownika. Ich celem jest połączenie zalet KLT i ULT. Istnieją implementacje, które
+	modyfikują system operacyjny, jak również takie, które nie ingerują w~jego strukturę. Opisana w~tej pracy implementacja
+	wątków mieszanych stosuje drugą metodę.
+\par
+\subsection{Wzajemne wykluczanie}
+%
+\indent
+	Jak wspomniano wcześniej, wzajemne wykluczanie jest mechanizmem używanym w~celu uniknięcia zjawiska wyścigów.
+	Aby wykluczyć taką sytuację, wątki wykonują działania na współdzielonym zasobie w~ramach tzw. \emph{sekcji krytycznej}
+	(ang. \emph{critical section}).
+\par
+%
+\indent
+	Sekcję krytyczną można zapisać w~następujący sposób:
+	\begin{verbatim}
 
-\newpage
-\input{summary.tex}
+    Wejście_do_sekcji_krytycznej();
 
-\newpage
-\input{bibliography.tex}
+    Sekcja_krytyczna(); // wykonanie operacji
+                        // na współdzielonych zasobach
 
+    Wyjście_z_sekcji_krytycznej();
+	\end{verbatim}
+	
+	Operacje wejścia i~wyjścia z~sekcji krytycznej muszą spełniać następujące warunki:
+	\begin{itemize}
+	\item[{\bf M}] Wzajemne wykluczanie : dokładnie jeden wątek znajduje się w~sekcji krytycznej
+	(Jeśli nastąpi przełączenie tego wątku na inny -- jest on nadal w~sekcji krytycznej, a~więc inne wątki
+	w~dalszym ciągu muszą czekać na jego wyjście z~sekcji krytycznej).
+	\item[{\bf P}] Postęp (ang. \emph{Progress}): jeśli żaden wątek nie znajduje się w~sekcji krytycznej, a~istnieją wątki oczekujące na wejście
+	do własnych sekcji krytycznych, to decyzja o~wejściu do sekcji krytycznej zapada pomiędzy wątkami, które oczekują na wejście
+	lub wychodzą z~sekcji krytycznej. Co więcej, decyzja ta musi zapaść (nie może być odraczana w~nieskończoność).
+	\item[{\bf B}] Ograniczone czekanie (ang. \emph{Bounded waiting}): wątek znajdzie się w~sekcji krytycznej najpóźniej po określonej
+	liczbie prób.
+	\end{itemize}
+\par
+\subsubsection{Algorytm Petersona}
+%
+\indent
+	Algorytm jest rozwiązaniem problemu sekcji krytycznej dla dwóch wątków. 
+\par
+
+
+%\end{document}
+%
+%\newpage
+%\input{scheduling_strategies.tex}
+%
+%\newpage
+%\input{mechanisms.tex}
+%
+%\newpage
+%\input{implementation.tex}
+%
+%\newpage
+%\input{testing.tex}
+%
+%\newpage
+%\input{summary.tex}
+%
+%\newpage
+%\input{bibliography.tex}
+%
 \end{document}

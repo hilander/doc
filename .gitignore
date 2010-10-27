@@ -7,6 +7,8 @@
 *.log
 *.pdf
 *.toc
+*.dvi
+*.out
 cscope.out
 mktemp.sh
 doxygen/
