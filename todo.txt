@@ -1,0 +1,46 @@
+Source:
++ General remarks
+	* należy utworzyć szablon handle< Typename T> celem
+		ujednolicenia dostępu do obiektów (na później?)
+	* dodać tracer (na później?)
++ Coroutine
+	* context switching
+	* fabryka (tworzenie nowej koprocedury, przydzielanie kontekstu dla koprocedury)
+	TODO (?)
+	* obsługa zdarzeń / sygnałów (?)
+	* jacketing dla IO (?)
++ Manager
+	TODO
+	* należy dokładnie określić odpowiedzialność tej przestrzeni nazw (oraz samej klasy)
+	* gdzie umieścić kontenery? (w tej chwili znajdują się w scheduler)
++ Fiber
+	* niewłaściwa nazwa plików / katalogów (używane jest runnable)
+	* resource:
+		- dospecyfikować (podstawowa klasa, klasy pochodne - te, które będą potrzebne do testów)
+	* pipe:
+		- zmienić nazwę (channel? two-way channel?)
+		- ustalić protokół przesyłania / odbierania
+		- zdarzenia specyficzne dla kanału
+		- jest to zasób, dziedziczenie po resource?
+	* message:
+		- to powinien być szablon klasy, 
+			= pierwszy argument typowy powinien być strukturą 
+				zawierającej typ wyliczeniowy, w którym będą zdefiniowane przez użytkownika komunikaty 
+			= drugi argument typowy powinien być strukurą zawierającą akcje, jakie będą podejmowane
+				w przypadku nadejścia komunikatu
+		- szatański pomysł: a gdyby struktura zawierająca enum użytkownika była szablonem:
+			template< int StartValue > struct user_messages
+			wtedy nie trzeba się martwić o kolizje wartości poszczególnych enumów.
+			W takim przypadku należało by wypchnąć definicję enuma zawierającego podstawowe 
+			komunikaty przed message.
+		- doprecyzować przesyłanie komunikatów (endpointy, pośrednicy, zdarzenia(!))
+	* runnable:
+		- nazwa powinna być zmieniona na fiber
+		- domyślne zasoby:
+			= kanał wejściowy, wyjściowy
+			= ?
++ Scheduler
+	* obecnie same dziury:
+		- 
+
+Doc:
