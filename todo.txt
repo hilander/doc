@@ -40,7 +40,7 @@ Source:
 			= kanał wejściowy, wyjściowy
 			= ?
 + Scheduler
-	* obecnie same dziury:
-		- 
+	* scheduler
+	* ueber_sheduler
 
 Doc:
