@@ -1,16 +1,13 @@
+<center><b>Co jeszcze zostało do zrobienia?</b></center>
 Source:
 + General remarks
 	* należy utworzyć szablon handle< Typename T> celem
 		ujednolicenia dostępu do obiektów (na później?)
 	* dodać tracer (na później?)
+	* pomyśleć nad mechanizmem odtwarzania (replay) (na później?)
 + Coroutine
-	* context switching
-	* fabryka (tworzenie nowej koprocedury, przydzielanie kontekstu dla koprocedury)
-	TODO (?)
-	* obsługa zdarzeń / sygnałów (?)
-	* jacketing dla IO (?)
+	* Wygląda na to, że wszystko OK
 + Manager
-	TODO
 	* należy dokładnie określić odpowiedzialność tej przestrzeni nazw (oraz samej klasy)
 	* gdzie umieścić kontenery? (w tej chwili znajdują się w scheduler)
 + Fiber
@@ -39,8 +36,44 @@ Source:
 		- domyślne zasoby:
 			= kanał wejściowy, wyjściowy
 			= ?
+	* socket:
+		- wyspecyfikować!
+		- dwa rodzaje (z punktu widzenia włókna):
+			= blokujący
+			= nieblokujący
+	* file:
+		- wyspecyfikować!
+		- zrobić jacketing
+		- dwa rodzaje dostępu (z punktu widzenia włókna):
+			= blokujący
+			= nieblokujący
 + Scheduler
-	* scheduler
+	* scheduler (userspace)
+		- nazwa nieadekwatna - zmienić na user[space]
+		- zasoby:
+			= określić zasoby używane przez schedulera
+			= zaimplementować mechanizm obsługi zdarzeń
+			= zaimplementować mechanizm obsługi sygnałów
+			= zaimplementować jacketing dla I/O, socketów
+		- określić politykę zarządzania włóknami, a następnie zaimplementować
 	* ueber_sheduler
+		- określić politykę zarządzania wątkami
+		- określić politykę zarządzania zasobami
+		- zaimplementować mechanizm komunikacji za pomocą kanałów
 
 Doc:
++ Wstęp
+	* taksonomia Flynn-a:
+		- obszerna klasyfikacja systemów komputerowych (jednostka centralna + pamięć, liczba wejść i wyjść programu)
+	* Systemy komputerowe:
+		- bez ILP
+		- ILP:
+			= już zrobione (zgrubnie, można dodać przykłady tam, gdzie ich nie ma)
+		- pamięć:
+			= memory wall
+	* Rozwój systemów operacyjnych:
+		- Scheduling
+			= bez schedulingu
+			= batch processing
+			= multiprocess
+			= multithreading

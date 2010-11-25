@@ -9,6 +9,7 @@
 *.toc
 *.dvi
 *.out
+*.html
 cscope.out
 mktemp.sh
 doxygen/
