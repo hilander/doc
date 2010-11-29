@@ -1,7 +1,7 @@
 
 .PHONY:all
 
-all: main
+all: final
 
-main: main.tex
-		pdflatex main.tex
+final: final.tex
+		pdflatex final.tex

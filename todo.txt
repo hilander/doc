@@ -19,6 +19,11 @@ Source:
 		- ustalić protokół przesyłania / odbierania
 		- zdarzenia specyficzne dla kanału
 		- jest to zasób, dziedziczenie po resource?
+	* runnable:
+		- nazwa powinna być zmieniona na fiber
+		- domyślne zasoby:
+			= kanał wejściowy, wyjściowy
+			= ?
 	* message:
 		- to powinien być szablon klasy, 
 			= pierwszy argument typowy powinien być strukturą 
@@ -31,11 +36,8 @@ Source:
 			W takim przypadku należało by wypchnąć definicję enuma zawierającego podstawowe 
 			komunikaty przed message.
 		- doprecyzować przesyłanie komunikatów (endpointy, pośrednicy, zdarzenia(!))
-	* runnable:
-		- nazwa powinna być zmieniona na fiber
-		- domyślne zasoby:
-			= kanał wejściowy, wyjściowy
-			= ?
+	* event:
+		- wyspecyfikować obsługę zdarzeń
 	* socket:
 		- wyspecyfikować!
 		- dwa rodzaje (z punktu widzenia włókna):
@@ -63,40 +65,57 @@ Source:
 
 Doc:
 + Wstęp
-	* taksonomia Flynn-a:
-		- obszerna klasyfikacja systemów komputerowych (jednostka centralna + pamięć, liczba wejść i wyjść programu)
+	* taksonomia Flynn-a (<i>opuścić</i>):
+		- zgrubna klasyfikacja systemów komputerowych (jednostka centralna + pamięć, liczba wejść i wyjść programu)
 	* Systemy komputerowe:
-		- bez ILP
-		- ILP:
-			= już zrobione (zgrubnie, można dodać przykłady tam, gdzie ich nie ma)
+		- procesor:
+			- bez ILP
+			- ILP:
+				= już zrobione (zgrubnie, można dodać przykłady tam, gdzie ich nie ma)
+			- Asymmetric multiprocessing (AMP)
+				= tylko wzmianka, nie interesuje nas
+			- Symmetric multiprocessing (SMP)
+			- Symmetric multithreading (SMT)
 		- pamięć:
 			= memory wall
-		- urządzenia zewnętrzne
+			= pamięć podręczna (cache)
+			= uniform memory access (UMA)
+			= non-uniform memory access (NUMA)
+			= cache-only memory architecture (COMA, przykład: Cell?) (?)
+		- urządzenia zewnętrzne:
 			= czas dostępu
 			= odczyt, zapis
+			= direct memory access (DMA)
 	* Rozwój systemów operacyjnych:
-		- Scheduling (wstęp):
+		- Zarządzanie procesami
+    	= wirtualna przestrzeń adresowa
+    	= podział czasu pomiędzy procesy
+    	= dostęp do zasobów
+    	= uruchamianie procesów potomnnych
+			= stronicowanie pamięci
+			= pamięć wirtualna dla procesów (translation lookaside buffer (TLB))
+		- komunikacja User space -- Kernel space
+		- Scheduling (historia):
 			= bez schedulingu
 			= batch processing
-			= multiprocess
+			= multiprocessing
 			= multithreading
-+ Zarządzanie procesami
-	* wirtualna przestrzeń adresowa
-	* podział czasu pomiędzy procesy
-	* dostęp do zasobów
-	* uruchamianie procesów potomnnych
-	* IPC:
-		- potoki anonimowe (pipes)
-		- potoki nazwane (fifo)
-		- kolejki komunikatów (message queues)
-		- semafory
-		- pamięć dzielona
-		- gniazda (sockets)
-			= UNIX Domain Sockets
-+ Rodzaje wątków
-	* wątki przestrzeni jądra (KLT)
-	* wątki przestrzeni użytkownika (ULT)
-+ Strategie zarządzania wątkami:
+		- Rodzaje wątków
+    	= wątki przestrzeni jądra (KLT)
+    	= wątki przestrzeni użytkownika (ULT)
+    - IPC:
+    	- potoki anonimowe (pipes)            	
+    	- potoki nazwane (fifo)               	
+    	- kolejki komunikatów (message queues)	
+    	- semafory                            	
+    	- pamięć dzielona             	
+    	- gniazda (sockets) (UNIX Domain Sockets)
+		- synchronizacja wątków
+			= semafory
+			= muteksy
+			= conditional variables
+			= conditions
++ Zarządzanie wątkami:
 	* load sharing
 		- trzy rodzaje:
 			= first come first served (FCFS)
@@ -127,6 +146,34 @@ Doc:
 		- możliwość zawieszenia obliczeń
 		- możliwość powrotu do zawieszonych obliczeń
 
+Struktura_dokumentu:
++ wstęp (14-16)
+	- architektura komputerów
+		= procesor
+		= architektury równoległe
+		= hierarchia pamięci
+		= cache
+		= zarządzanie pamięcią
+		= urządzenia I/O
+	- systemy operacyjne (w ogólnym kontekście)
+		= procesy (process image, tworzenie, address space, ...)
+		= komunikacja US vs KS
+		= wątki
+		= scheduling (kiedyś i teraz)
+		= komunikacja (IPC: shmem, msgpass)
+		= synchronizacja (wątków)
+		= obsługa I/O (pliki, schedulery, sieć, nieblokujące I/O - polling)
+	- języki programowania
+		= procedura / wywołanie
+		= ramka stosu / wywołanie
+		= kontynuacje (koprocedury, iteratory, generatory, pochodne)
++ motywacja i poprzednie prace (3)
++ UNIX (8-10)
++ opis rozwiązania (20)
++ podsumowanie
+	- testy
+	- narzędzia
+	- future work
 Testy:
 + Jednostkowe
 + Wydajnościowe
