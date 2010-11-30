@@ -226,13 +226,14 @@
 \par
 %
 \indent
-	Problemem, który jest naturalnie związany z~ILP jest również zachowanie oryginalnej chronologii wykonywania rozkazów (zapisu wyników
+	Problemem, który jest naturalnie związany z~ILP to zależność od danych (ang. \emph{data dependency}).
+	Dotyczy on zachowania oryginalnej chronologii wykonywania rozkazów (zapisu wyników
 	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). w sekwencji
 	\begin{flushleft}
 	\begin{tabular}{l l}\\
 		(1) & {\tt add Y,Z,X} \\
 		(2) & {\tt add U,V,T} \\
-		(3) & {\tt mult X,T,L // zapisz iloczyn X}$\times${\tt T do L} \\
+		(3) & {\tt mult X,T,L /* zapisz iloczyn X}$\times${\tt T do L */} \\
 		(4) & {\tt add L,T,L} \\
 	\end{tabular}\\
 	\end{flushleft}
