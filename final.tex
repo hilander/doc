@@ -31,19 +31,9 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{1ex plus 0.7ex minus 0.1ex}
 
-\begin{center}
-
-\begin{minipage}{10cm}
-
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{1ex plus 0.7ex minus 0.1ex}
-
-\begin{center}
-\bf{Streszczenie}
-\end{center}
-
-\end{minipage}
-\end{center}
+\begin{abstract}
+	\emph{Tutaj znajdzie się streszczenie pracy.}
+\end{abstract}
 
 \newpage
 %
@@ -55,8 +45,9 @@
 	W~systemie komputerowym (lub w~skrócie: komputerze) można wyróżnić trzy podstawowe składowe:
 	\begin{itemize}
 		\item procesor (jednostka centralna, CPU): kontroluje działanie komputera, wykonuje operacje na danych;
-		\item pamięć: przechowuje dane oraz programy. Pamięć w~tym kontekście jest z~natury ulotna (po wyłączeniu komputera,
-			jej zawartości nie można odzyskać);
+		\item pamięć głowna: przechowuje dane oraz programy. Pamięć w~tym kontekście jest z~natury ulotna (po wyłączeniu komputera,
+			jej zawartości nie można odzyskać); jeśli w~treści dokumentu pojawi się słowo \emph{pamięć}, odwoływać się będzie ono do
+			pamięci głównej;
 		\item urządzenia zewnętrzne (peryferia, I/O): służą do wymiany danych pomiędzy komputerem i~światem zewnętrznym.
 	\end{itemize}
 	Komunikacja pomiędzy nimi odbywa się za pośrednictwem szyny systemowej (ang. \emph{system bus}).
@@ -130,6 +121,10 @@
 	\end{tabular}\par
 	\begin{small} Tabela 1. Sekwencyjne wykonanie dwóch rozkazów \end{small} \par
 	\end{center}\par
+\par
+%
+\indent
+{\bf Zrównoleglenie wykonania programu na poziomie instrukcji}
 \par
 %
 \indent 
@@ -240,6 +235,26 @@
 	instrukcje (1) i~(2) mogą wyć wykonane w~kolejności $\langle 1,2 \rangle$ jak i~$\langle 2,1 \rangle$, zaś wynik działania instrukcji
 	(3) zależy bezpośrednio od wyników działania (1) i~(2). Co więcej, instrukcja (4) nie może być wykonana wcześniej 
 	niż po zakończeniu wykonania instrukcji (1), (2) i~(3). Tak więc chronologia wykonania instrukcji (3) i~(4) nie może być zmieniona.
+\par
+%
+\indent
+	W~celu rzeczywistego zrównoleglenia działania programu, w~komputerach pojawiło się więcej procesorów,
+	które działały niezależnie od siebie. Procesory były pojedynczymi układami, bądź kilka procesorów umieszczano w~jednym układzie. 
+	Pojedynczy procesor w~kości zawierającej kilka jednostek centralnych zwany jest \emph{rdzeniem} (ang. \emph{core}).
+	Odpowiednio zaprojektowany program,	który korzysta z~kilku procesorów może przyspieszyć swoje działanie nawet proporcjonalnie do ich liczby,
+	na których jest wykonywany.	Takie przyspieszenie dzialania programu, choć możliwe, jest rzadko spotykane.
+	Dobrą ilustracją problemu przyspieszania działania procesora jest prawo Amdahla, opisane w~dalszej części tego dokumentu.
+\par
+%
+\indent
+	Ze względu na dostęp procesora do pamięci w~systemie komputerowym, możemy wyróżnić dwa rodzaje komputerów wieloprocesorowych:
+	\begin{itemize}
+		\item o~symetrycznym dostępie do pamięci (ang. \emph{symmetric multiprocessing, SMP}): wszystkie procesory posiadają 
+			dostęp do tej samej pamięci, zaś dostęp do niej nie jest priorytetyzowany. Jest to najczęściej spotykany model w~komputerach,
+			w~których zamontowane są jednostki wielordzeniowe.
+		\item o~niesymetrycznym dostępie do pamięci (ang. \emph{asymmetric multiprocessing, AMP}): każdy procesor posiada przyporządkowaną
+		dla niego pamięć. Najczęściej spotykane przykłady AMP to systemy rozproszone i~klastry.
+	\end{itemize}
 \par
 %
 \subsubsection{Pamięć}
