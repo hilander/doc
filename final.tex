@@ -6,6 +6,7 @@
 \usepackage[table]{xcolor}
 \usepackage[bookmarks, pdfhighlight=/P, linkbordercolor={1 1 1}, unicode=true]{hyperref}
 \usepackage{verbatim}
+\hyphenation{ wyj-ścia pier-wszego}
 %\usepackage{qswiss,qcourier}
 %\usepackage{sfheaders}
 
@@ -45,7 +46,7 @@
 	W~systemie komputerowym (lub w~skrócie: komputerze) można wyróżnić trzy podstawowe składowe:
 	\begin{itemize}
 		\item procesor (jednostka centralna, CPU): kontroluje działanie komputera, wykonuje operacje na danych;
-		\item pamięć głowna: przechowuje dane oraz programy. Pamięć w~tym kontekście jest z~natury ulotna (po wyłączeniu komputera,
+		\item pamięć główna: przechowuje dane oraz programy. Pamięć w~tym kontekście jest z~natury ulotna (po wyłączeniu komputera,
 			jej zawartości nie można odzyskać); jeśli w~treści dokumentu pojawi się słowo \emph{pamięć}, odwoływać się będzie ono do
 			pamięci głównej;
 		\item urządzenia zewnętrzne (peryferia, I/O): służą do wymiany danych pomiędzy komputerem i~światem zewnętrznym.
@@ -59,16 +60,16 @@
 	Procesor jest urządzeniem, które posiada:
 	\begin{itemize}
 		\item własny zestaw instrukcji (zwanych również rozkazami): ich liczba może wynosić od kilkunastu (architektura RISC, 
-			ang. \emph{Reduced Set Instruction Computers}) do kilkset (architektura CISC, ang.
+			ang. \emph{Reduced Set Instruction Computers}) do kilkuset (architektura CISC, ang.
 			\emph{Complex Instruction Set Computers}). Często pojedynczy rozkaz posiada wiele trybów adresowania: jako argument
 			może użyć własnego rejestru (tryb implikowany), komórki pamięci (tryb bezpośredni), komórki pamięci, której adres został wyliczony
 			(tryby: pośredni, pośredni preindeksowany, pośredni postindeksowany). Połączenie instrukcji wraz z~ich trybami adresowania daje 
 			stosunkową liczbę rozkazów.
 		\item wewnętrzne komórki pamięci, zwane \emph{rejestrami}.
-		\item Licznik rozkazów (ang. \emph{prgoram counter}): wyróżniony rejestr, który wskazuje adres następnej instrukcji. 
+		\item Licznik rozkazów (ang. \emph{program counter}): wyróżniony rejestr, który wskazuje adres następnej instrukcji. 
 			Jeśli w~wyniku ostatniej instrukcji następuje skok (warunkowy lub bezwarunkowy), zmieniana jest wartość tego rejestru.
 		\item mechanizm \emph{przerwań}: szyna systemowa może w~pewnych sytuacjach poinformować o~wystąpieniu określonego zdarzenia.
-			Przerwania można podzielić na maskowalne (procesor zignoruje informację o~wystapienu danego zdarzenia) oraz niemaskowalne.
+			Przerwania można podzielić na maskowalne (procesor zignoruje informację o~wystąpieniu danego zdarzenia) oraz niemaskowalne.
 			Przerwania mogą posiadać priorytety (przerwanie o~niższym priorytecie zostanie zignorowane podczas obsługiwania przerwania
 			o~wyższym priorytecie lub jego obsługa rozpocznie się po zakończeniu obecnie obsługiwanego przerwania).
 	\end{itemize}
@@ -77,7 +78,7 @@
 \indent
 	Procesor przetwarza rozkazy. Można podzielić je na pięć grup:
 	\begin{itemize}
-		\item odczyt / zapis: wczytanie zawartosci komórki pamięci do rejestru, zapis zawartości rejestru do komórki;
+		\item odczyt / zapis: wczytanie zawartości komórki pamięci do rejestru, zapis zawartości rejestru do komórki;
 		\item skoki: bezwarunkowe, warunkowe, pośrednie;
 		\item operacje logiczne: NOT, AND, OR, XOR;
 		\item arytmetyka: suma, różnica, iloczyn, iloraz;
@@ -97,9 +98,9 @@
 	Jednakże, dla wszystkich procesorów, możemy wyróżnić podstawowe kroki wykonania rozkazu:
 	\begin{enumerate}
 	\item Pobranie (ang. \emph{Instruction Fetch, IF}): wymaga komunikacji z~pamięcią.
-		pobrany rozkaz po pobraniu jest gotowy do dalszego przetwarzania.
+		Pobrany rozkaz po pobraniu jest gotowy do dalszego przetwarzania.
 	\item Dekodowanie (ang. \emph{Instruction Decode, ID}):  liczba bajtów, które należy pobrać, może być zmienna:
-		nawet gdy długość rozkazu jest niezmienna (np. 2 bajty), jego argumenty (opkodów, ang. \emph{opcode}) mogą być zmiennej długości.
+		nawet gdy długość rozkazu jest niezmienna (np. 2 bajty), jego argumenty (\emph{opkodów}, ang. \emph{opcode}) mogą być zmiennej długości.
 	\item Wykonanie (ang. \emph{Execute, EX}): poszczególne części procesora wykonują działanie w~kolejności określonej przez aktualnie
 		wykonywany rozkaz.
 	\item Dostęp do pamięci (ang. \emph{Memory Access, MEM}): rozkazy mogą korzystać z~danych zawartych w~komórkach pamięci. Jeśli bieżący rozkaz
@@ -183,14 +184,14 @@
 	W~celu zniwelowania niedogodności związanych z~,,nietrafionymi'' skokami warunkowymi, zaczęto stosować technikę 
 	\emph{przewidywania skoku} (ang. \emph{branch prediction}): stosowane są heurystyki, które określają najbardziej prawdopodobny
 	wynik instrukcji skoku. Dzięki stosowaniu tych heurystyk, udaje się w~dużej liczbie przypadków uniknąć niepotrzebnych obliczeń,
-	a~wykonywane są te rozkazy, które rezczywiście są potrzebne do wykonania programu.
-	Przewidywanie skoku jest jedną z~technik stosowanych w~mechaniźmie zwaym \emph{Wykonaniem spekulatywnym} (ang. \emph{Speculative execution}):
+	a~wykonywane są te rozkazy, które rzeczywiście są potrzebne do wykonania programu.
+	Przewidywanie skoku jest jedną z~technik stosowanych w~mechanizmie zwanym \emph{Wykonaniem spekulatywnym} (ang. \emph{Speculative execution}):
 	wykonanie spekulatywne dopuszcza również wykonanie (przy spełnieniu określonych założeń) części programu znajdującego się za skokiem warunkowym,
 	ale jeszcze \emph{przed} wykonaniem tego skoku.
 \par
 %
 \indent
-	Technika wykonania określonego fragmentu kodu źródłowego jest stosowana również w~mechaniźmie \emph{Wykonania poza kolejnością}
+	Technika wykonania określonego fragmentu kodu źródłowego jest stosowana również w~mechanizmie \emph{Wykonania poza kolejnością}
 	(ang. \emph{Out of Order execution, OoO}): jeśli pewien rozkaz używa wartości rejestru, która została już obliczona, to można go wykonać
 	poza kolejnością podaną przez autora programu. Dla sekwencji rozkazów:
 	\begin{flushleft}
@@ -223,7 +224,7 @@
 \indent
 	Problemem, który jest naturalnie związany z~ILP to zależność od danych (ang. \emph{data dependency}).
 	Dotyczy on zachowania oryginalnej chronologii wykonywania rozkazów (zapisu wyników
-	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). w sekwencji
+	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). W sekwencji
 	\begin{flushleft}
 	\begin{tabular}{l l}\\
 		(1) & {\tt add Y,Z,X} \\
@@ -242,7 +243,7 @@
 	które działały niezależnie od siebie. Procesory były pojedynczymi układami, bądź kilka procesorów umieszczano w~jednym układzie. 
 	Pojedynczy procesor w~kości zawierającej kilka jednostek centralnych zwany jest \emph{rdzeniem} (ang. \emph{core}).
 	Odpowiednio zaprojektowany program,	który korzysta z~kilku procesorów może przyspieszyć swoje działanie nawet proporcjonalnie do ich liczby,
-	na których jest wykonywany.	Takie przyspieszenie dzialania programu, choć możliwe, jest rzadko spotykane.
+	na których jest wykonywany.	Takie przyspieszenie działania programu, choć możliwe, jest rzadko spotykane.
 	Dobrą ilustracją problemu przyspieszania działania procesora jest prawo Amdahla, opisane w~dalszej części tego dokumentu.
 \par
 %
@@ -251,7 +252,7 @@
 	strumieni rozkazów oraz danych, wyróżniamy cztery klasy:
 	\begin{center}
 	\begin{tabular}{|c|c|c|} \hline
-													 & Jeden strumień instrukcji	 & Wiele strumieni instukcji \\
+													 & Jeden strumień instrukcji	 & Wiele strumieni instrukcji \\
 													 & (\emph{Single Instruction}) & (\emph{Multiple Instruction}) \\\hline
 			Jeden                &     												 &      \\
 			strumień danych      &  SISD										   & MISD 			\\
@@ -262,7 +263,7 @@
 	\end{tabular}
 	\begin{small} Tabela 4. Taksonomia Flynna \end{small}
 	\end{center}
-	Klasy te możemy scharakteryzowac w~następujący sposób:
+	Klasy te możemy scharakteryzować w~następujący sposób:
 	\begin{itemize}
 		\item SISD jest klasą programów wykonywanych sekwencyjnie na maszynie sekwencyjnej;
 		\item SIMD odpowiada programom wykonywanym na maszynie superskalarnej lub na procesorach przetwarzających sygnały (DSP);
@@ -313,45 +314,156 @@
 	Można zauważyć, że wzrost mocy obliczeniowej maszyn wieloprocesorowych (wielordzeniowych) w~stosunku do maszyn klasy SISD (SIMD) jest
 	analogiczny do wzrostu mocy obliczeniowej procesora posiadającego architekturę ILP do procesora posiadającego architekturę sekwencyjną.
 	Jednakże, aby wykorzystać potencjał architektur równoległych,
-	zarówno ILP jak i~MIMD wymagają odpowiednio zaprojektowanych i~zaprogramowanych programów.
+	zarówno ILP jak i~MIMD wymagają odpowiednio zaprojektowanych i~zaprogramowanych aplikacji.
 \par
 %
 \subsubsection{Pamięć}
 \indent
-	Innym poważnym problemem, z~jakim można się obecnie spotkać, jest dostęp do pamięci RAM: od początku lat 90. XX~wieku różnica
-	pomiędzy częstotliwością taktowania procesora, a~pamięci RAM zwiększyła się drastycznie. Już wtedy zaczęto zauważać
-	ten problem, przyrównując go, z~punktu widzenia procesora, do uderzenia w~mur (ang. \emph{Memory Wall}). Aby ominąć ten problem,
-	w~procesorach umieszczano pamięć podręczną (ang. \emph{cache}), która była taktowana tak jak sam procesor (cache pierwszego poziomu, L1 cache),
-	lub częstotliwością niewiele odbiegającą od częstotliwości taktowania procesora (L2 cache). Oczywiście ilość pamięci podręcznej
-	była nieporównywalnie mniejsza od ilości pamięci RAM, tak więc pojawienie się pamięci cache wymusiło stosowanie technik, które nie
-	były potrzebne dotychczas.
+	Pamięć w~systemie komputerowym możemy podzielić na dwa rodzaje: ulotną i~trwałą. Informacje znajdujące się w~pamięci ulotnej
+	nie będą odzyskane po wyłączeniu i~ponownym włączeniu komputera. Można wyróżnić dwa rodzaje pamięci ulotnej:
+	\begin{itemize}
+		\item wewnętrzna: procesor komunikuje się z~nią bez pośrednictwa szyny systemowej. Jest taktowana tą samą częstotliwością, co CPU
+			(lub bardzo do niej zbliżoną). Pamięciami tego rodzaju są:
+			\begin{itemize}
+				\item rejestry procesora;
+				\item pamięć podręczna (ang \emph{cache}), często wielopoziomowa.
+			\end{itemize}
+		\item Systemowa (operacyjna): szyna systemowa pośredniczy podczas operacji odczytu/zapisu do pamięci tego rodzaju. Ta pamięć jest zwana
+			pamięcią główną komputera (ang. \emph{main memory, primary memory}), a~ponieważ dostęp do każdej komórki tej pamięci
+			w~każdym momencie działania systemu komputerowego jest możliwy, zwana jest również pamięcią o~dostępie swobodnym
+			(ang. \emph{random access memory, RAM}).
+	\end{itemize}
+	Z~punktu widzenia procesora, pamięć trwała jest pamięcią ,,za'' szyną systemową, za wyjątkiem pamięci stałej (ang. \emph{read only memory, ROM}),
+	nie znajduje się ona nawet na płycie głównej, na której znajduje się jednostka centralna, dlatego pamięci tego rodzaju zwane są 
+	zewnętrznymi. O~ile pamięć główna jest uprzywilejowanym urządzeniem o~najszybszym dostępie, o~tyle dostęp do pamięci
+	zewnętrznych jest o~wiele wolniejszy. Do trwałych pamięci zewnętrznych zaliczyć można następujące urządzenia:
+	\begin{itemize}
+		\item dyski magnetyczne (dyskietki, dyski twarde, SSD, pamięci typu Flash);
+		\item płyty CD, DVD, BD;
+		\item taśmy magnetyczne.
+	\end{itemize}
 \par
 %
 \indent
-	Okazuje się więc, że zwiększanie częstotliwości taktowania procesora nie wpływa na wzrost jego wydajności w~takim stopniu, jak ILP.
-	Należy również pamiętać o~zależności temperatury wydzielanej przez jednostkę centralną w~stosunku do wzrostu częstotliwości taktowania,
-	która rośnie wykładniczo.
-	%Co więcej, sugerowany przez producentów wzrost wydajności procesora jest traktowany jako mit (ang. \emph{megahertz myth}).
+	Występuje następująca hierarchia pomiędzy rodzajami pamięci:
+	\begin{enumerate}
+		\item pamięć znajdująca się na płycie głównej (ang. \emph{inboard storage}), czyli rejestry, cache, RAM oraz ROM;
+		\item pamięć poza płytą główną (ang. \emph{outboard storage}): dyski, płyty CD, DVD, BD;
+		\item pamięć niepodłączona (ang. \emph{off\dywiz line storage}), przede wszystkim taśmy magnetyczne,
+			na których składowane są dane, ale dostęp do nich jest sporadyczny (dane są zapisywane w~czasie sesji zapisu,
+			podobnie limitowany jest odczyt z~tego rodzaju pamięci).
+	\end{enumerate}
+	Najwyżej w~tej hierarchii stoi pamięć na płycie głównej: z~punktu widzenia procesora, czas dostępu do rejestrów jest natychmiastowy,
+	podobnie rzecz ma się z~pamięcią cache. Dostęp do pamięci RAM (ROM) wymaga minimalnie więcej czasu, niż ma to miejsce przy dwóch
+	wcześniej wymienionych rodzajach pamięci. Nasuwają się pytania: ,,czy nie lepiej, zamiast pamięci RAM, umieścić całą
+	pamięć operacyjną w~kości procesora, rezygnując z~pośrednictwa szyny systemowej\mbox{}? Co jest przyczyną takiej organizacji pamięci ulotnej\mbox{}?''
+	Jest kilka odpowiedzi na te pytania:
+	\begin{enumerate}
+		\item Koszty wytworzenia pamięci. Najdrożej jest wytworzyć pamięć najszybszą przy wymaganej niezawodności oraz szybkości działania.
+			Dlatego rejestry procesorach mają rozmiar co najwyżej kilkaset bajtów, cache pierwszego poziomu (ang. \emph{level one cache})
+			jest wielkości liczonej w~kilobajtach, cache drugiego (a~także trzeciego) poziomu liczony jest w~megabajtach, zaś
+			rozmiar pamięci RAM to kilka (do kilkunastu) gigabajtów.
+		\item Technologia, w~jakiej wytwarzane są obecnie pamięci oraz procesory nie pozwala na umieszczenie na jednej kości kilku rdzeni
+			wraz z~kilkoma gigabajtami pamięci operacyjnej. Obecnie kości zawierające kilka rdzeni wydzielają bardzo dużo ciepła, a~po dodaniu
+			pamięci, taki układ elektroniczny z~powodu wydzielania ciepła byłby bardzo niestabilny. Od roku 2006 można zauważyć,
+			że częstotliwość taktowania procesorów nie wzrasta w~takim stopniu, jak to miało miejsce do tego momentu. To także efekt ograniczeń,
+			jakie istnieją w~wyniku wydzielania temperatury przez jednostkę centralną.
+		\item Modularność. Po wystąpieniu awarii (np. niedziałający bit pamięci), Pamięć operacyjna, będąca urządzeniem zewnętrznym, może zostać
+			wymieniona na niewadliwą. W~przypadku umieszczenia pamięci wraz z~procesorem, taka wymiana pociągnęła by za sobą o~wiele większe
+			koszty. Co więcej, z~pamięci operacyjnej może korzystać wiele procesorów, które znajdują się w~różnych układach rozsianych po płycie głównej.
+			Z~pamięci korzystać mogą również inne urządzenia niż procesor (np. karta graficzna, dyski), więc obsługa żądań tych urządzeń mogła by być
+			sporym obciążeniem dla samego procesora. Oczywiście istnieją specjalizowane systemy komputerowe, w~których jedyną dostępną 
+			pamięcią operacyjną jest cache (architektura COMA, ang. \emph{cache only memory architecture}).
+	\end{enumerate}
 \par
 %
 \indent
-	Stosowanie coraz bardziej zaawansowanych technik (jak również uniknięcie przegrzania jednostki centralnej)
-	wymusiło miniaturyzację samego procesora. Następnym krokiem było umieszczenie w~jednostce
-	centralnej (CPU) kilku procesorów, zwanych \emph{rdzeniami} (ang. \emph{cores}). Wraz z~pojawieniem się wielordzeniowej jednostki centralnej,
-	w~celu efektywnego jej wykorzystania, należy uwzględnić wszystkie problemy związane z~programowaniem równoległym, w~szczególności
-	wykonanie aplikacji, w~celu efektywnego wykorzystania zasobów, powinno być zrównoleglone w~jak największym stopniu.
+	W~powszechnych zastosowaniach używa się architektur pamięci, w~których występuje RAM. Są to:
+	\begin{itemize}
+		\item pamięć niejednorodna (ang. \emph{non\dywiz uniform memory architecture, NUMA}): każdy procesor posiada własną pamięć operacyjną
+			(która nie jest współdzielona z~innymi jednostkami), a~dodatkowo posiada dostęp do pamięci operacyjnej współdzielonej z~innymi CPU.
+			Niektóre procesory mogą mieć priorytet w~dostępie do pamięci dzielonej.
+		\item Pamięć jednorodna (ang. \emph{uniform memory architecture, UMA}): wszystkie procesory mają dostęp do dzielonej pamięci operacyjnej.
+			Każdy z~nich posiada równoprawny dostęp do tej pamięci.
+	\end{itemize}
+	Powyższe architektury mogą być zastosowane zarówno w~maszynach SMP, jak również w~AMP.
 \par
-
+%
+\indent
+	Pamięci trwałe, znajdujące się poza płytą główną systemu komputerowego, posiadają jedną zasadniczą cechę: ich koszt w~przeliczeniu na jednostkę
+	(np. bajt) jest o~wiele niższy niż w~wypadku pamięci znajdującej się na płycie głównej. Okupione jest to znacznie dłuższym czasem dostępu 
+	do nich, dlatego w~powszechnym użyciu stosowane jest rozwiązanie polegające na wymianie komunikatów o~pobraniu/przesłaniu danych pomiędzy
+	procesorem a~urządzeniem, zaś same dane do tego typu operacji znajdują się w~pamięci RAM i~są tam przesyłane (lub pobierane) przez urządzenie.
+	Mechanizm, który umożliwia takie przesyłanie danych zwany jest bezpośrednim dostępem do pamięci (ang. \emph{direct memory access}).
+\par
+%
+\indent
+	Pamięci typu off\dywiz line są używane przede wszystkim jako magazyn do przechowywania danych w~ilości przekraczającej rozmiary pamięci trwałej.
+	W~porównaniu do pamięci stojących wyżej w~hierarchii, takie pamięci posiadają bardzo duży rozmiar, jednakże czas dostępu do danych w~nich
+	zawartych jest liczony w~minutach, lub nawet godzinach.
+\par
+%
+\indent
+	Można zauważyć, że ,,murem'' oddzielającym procesor od pamięci (za wyjątkiem pamięci wewnętrznej) jest szyna systemowa.
+	Szyny systemowe, w~obecnych komputerach, są taktowane niższymi częstotliwościami (nawet kilkakrotnie), niż sam procesor.
+	Także sama pamięć RAM może być taktowana częstotliwością niższą zarówno od wymienionych wcześniej.
+	Taka dysproporcja w~taktowaniu części systemu komputerowego może prowadzić do przestojów w~pracy procesora: nie może wykonać żadnego działania,
+	ponieważ nie ma kolejnych instrukcji programu! Rosnąca dysproporcja w~taktowaniu procesorów i~pamięci jest zwana \emph{murem pamięciowym}
+	(ang. \emph{memory wall}).
+\par
+%
+\indent
+	Okazuje się, że wywołanie spekulatywne może być pomocne podczas rozstrzygania problemu pobierania właściwych danych zawierających 
+	dane programu. W~celu uniknięcia przestojów jednostki centralnej, stosowany jest również cache dla instrukcji procesora.
+\par
+%
+\indent
+	Pamięć podręczna jest bardzo ważną częścią pamięci ulotnej: to z~tej pamięci (a~dokładniej: z~pamięci pierwszego poziomu) procesor
+	może pobierać pojedyncze bajty i~tylko na tej pamięci może on wykonywać operacje odczytu/zapisu. 
+	Z~pamięci RAM dane pobierane są do pamięci cache (do najwyższego poziomu cache\dywiz u) w~paczkach o~określonej wielkości (np. 32 bajty),
+	dzięki czemu zmniejsza się liczba żądań dostępu pamięci podręcznej (widzianej przez szynę danych jako procesor) do pamięci operacyjnej.
+	Takie rozwiązanie pociąga za sobą problem zgodności danych: jeśli procesor zmieni zawartość pewnej komórki pamięci,
+	to zawartość odpowiadającej jej komórki w~pamięci operacyjnej powinna być taka sama w~momencie odczytu dokonywanego przez inny procesor
+	znajdujący się w~systemie. Problem ten można rozwiązać na dwa sposoby:
+	\begin{itemize}
+		\item jeśli zgłaszane jest żądanie dostępu do komórki przez rdzeń znajdujący się w~tym samym układzie, wystarczy wymienić wartość komórki
+			tylko we współdzielonej pamięci podręcznej, a~następnie przesłać ją do cache\dywiz u~pierwszego poziomu, do którego dostęp posiada
+			rdzeń, który zgłosił żądanie. Zawartość pamięci operacyjnej zostanie uaktualniona \emph{później}.
+		\item Jeśli dostępu do komórki zażądał inny procesor, wówczas należy przesłać zawartość komórki do pamięci RAM.
+	\end{itemize}
+	Oczywiście, jeśli następuje zmiana zawartości pamięci podręcznej, zawartość zmienionej komórki musi zostać przesłana do pamięci operacyjnej
+	(jest to sytuacja, która została określona jako ,,później'').
+\par
+%
+\indent
+	Powyższy opis zastosowania pamięci podręcznej pozwala uzmysłowić intensywność jej użycia, a~także jej niebanalne we współczesnych
+	systemach komputerowych: tworząc jakikolwiek program, dobrze jest mieć na uwadze rozmiary pamięci cache, 
+	gdyż jeśli program będzie wykonywać operacje na komórkach pamięci, bardzo często będzie dochodzić wtedy do \emph{rozminięcia} zawartości
+	cache\dywiz u z~żądanymi danymi, które procesor będzie musiał pobierać z~pamięci operacyjnej (ang. \emph{cache miss}), co zaowocuje
+	długimi przestojami w~pracy procesora, a~w~konsekwencji może doprowadzić do spadku wydajności aplikacji. Obniżenie liczby nietrafionych 
+	żądań dostępu do tych trafionych (ang. \emph{cache hit}) może skutkować sprawnie działającą aplikacją.
+\par
+%
 \subsubsection{Urządzenia zewnętrzne}
 \indent
-	Urządzenia zewnętrzne, znane również jako \emph{peryferia}, \emph{urządzenia wejścia--wyjścia}, \emph{I/O} (\emph{ang. Input/Output}),
-	odpowiadają za komunikację komputera ze światem zewnętrznym. Można podzielić je według właściwości odczytu/zapisu na trzy grupy:
+	Urządzenia zewnętrzne, znane również jako \emph{peryferia}, \emph{urządzenia wejścia\dywiz wyjścia}, \emph{I/O} (\emph{ang. Input/Output}),
+	to, oprócz pamięci trwałych, również urządzenia do komunikacji komputera ze światem zewnętrznym. 
+	Można podzielić je według właściwości odczytu/zapisu na trzy grupy:
 	\begin{itemize}
 		\item{tylko odczyt danych, np.} klawiatura, mysz, 
 		\item{tylko zapis, np.} wyświetlacz,
 		\item{odczyt i~zapis, np.} karta sieciowa, graficzna, dźwiękowa, \ldots
 	\end{itemize}
 \par
+%
+\indent
+	Komunikacja procesora z~peryferiami odbywa się poprzez szynę systemową. Sposób połączenia tych urządzeń z~szyna systemową może się rożnić
+	i~być jednym z~podanych:
+	\begin{itemize}
+		\item \ldots
+	\end{itemize}
+\par
+%
 \subsection{System operacyjny}
 %
 \indent
@@ -379,7 +491,7 @@
 \par
 %
 \indent
-	Aplikację można roapztrywać jako zbiór zadań, które wykonywane są w~określonym kontekście. Może zdarzyć się również, że pewne zadania
+	Aplikację można rozpatrywać jako zbiór zadań, które wykonywane są w~określonym kontekście. Może zdarzyć się również, że pewne zadania
 	mogą być wykonane po zakończeniu działania innych. Może się zdarzyć, że pewne zadania korzystają ze wspólnych zasobów.
 	Systemy operacyjne udostępniają podstawową abstrakcję dla zadań: \emph{procesy}. Wykonanie procesu odbywa się w~jednym lub wielu \emph{wątkach}
 	Systemy operacyjne można podzielić na analogiczne klasy do tych z~taksonomii Flynna, ale ze względu na sposób zarządzania zadaniami.
