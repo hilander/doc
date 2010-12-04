@@ -6,6 +6,7 @@
 \usepackage[table]{xcolor}
 \usepackage[bookmarks, pdfhighlight=/P, linkbordercolor={1 1 1}, unicode=true]{hyperref}
 \usepackage{verbatim}
+\usepackage{multirow}
 \hyphenation{ wyj-ścia pier-wszego}
 %\usepackage{qswiss,qcourier}
 %\usepackage{sfheaders}
@@ -447,7 +448,7 @@
 \subsubsection{Urządzenia zewnętrzne}
 \indent
 	Urządzenia zewnętrzne, znane również jako \emph{peryferia}, \emph{urządzenia wejścia\dywiz wyjścia}, \emph{I/O} (\emph{ang. Input/Output}),
-	to, oprócz pamięci trwałych, również urządzenia do komunikacji komputera ze światem zewnętrznym. 
+	to, oprócz pamięci trwałych, także urządzenia do komunikacji komputera ze światem zewnętrznym. 
 	Można podzielić je według właściwości odczytu/zapisu na trzy grupy:
 	\begin{itemize}
 		\item{tylko odczyt danych, np.} klawiatura, mysz, 
@@ -457,24 +458,66 @@
 \par
 %
 \indent
-	Komunikacja procesora z~peryferiami odbywa się poprzez szynę systemową. Sposób połączenia tych urządzeń z~szyna systemową może się rożnić
+	Komunikacja procesora z~peryferiami odbywa się poprzez szynę systemową. Sposób połączenia tych urządzeń z~szyna systemową może się różnić
 	i~być jednym z~podanych:
 	\begin{itemize}
-		\item \ldots
+		\item procesor oraz wszystkie peryferia są podłączone do jednej szyny systemowej. Możliwa jest komunikacja pomiędzy różnymi urządzeniami
+			w~systemie komputerowym. Takie połączenie urządzeń wymusza uczestnictwo procesora w~wymianie danych z~I/O.
+		\item Procesor oraz pamięć operacyjna podłączone są do szyny systemowej, zaś pozostałe urządzenia są podłączone do jednostki bezpośredniego
+			dostępu do pamięci. Taka architektura systemu komputerowego może być zorganizowana na dwa sposoby:
+			\begin{itemize}
+				\item DMA jest jednym urządzeniem podłączonym do szyny systemowej, do którego współdzielony dostęp posiadają wszystkie urządzenia
+					zewnętrzne. Komunikacja pomiędzy peryferiami a~DMA odbywa się przy użyciu \emph{szyny wejścia\dywiz wyjścia} 
+					(ang. \emph{I/O bus}).
+				\item Istnieje wiele urządzeń DMA, podłączonych do szyny systemowej, a~grupy urządzeń podłączonych do każdego z~nich mają do niego
+					bezpośredni dostęp.
+			\end{itemize}
 	\end{itemize}
+\par
+%
+\indent
+	Komunikacja pomiędzy procesorem, a~peryferiami jest rozwiązana dwojako:
+	\begin{itemize}
+		\item bez użycia przerwań: stosuje się wówczas technikę \emph{aktywnego czekania} (ang. \emph{busy waiting}). Metoda ta
+			wymaga od procesora nieustannego sprawdzania stanu urządzeń. W~razie zmiany stanu urządzenia, podejmowana jest odpowiednia
+			akcja, stosowna do rodzaju zdarzenia, jak i~urządzenia.
+		\item Stosowany jest mechanizm przerwań. Zmiana stanu urządzenia wejścia\dywiz wyjścia powoduje wysłanie sygnału,
+			który wyzwala określone przerwanie \linebreak 
+			w~procesorze: wykonanie dotychczasowych instrukcji jest zawieszane, a~uruchamiana jest
+			procedura obsługi danego przerwania. Można wyróżnić dwa sposoby przesyłania danych pomiędzy procesorem a~I/O:
+			\begin{itemize}
+				\item procesor, po uprzednim pobraniu danych, przesyła je do urządzenia. Ponieważ przesyłanie dużych ilości danych w~niedużych
+					porcjach (np. bajt) powodowało by bardzo dużą liczbę przerwań oraz duży narzut czasowy na ich pobieranie z~pamięci operacyjnej,
+					do takiego rodzaju przesyłania danych stosuje się \emph{bufory}, zawierające większą porcję danych, które są przesyłane 
+					na raz do urządzenia zewnętrznego. W~zależności od potrzeb, bufor może być pojedynczym blokiem pamięci, może składać się 
+					z~kilku bloków z~wyróżnionym blokiem do przesłania (jak również może być to blok, który zostanie zapełniony danymi przesłanymi
+					z~urządzenia peryferyjnego) do I/O w~danym momencie, a~aktualny blok jest wybierany cyklicznie z~puli dostępnych. W~zależności
+					od potrzeb oraz możliwości systemu komputerowego, kształt bufora jest określany przez politykę obsługi I/O oraz dostępne 
+					mechanizmy, które można zastosować.
+				\item Procesor jest informowany o~wystąpieniu zdarzenia w~urządzeniu I/O (lub sam wysyła do niego odpowiedni komunikat), zaś
+					dane są przesyłane przez DMA bezpośrednio z~pamięci do odpowiedniego urządzenia, bądź w~kierunku przeciwnym.
+					Rozwiązanie to wymaga od procesora jedynie reakcji na zdarzenie, zaś transfer danych odbywa się bez jego udziału.
+			\end{itemize}
+	\end{itemize}
+	Jak można zauważyć, przy użyciu DMA udział procesora w~komunikacji z~peryferiami ograniczony jest do absolutnego minimum. Dlatego też
+	komunikacja większości urządzeń I/O z~procesorem odbywa się za jego pośrednictwem.
+\par
+%
+\indent
 \par
 %
 \subsection{System operacyjny}
 %
 \indent
-	System operacyjny (ang. \emph{operating system}) jest programem, który kontroluje wykonanie aplikacji (programów),
+	System operacyjny (ang. \emph{operating system, OS}) jest programem, który kontroluje wykonanie aplikacji użytkownika (programów),
 	może być postrzegany jako pośrednik (interfejs) pomiędzy aplikacją a~sprzętem (systemem komputerowym), na którym jest wykonywany.
 	Musi spełniać następujące warunki:
 	\begin{itemize}
-		\item wygoda: system sprawia, że komputer jest wygodny w~użyciu; %An OS makes a computer more convenient to use.
-		\item wydajność: system wydajnie zarządza zasobami komputera; % An OS allows the computer system resources to be used in an efficient manner.
-		\item Ability to evolve: An OS should be constructed in such a way as to permit the
-      effective development, testing, and introduction of new system functions without interfering with service.
+		\item wygoda: system sprawia, że komputer jest wygodny w~użyciu;
+		\item wydajność: system wydajnie zarządza zasobami komputera;
+		\item rozszerzalność: OS powinien być zaprojektowany w~sposób umożliwiający łatwe rozszerzanie o~kolejne funkcje;
+			również usprawnienia dotychczasowych funkcji powinny odbywać się tak, aby zmiany nie zmuszały użytkownika do zmian w~aplikacji
+			-- zmiany powinny być dla niego \emph{przezroczyste}.
 	\end{itemize}
 \par
 %
@@ -482,9 +525,12 @@
 	Systemy operacyjne, ze względu na sposób wykonywania zadań, można podzielić na cztery grupy:
 	\begin{center}
 	\begin{tabular}{|c|c|c|} \hline
-													 & Jeden wątek w~procesie   	 & Wiele wątków w~procesie \\\hline
-			Jeden proces               &  SISD										   & MISD 			\\\hline
-			Wiele procesów             & SIMD                        & MIMD \\\hline
+													 & Jeden wątek w~procesie   	 & Wiele wątków w~procesie \\
+													 & (Single Thread)          	 & (Multiple threads)      \\\hline
+			Jeden proces         & \multirow{2}{*}{SPST} 	     & \multirow{2}{*}{SPMT}	 \\
+			(Single Process)     &  										   		 &  									     \\\hline
+			Wiele procesów       & \multirow{2}{*}{MPST}       & \multirow{2}{*}{MPMT}   \\
+			(Multiple Processes) &                             &                         \\\hline
 	\end{tabular}\\
 	\begin{small} Tabela 5. Klasyfikacja systemów operacyjnych \end{small}
 	\end{center}

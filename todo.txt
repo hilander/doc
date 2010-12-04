@@ -65,8 +65,7 @@ Source:
 
 Doc:
 + Wstęp
-	* taksonomia Flynn-a (<i>opuścić</i>):
-		- zgrubna klasyfikacja systemów komputerowych (jednostka centralna + pamięć, liczba wejść i wyjść programu)
+	* taksonomia Flynn-a
 	* Systemy komputerowe:
 		- procesor:
 			- bez ILP
