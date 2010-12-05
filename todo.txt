@@ -90,7 +90,7 @@ Doc:
     	= wirtualna przestrzeń adresowa
     	= podział czasu pomiędzy procesy
     	= dostęp do zasobów
-    	= uruchamianie procesów potomnnych
+    	= uruchamianie procesów potomnych
 			= stronicowanie pamięci
 			= pamięć wirtualna dla procesów (translation lookaside buffer (TLB))
 		- komunikacja User space -- Kernel space

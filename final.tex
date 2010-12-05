@@ -522,13 +522,67 @@
 \indent
 	System operacyjny dostarcza usługi w~następujących obszarach:
 	\begin{itemize}
-		\item rozwój programów
-		\item Wykonanie programu
-		\item Dostęp do I/O
-		\item Kontrolowany dostęp do plików
-		\item Dostęp do systemu
-		\item Wykrywanie błędów oraz reakcja na nie
-		\item Księgowanie
+		\item rozwój aplikacji: OS dostarcza zestaw narzędzi do tworzenia i~rozwijania aplikacji użytkownika począwszy od
+			edytorów po kompilatory, \emph{debuggery}, \emph{profilery}, itp.
+		\item Wykonanie programu: aplikacje użytkownika są uruchamiane w~środowisku dostarczanym przez system operacyjny. Środowisko to 
+			udostępnia zasoby, których aplikacje te potrzebują. Dodatkowo, OS zarządza kolejnością wykonania tych programów (ang. \emph{scheduling}).
+		\item Dostęp do I/O: system operacyjny jest pośrednikiem pomiędzy programem a~peryferiami. Ze względu na swoją unikalność,
+			każde urządzenie zewnętrzne jest unikatowe, lecz system operacyjny przydziela je do odpowiednich klas abstrakcji, dzięki czemu
+			użytkownik nie musi na przykład dbać o~to, czy dane pochodzą z~dysku twardego, posiadającego obracające się talerze a~odczyt/zapis danych
+			jest wykonywany za pomocą głowic, czy może urządzeniem tym jest dysk SSD posiadający kości pamięci Flash.
+		\item Kontrolowany dostęp do plików: dane składowane w~pamięciach zewnętrznych składowane są w~postaci \emph{plików} (ang. \emph{files}).
+			Jest to konsekwencją ogromnego rozmiaru pamięci zewnętrznych (w~porównaniu do pamięci operacyjnej). Dodatkowo, dane te muszą być przedstawione
+			człowiekowi w~zrozumiałej formie. Dlatego też powstała idea systemu plików (ang. \emph{file system}). Obecnie istnieją rozwiązania, 
+			które oferują wytworzenie, w~sposób przezroczysty, systemu plików, który obejmuje zawartość wielu (często rozproszonych) systemów plików.
+			OS może uznać, że dana aplikacja \emph{nie powinna} używać pewnych plików, niektóre z~nich może używać tylko do odczytu, zaś pewne z~nich
+			może zarówno odczytać, jak również modyfikować. W~tym celu musi posiadać mechanizmy do limitowania dostępu do plików.
+		\item Dostęp do systemu: pewne zasoby systemu mogą być używane jedynie przez jego własne komponenty, np. wspomniany wyżej bezpośredni
+			(niskopoziomowy, ang. \emph{low\dywiz level}) dostęp do peryferiów. Jak okaże się w~dalszej części tego tekstu, niektóre dane znajdujące się 
+			w~pamięci operacyjnej mogą być używane przez dokładnie jedną aplikację.
+		\item Wykrywanie błędów oraz reakcja na nie: w~trakcie działania systemu operacyjnego może wystąpić sytuacja awaryjna:
+		\begin{itemize}
+			\item awaria może wystąpić w~jednym z~urządzeń zewnętrznych, np. błąd w~odczycie z~dysku twardego;
+			\item jedna z~wykonywanych aplikacji użytkownika może wykonać niedozwoloną operację, np. próba niedozwolonej operacji na pewnym zasobie;
+			\end{itemize}
+			w~takiej sytuacji OS musi zareagować stosownie do wykrytego błędu, np. poinformować aplikację o~niemożności odczytu danych z~dysku, lub
+			poinformowanie o~braku dostępu do zasobu.
+		\item Księgowanie: śledzenie zachowania aplikacji, wytwarzanie bazy informacji, a~następnie ich analiza może dać efekt w~postaci
+			nowej wersji systemu, która, przy uwzględnieniu wniosków płynących z~analiz, będzie w~większym stopniu odpowiadać wymaganiom aplikacji,
+			a~co za tym idzie, spowoduje szybsze działanie systemu.
+	\end{itemize}
+\par
+%
+\indent
+	Aplikacje użytkownika wykonywane pod kontrolą systemu operacyjnego mogą być bardzo proste (np. program do zliczania słów w~pliku tekstowym),
+	jak również bardzo złożone (program do obsługi transakcji bankowych, który z~powodu spełniania ogromnej liczby wymagań, może być potraktowany jako
+	system). OS musi zatem udostępniać pewną abstrakcję, w~ramach której pomieszczą się różnorodne wymagania dowolnej aplikacji użytkownika).
+	Tą abstrakcją jest \emph{proces} (ang. \emph{process}).
+\par
+%
+\indent
+	Proces musi umożliwiać dostęp do systemu i~jego zasobów: każda aplikacja potrzebuje pewnego czasu do wykonania swoich zadań, w~trakcie wykonywania
+	korzysta z~pamięci operacyjnej, a~także może wymagać innych zasobów systemu operacyjnego, m. in.:
+	\begin{itemize}
+		\item zasobów systemu plików;
+		\item umożliwienia komunikacji z~innymi aplikacjami;
+		\item izolacji od innych programów;
+		\item pobierać dane od użytkownika lub informować go o~wynikach pracy.
+	\end{itemize}
+	Dodatkowo, sama aplikacja może składać się z~autonomicznych komponentów, które nie mogą być przez nie współdzielone, 
+	np. ze względu na bezpieczeństwo przetwarzanych danych. Tak więc sama aplikacja może składać się nie z~jednego, ale z~pewnej liczby
+	procesów, które komunikują się w~sposób kontrolowany przez system i~użytkownika.
+\par
+%
+\indent
+	Ponieważ proces musi spełniać tak wiele ortogonalnych względem siebie wymagań, zdefiniowanie go jest dość trudne, gdyż granice tego pojęcia
+	są dość rozmyte. Dobrym określeniem, które oddaje naturę procesu jest \emph{piaskownica} (ang. \emph{sandbox}):
+	proces posiada:
+	\begin{itemize}
+		\item własną przestrzeń adresową;
+		\item stan;
+		\item czas wykonania;
+		\item uchwyty (ang. \emph{handle}) do zasobów systemowych;
+		\item dostęp do mechanizmów komunikacji międzyprocesowej (ang. \emph{interprocess communication, IPC}).
 	\end{itemize}
 \par
 %
