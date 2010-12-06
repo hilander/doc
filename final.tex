@@ -560,6 +560,22 @@
 \par
 %
 \indent
+	System operacyjny można podzielić na dwie zasadnicze warstwy:
+	\begin{enumerate}
+		\item \emph{Jądro systemu} (ang. \emph{kernel}). Zawiera ono:
+		\begin{itemize}
+			\item warstwę abstrakcji sprzętu (ang. \emph{hardware abstraction layer, HAL}), w~której znajdują się m. in. sterowniki dla urządzeń 
+				za szyną systemową.
+			\item Moduł do zarządzania (szeregowania) zadań
+			\item Moduł do zarządzania pamięcią wirtualną
+			\item Moduły komuni
+		\end{itemize}
+		\item Warstwa użytkownika, w~której znajdują się aplikacje. Programy tej warstwy korzystają z~ułatwień i~narzędzi dostarczanych przez
+			jądro systemu.
+	\end{enumerate}
+\par
+%
+\indent
 	Proces musi umożliwiać dostęp do systemu i~jego zasobów: każda aplikacja potrzebuje pewnego czasu do wykonania swoich zadań, w~trakcie wykonywania
 	korzysta z~pamięci operacyjnej, a~także może wymagać innych zasobów systemu operacyjnego, m. in.:
 	\begin{itemize}
@@ -575,15 +591,36 @@
 %
 \indent
 	Ponieważ proces musi spełniać tak wiele ortogonalnych względem siebie wymagań, zdefiniowanie go jest dość trudne, gdyż granice tego pojęcia
-	są dość rozmyte. Dobrym określeniem, które oddaje naturę procesu jest \emph{piaskownica} (ang. \emph{sandbox}):
-	proces posiada:
+	są dość rozmyte. Dobrym określeniem, które oddaje naturę procesu jest \emph{piaskownica} (ang. \emph{sandbox}), gdyż system wytwarza i~udostępnia 
+	specjalnie dla niego:
 	\begin{itemize}
-		\item własną przestrzeń adresową;
-		\item stan;
+		\item własną przestrzeń adresową, niezależną i~izolowaną od innych procesów;
 		\item czas wykonania;
 		\item uchwyty (ang. \emph{handle}) do zasobów systemowych;
 		\item dostęp do mechanizmów komunikacji międzyprocesowej (ang. \emph{interprocess communication, IPC}).
 	\end{itemize}
+	Oprócz wyżej wymienionych zasobów, proces posiada także swój stan.
+\par
+%
+\indent
+	Procesy, mimo faktu posiadania doskonałej (lub \emph{prawie} doskonałej) izolacji, posiadają jedną, zasadniczą wadę: przełączanie pomiędzy nimi
+	zajmuje dużo czasu. Aplikacja, która posiada dużą liczbę procesów, mimo iż w~teorii powinna działać bardzo sprawnie,
+	może nie spełniać tych oczekiwań, gdyż systemowi dużo czasu może zająć przełączanie pomiędzy przestrzeniami adresowymi procesów:
+	jeśli przestrzeń adresowa procesu, do którego przechodzi sterowanie, znajduje się w~pamięci podręcznej procesora, to czas potrzebny do 
+	przełączenia sterowania pomiędzy tymi procesami będzie stosunkowo krótki. Jeśli zaś informacje o~przestrzeni adresowej tego procesu znajdują się
+	w~pamięci operacyjnej (lub w~pamięci zewnętrznej), to czas potrzebny na przełączenie pomiędzy tymi procesami może się znacząco wydłużyć,
+	a~procesor będzie zmuszony do przestoju w~obliczeniach.
+\par
+%
+\indent
+	Rozwiązaniem kosztownego problemu przełączania pomiędzy przestrzeniami adresowymi procesów jest zastosowanie \emph{wątków} (ang. \emph{threads}).
+	Wątki w~ramach jednego procesu posiadają wspólną przestrzeń adresową, sumaryczny czas ich wykonania jest równy czasowi przydzielonemu dla 
+	procesu, w~ramach którego są wykonywane. Przełączanie pomiędzy nimi również pociąga za sobą poniesienie kosztów czasowych, są one jednak
+	o~wiele niższe niż te, które należało by ponieść w~wypadku przełączania sterowania pomiędzy procesami. Z~powodu mniejszego narzutu czasowego,
+	związanego z~przełączaniem pomiędzy wątkami, nazywane są one również \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}).
+	Wraz z~niewątpliwą oszczędnością czasu podczas przełączania pomiędzy wątkami, z~powodu używania przez wątki tej samej przestrzeni adresowej,
+	następuje utrata izolacji przestrzeni adresowej pomiędzy nimi. Może się to wiązać z~utratą bezpieczeństwa danych używanych przez dany wątek,
+	dlatego też, podczas projektowania aplikacji należy dokonać takiego podziału zadań na procesy i~wątki, aby zachować zakładaną ochronę danych.
 \par
 %
 \indent
