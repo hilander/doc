@@ -517,13 +517,17 @@
 			również usprawnienia dotychczasowych funkcji powinny odbywać się tak, aby zmiany nie zmuszały użytkownika do zmian w~aplikacji
 			-- zmiany powinny być dla niego \emph{przezroczyste}.
 	\end{itemize}
+	Najważniejszą zyskiem z~używania systemu jest możliwość uruchomienia aplikacji na różnych systemach komputerowych, na których
+	jest on dostępny, a~więc aplikacja jest \emph{przenośna}.
 \par
 %
 \indent
-	System operacyjny dostarcza usługi w~następujących obszarach:
+	Powinnościami systemu operacyjnego są:
 	\begin{itemize}
 		\item rozwój aplikacji: OS dostarcza zestaw narzędzi do tworzenia i~rozwijania aplikacji użytkownika począwszy od
-			edytorów po kompilatory, \emph{debuggery}, \emph{profilery}, itp.
+			edytorów po kompilatory. Większość aplikacji jest pisana w~językach programowania wysokiego poziomu (o~których szerzej w~dalszej części
+			tej pracy), a~to właśnie kompilator odpowiada za generację kodu maszynowego, który zostanie wykonany w~optymalny sposób
+			na procesorze (lub procesorach), z~wykorzystaniem ILP.
 		\item Wykonanie programu: aplikacje użytkownika są uruchamiane w~środowisku dostarczanym przez system operacyjny. Środowisko to 
 			udostępnia zasoby, których aplikacje te potrzebują. Dodatkowo, OS zarządza kolejnością wykonania tych programów (ang. \emph{scheduling}).
 		\item Dostęp do I/O: system operacyjny jest pośrednikiem pomiędzy programem a~peryferiami. Ze względu na swoją unikalność,
@@ -555,24 +559,34 @@
 \indent
 	Aplikacje użytkownika wykonywane pod kontrolą systemu operacyjnego mogą być bardzo proste (np. program do zliczania słów w~pliku tekstowym),
 	jak również bardzo złożone (program do obsługi transakcji bankowych, który z~powodu spełniania ogromnej liczby wymagań, może być potraktowany jako
-	system). OS musi zatem udostępniać pewną abstrakcję, w~ramach której pomieszczą się różnorodne wymagania dowolnej aplikacji użytkownika).
+	system). OS musi zatem udostępniać pewną abstrakcję systemu operacyjnego, która udostępni aplikacji wszystkie usługi oraz zapewni swego
+	rodzaju iluzję wyłączności dostępu do zasobów systemu.
 	Tą abstrakcją jest \emph{proces} (ang. \emph{process}).
 \par
 %
 \indent
-	System operacyjny można podzielić na dwie zasadnicze warstwy:
-	\begin{enumerate}
-		\item \emph{Jądro systemu} (ang. \emph{kernel}). Zawiera ono:
-		\begin{itemize}
-			\item warstwę abstrakcji sprzętu (ang. \emph{hardware abstraction layer, HAL}), w~której znajdują się m. in. sterowniki dla urządzeń 
-				za szyną systemową.
-			\item Moduł do zarządzania (szeregowania) zadań
-			\item Moduł do zarządzania pamięcią wirtualną
-			\item Moduły komuni
-		\end{itemize}
-		\item Warstwa użytkownika, w~której znajdują się aplikacje. Programy tej warstwy korzystają z~ułatwień i~narzędzi dostarczanych przez
-			jądro systemu.
-	\end{enumerate}
+	System operacyjny można podzielić na dwie zasadnicze warstwy, zwane również \emph{przestrzeniami}: \emph{przestrzeń jądra}
+	(ang. \emph{kernel space}) oraz \emph{przestrzeń użytkownika} (ang. \emph{user space}).
+\par
+%
+\indent
+	Jądro systemu to jego podstawa, która jest odpowiedzialna za zarządzanie jego usługami, jak również zasobami, m. in. pamięcią, I/O,
+	przydzielaniem czasu procesora poszczególnym programom. Instrukcje jądra wykonywane są w~przestrzeni jądra. Dzięki temu,
+	mają one dostęp do wszystkich zasobów systemu komputera i~mogą je dowolnie zmieniać. Dlatego też procesy uruchamiane w~przestrzeni
+	jądra muszą być zaprojektowane zgodnie ze wszystkimi wymaganiami stawianymi danemu systemowi operacyjnemu, wraz z~podstawowym wymaganiem:
+	muszą one być \emph{niezawodne}, gdyż w~razie wystąpienia poważnego błędu w~trakcie wykonywania programu uruchomionego w~przestrzeni jądra,
+	działanie wszystkich aplikacji w~systemie zostanie zaburzone, a~w~konsekwencji może doprowadzić to do unicestwienia całego systemu operacyjnego.
+\par
+%
+\indent
+	Programy uruchamiane w~przestrzeni użytkownika posiadają limitowany dostęp do zasobów komputera:
+	\begin{itemize}
+		\item procesy . Co więcej, jej rzeczywiste położenie w~pamięci operacyjnej jest nieznane
+			aplikacji, gdyż to jądro dokonuje translacji adresów fizycznych na adresy używane przez nie (również translacja w~drugą stronę
+			przeprowadzana jest przez jądro).
+			Również nie wszystkie rejestry procesora są dostępne dla aplikacji uruchomionej w~tej przestrzeni.
+		\item 
+	\end{itemize}
 \par
 %
 \indent
@@ -629,9 +643,9 @@
 	\begin{tabular}{|c|c|c|} \hline
 													 & Jeden wątek w~procesie   	 & Wiele wątków w~procesie \\
 													 & (Single Thread)          	 & (Multiple threads)      \\\hline
-			Jeden proces         & \multirow{2}{*}{SPST} 	     & \multirow{2}{*}{SPMT}	 \\
+			Jeden proces         & \multirow{2}{*}{1:1} 	     & \multirow{2}{*}{N:1}	 \\
 			(Single Process)     &  										   		 &  									     \\\hline
-			Wiele procesów       & \multirow{2}{*}{MPST}       & \multirow{2}{*}{MPMT}   \\
+			Wiele procesów       & \multirow{2}{*}{1:N}       & \multirow{2}{*}{N:M}   \\
 			(Multiple Processes) &                             &                         \\\hline
 	\end{tabular}\\
 	\begin{small} Tabela 5. Klasyfikacja systemów operacyjnych \end{small}
@@ -646,6 +660,24 @@
 \par
 %
 \subsection{Języki programowania}
+\indent
+	Obecnie jedynie niewielka część systemu operacyjnego jest napisana w~języku maszynowym (asemblerze, ang. \emph{assembler}).
+	Pozostała część systemu napisana jest w~języku wyższego poziomu. Aplikacje, ze względu na przenośność, nie powinny używać języka 
+	maszynowego \emph{w~ogóle}.
+\par
+%
+\indent
+\par
+%
+\subsubsection{C}
+\indent
+	Językiem programowania, w~których napisana jest większość dostępnych systemów, jest C.~Język ten powstał zresztą w~celu stworzenia
+	systemu operacyjnego (UNIX).
+\par
+%
+\subsubsection{C++}
+\subsubsection{C\#}
+\subsubsection{Java}
 \section{Motywacja} 
 %
 \indent
