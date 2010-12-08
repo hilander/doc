@@ -576,16 +576,36 @@
 	jądra muszą być zaprojektowane zgodnie ze wszystkimi wymaganiami stawianymi danemu systemowi operacyjnemu, wraz z~podstawowym wymaganiem:
 	muszą one być \emph{niezawodne}, gdyż w~razie wystąpienia poważnego błędu w~trakcie wykonywania programu uruchomionego w~przestrzeni jądra,
 	działanie wszystkich aplikacji w~systemie zostanie zaburzone, a~w~konsekwencji może doprowadzić to do unicestwienia całego systemu operacyjnego.
+	Ze względu na budowę, można wyróżnić dwa rodzaje jądra systemu:
+	\begin{itemize}
+		\item jądro monolityczne (ang. \emph{monolithic kernel}), które zawiera w~sobie większą część usług systemu. Wszystkie usługi jądra
+			wykonywane są w~ramach jednego procesu, co daje w~efekcie prowadzi do wysokiej wydajności działania takiego jądra. Wadą takiego jądra
+			jest fakt, że w~momencie błędu w~działaniu jednego z~jego składników, może dojść do załamania pracy całego procesu, a~w~konsekwencji,
+			do załamania pracy całego systemu.
+			Przykładem jądra monolitycznego jest jądro systemu Linux, w~którym obsługa pamięci i~urządzeń zewnętrznych oraz zarządzanie czasem procesora
+			dokonywana jest w~przestrzeni jądra. Jądro Linuksa jest \emph{zmodularyzowane}: jego poszczególne elementy mogą być załadowane
+			jak również wyłączone z~jądra.
+		\item Mikrojądro (ang. \emph{microkernel}), które w~odróżnieniu od monolitycznego, w~przestrzeni jądra posiada proces zawierający
+			obsługę minimalnych składników systemu operacyjnego, zaś obsługa reszty składników systemu dokonywana jest w~innych procesach
+			(zwanych również \emph{serwerami}). Podstawową zaletą takiej organizacji jądra systemu jest bardzo wysoka stabilność, gdyż w~momencie
+			wystąpienia krytycznego błędu w~którymś z~serwerów, przerwane zostanie jego działanie, zaś działanie systemu operacyjnego nie zostanie
+			zaburzone w~poważny sposób. Zasadniczą wadą takiego jądra jest spory koszt związany z~przełączaniem pomiędzy poszczególnymi jego procesami;
+			ponieważ poszczególne usługi znajdują się w~osobnych procesach, komunikacja pomiędzy nimi jest obsługiwana przez system, co
+			w~wypadku intensywnej wymiany danych może przyczynić się do kosztownej obsługi takiej komunikacji.
+	\end{itemize}
 \par
 %
 \indent
-	Programy uruchamiane w~przestrzeni użytkownika posiadają limitowany dostęp do zasobów komputera:
+	Programy (procesy uruchomione w~ramach takich programów) uruchamiane w~przestrzeni użytkownika posiadają limitowany dostęp do zasobów komputera:
 	\begin{itemize}
-		\item procesy . Co więcej, jej rzeczywiste położenie w~pamięci operacyjnej jest nieznane
-			aplikacji, gdyż to jądro dokonuje translacji adresów fizycznych na adresy używane przez nie (również translacja w~drugą stronę
+		\item procesy posiadają limitowany i~niebezpośredni dostęp do pamięci. Co więcej, rzeczywiste położenie używanych komórek pamięci operacyjnej
+			jest nieznane	aplikacji, gdyż to jądro dokonuje translacji adresów fizycznych na adresy używane przez nie (również translacja w~drugą stronę
 			przeprowadzana jest przez jądro).
-			Również nie wszystkie rejestry procesora są dostępne dla aplikacji uruchomionej w~tej przestrzeni.
-		\item 
+			Niektóre rejestry procesora są także niedostępne dla takich procesów.
+		\item Czas wykonania, jak również moment, w~którym proces jest uruchomiony na procesorze, w~pełni zależy od systemu operacyjnego, a~dokładnie
+			od zarządcy (ang. \emph{scheduler}) i~stosowanej przez niego wobec konkretnego procesu polityki.
+		\item Dostęp do urządzeń zewnętrznych jest zarządzany przez jądro, a~więc i~w~tym przypadku proces uruchomiony w~przestrzeni użytkownika
+			korzysta z~nich przy użyciu usług udostępnianych przez jądro.
 	\end{itemize}
 \par
 %
