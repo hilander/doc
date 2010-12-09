@@ -106,7 +106,7 @@ Doc:
     	- potoki anonimowe (pipes)            	
     	- potoki nazwane (fifo)               	
     	- kolejki komunikatów (message queues)	
-    	- semafory                            	
+			- sygnały
     	- pamięć dzielona             	
     	- gniazda (sockets) (UNIX Domain Sockets)
 		- synchronizacja wątków

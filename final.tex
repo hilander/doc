@@ -524,12 +524,12 @@
 \indent
 	Powinnościami systemu operacyjnego są:
 	\begin{itemize}
-		\item rozwój aplikacji: OS dostarcza zestaw narzędzi do tworzenia i~rozwijania aplikacji użytkownika począwszy od
+		\item wykonanie programu: aplikacje użytkownika są uruchamiane w~środowisku dostarczanym przez system operacyjny. Środowisko to 
+			udostępnia zasoby, których aplikacje te potrzebują. Dodatkowo, OS zarządza kolejnością wykonania tych programów (ang. \emph{scheduling}).
+		\item Rozwój aplikacji: OS dostarcza zestaw narzędzi do tworzenia i~rozwijania aplikacji użytkownika począwszy od
 			edytorów po kompilatory. Większość aplikacji jest pisana w~językach programowania wysokiego poziomu (o~których szerzej w~dalszej części
 			tej pracy), a~to właśnie kompilator odpowiada za generację kodu maszynowego, który zostanie wykonany w~optymalny sposób
 			na procesorze (lub procesorach), z~wykorzystaniem ILP.
-		\item Wykonanie programu: aplikacje użytkownika są uruchamiane w~środowisku dostarczanym przez system operacyjny. Środowisko to 
-			udostępnia zasoby, których aplikacje te potrzebują. Dodatkowo, OS zarządza kolejnością wykonania tych programów (ang. \emph{scheduling}).
 		\item Dostęp do I/O: system operacyjny jest pośrednikiem pomiędzy programem a~peryferiami. Ze względu na swoją unikalność,
 			każde urządzenie zewnętrzne jest unikatowe, lecz system operacyjny przydziela je do odpowiednich klas abstrakcji, dzięki czemu
 			użytkownik nie musi na przykład dbać o~to, czy dane pochodzą z~dysku twardego, posiadającego obracające się talerze a~odczyt/zapis danych
@@ -542,7 +542,8 @@
 			może zarówno odczytać, jak również modyfikować. W~tym celu musi posiadać mechanizmy do limitowania dostępu do plików.
 		\item Dostęp do systemu: pewne zasoby systemu mogą być używane jedynie przez jego własne komponenty, np. wspomniany wyżej bezpośredni
 			(niskopoziomowy, ang. \emph{low\dywiz level}) dostęp do peryferiów. Jak okaże się w~dalszej części tego tekstu, niektóre dane znajdujące się 
-			w~pamięci operacyjnej mogą być używane przez dokładnie jedną aplikację.
+			w~pamięci operacyjnej mogą być używane przez dokładnie jedną aplikację; do tego celu stosowany jest mechanizm stronicowania pamięci
+			(ang. \emph{memory paging}).
 		\item Wykrywanie błędów oraz reakcja na nie: w~trakcie działania systemu operacyjnego może wystąpić sytuacja awaryjna:
 		\begin{itemize}
 			\item awaria może wystąpić w~jednym z~urządzeń zewnętrznych, np. błąd w~odczycie z~dysku twardego;
@@ -552,7 +553,12 @@
 			poinformowanie o~braku dostępu do zasobu.
 		\item Księgowanie: śledzenie zachowania aplikacji, wytwarzanie bazy informacji, a~następnie ich analiza może dać efekt w~postaci
 			nowej wersji systemu, która, przy uwzględnieniu wniosków płynących z~analiz, będzie w~większym stopniu odpowiadać wymaganiom aplikacji,
-			a~co za tym idzie, spowoduje szybsze działanie systemu.
+			a~co za tym idzie, spowoduje szybsze działanie systemu. Większość współczesnych systemów operacyjnych posiada określone zastosowania
+			(np. system Windows 7 wykonywany jest dla jednego użytkownika, który pracuje na jednej stacji roboczej, zaś system GNU/Linux
+			powinien w~założeniu obsługiwać wielu użytkowników jednocześnie, niekoniecznie za pomocą interfejsu graficznego), dlatego gromadzenie
+			i~analiza informacji o~specyficznych dla tych systemów kombinacjach uruchomionych aplikacji w~danym momencie oraz samym zachowaniu użytkownika,
+			może dać efekt w~postaci zwiększenia wydajności najczęściej (najbardziej intensywnie) używanych składowych systemu, nawet kosztem
+			zmniejszenia wydajności innych składowych systemu.
 	\end{itemize}
 \par
 %
@@ -560,18 +566,20 @@
 	Aplikacje użytkownika wykonywane pod kontrolą systemu operacyjnego mogą być bardzo proste (np. program do zliczania słów w~pliku tekstowym),
 	jak również bardzo złożone (program do obsługi transakcji bankowych, który z~powodu spełniania ogromnej liczby wymagań, może być potraktowany jako
 	system). OS musi zatem udostępniać pewną abstrakcję systemu operacyjnego, która udostępni aplikacji wszystkie usługi oraz zapewni swego
-	rodzaju iluzję wyłączności dostępu do zasobów systemu.
+	rodzaju iluzję wyłączności dostępu do zasobów systemu (umożliwiając jednocześnie komunikację z~innymi aplikacjami).
 	Tą abstrakcją jest \emph{proces} (ang. \emph{process}).
 \par
 %
 \indent
-	System operacyjny można podzielić na dwie zasadnicze warstwy, zwane również \emph{przestrzeniami}: \emph{przestrzeń jądra}
-	(ang. \emph{kernel space}) oraz \emph{przestrzeń użytkownika} (ang. \emph{user space}).
+	Ze względu na dostęp do zasobów komputera, procesy uruchomione przez system operacyjny można podzielić 
+	na dwie zasadnicze grupy (warstwy), które z~punktu widzenia procesów są traktowane jak środowisko, w~którym działają 
+	(lub są ich \emph{przestrzeniami}): 
+	\emph{przestrzeń jądra} (ang. \emph{kernel space}) oraz \emph{przestrzeń użytkownika} (ang. \emph{user space}).
 \par
 %
 \indent
 	Jądro systemu to jego podstawa, która jest odpowiedzialna za zarządzanie jego usługami, jak również zasobami, m. in. pamięcią, I/O,
-	przydzielaniem czasu procesora poszczególnym programom. Instrukcje jądra wykonywane są w~przestrzeni jądra. Dzięki temu,
+	przydzielaniem czasu procesora poszczególnym programom. Instrukcje procesu jądra wykonywane są w~przestrzeni jądra. Dzięki temu,
 	mają one dostęp do wszystkich zasobów systemu komputera i~mogą je dowolnie zmieniać. Dlatego też procesy uruchamiane w~przestrzeni
 	jądra muszą być zaprojektowane zgodnie ze wszystkimi wymaganiami stawianymi danemu systemowi operacyjnemu, wraz z~podstawowym wymaganiem:
 	muszą one być \emph{niezawodne}, gdyż w~razie wystąpienia poważnego błędu w~trakcie wykonywania programu uruchomionego w~przestrzeni jądra,
@@ -583,12 +591,13 @@
 			jest fakt, że w~momencie błędu w~działaniu jednego z~jego składników, może dojść do załamania pracy całego procesu, a~w~konsekwencji,
 			do załamania pracy całego systemu.
 			Przykładem jądra monolitycznego jest jądro systemu Linux, w~którym obsługa pamięci i~urządzeń zewnętrznych oraz zarządzanie czasem procesora
-			dokonywana jest w~przestrzeni jądra. Jądro Linuksa jest \emph{zmodularyzowane}: jego poszczególne elementy mogą być załadowane
+			dokonywana jest w~przestrzeni jądra. Jądro Linuksa jest \emph{zmodularyzowane}: jego poszczególne elementy (moduły) mogą być załadowane
 			jak również wyłączone z~jądra.
 		\item Mikrojądro (ang. \emph{microkernel}), które w~odróżnieniu od monolitycznego, w~przestrzeni jądra posiada proces zawierający
-			obsługę minimalnych składników systemu operacyjnego, zaś obsługa reszty składników systemu dokonywana jest w~innych procesach
+			obsługę minimalnych składników systemu operacyjnego. Obsługa reszty składników systemu dokonywana jest w~innych procesach
 			(zwanych również \emph{serwerami}). Podstawową zaletą takiej organizacji jądra systemu jest bardzo wysoka stabilność, gdyż w~momencie
-			wystąpienia krytycznego błędu w~którymś z~serwerów, przerwane zostanie jego działanie, zaś działanie systemu operacyjnego nie zostanie
+			wystąpienia krytycznego błędu w~którymś z~serwerów, przerwane zostanie jego działanie, a~jego proces zostanie unicestwiony.
+			Działanie systemu operacyjnego nie zostanie w~takiej sytuacji
 			zaburzone w~poważny sposób. Zasadniczą wadą takiego jądra jest spory koszt związany z~przełączaniem pomiędzy poszczególnymi jego procesami;
 			ponieważ poszczególne usługi znajdują się w~osobnych procesach, komunikacja pomiędzy nimi jest obsługiwana przez system, co
 			w~wypadku intensywnej wymiany danych może przyczynić się do kosztownej obsługi takiej komunikacji.
@@ -621,19 +630,6 @@
 	Dodatkowo, sama aplikacja może składać się z~autonomicznych komponentów, które nie mogą być przez nie współdzielone, 
 	np. ze względu na bezpieczeństwo przetwarzanych danych. Tak więc sama aplikacja może składać się nie z~jednego, ale z~pewnej liczby
 	procesów, które komunikują się w~sposób kontrolowany przez system i~użytkownika.
-\par
-%
-\indent
-	Ponieważ proces musi spełniać tak wiele ortogonalnych względem siebie wymagań, zdefiniowanie go jest dość trudne, gdyż granice tego pojęcia
-	są dość rozmyte. Dobrym określeniem, które oddaje naturę procesu jest \emph{piaskownica} (ang. \emph{sandbox}), gdyż system wytwarza i~udostępnia 
-	specjalnie dla niego:
-	\begin{itemize}
-		\item własną przestrzeń adresową, niezależną i~izolowaną od innych procesów;
-		\item czas wykonania;
-		\item uchwyty (ang. \emph{handle}) do zasobów systemowych;
-		\item dostęp do mechanizmów komunikacji międzyprocesowej (ang. \emph{interprocess communication, IPC}).
-	\end{itemize}
-	Oprócz wyżej wymienionych zasobów, proces posiada także swój stan.
 \par
 %
 \indent
@@ -672,11 +668,61 @@
 	\end{center}
 \par
 %
+\subsubsection{Zarządzanie pamięcią}
+%
 \indent
-	Aplikację można rozpatrywać jako zbiór zadań, które wykonywane są w~określonym kontekście. Może zdarzyć się również, że pewne zadania
-	mogą być wykonane po zakończeniu działania innych. Może się zdarzyć, że pewne zadania korzystają ze wspólnych zasobów.
-	Systemy operacyjne udostępniają podstawową abstrakcję dla zadań: \emph{procesy}. Wykonanie procesu odbywa się w~jednym lub wielu \emph{wątkach}
-	Systemy operacyjne można podzielić na analogiczne klasy do tych z~taksonomii Flynna, ale ze względu na sposób zarządzania zadaniami.
+	Pamięć operacyjna jest zarządzana przez komponent systemu zwany alokatorem (ang. \emph{allocator}).
+\par
+%
+\subsubsection{Zarządzanie czasem procesora}
+%
+\indent
+	Mechanizm umożliwiający systemowi przełączanie pomiędzy procesami oraz wątkami, jest znany pod nazwą \emph{wywłaszczania}
+	(ang. \emph{preemption}).
+\par
+\subsubsection{Dostęp do I/O}
+%
+\indent
+	Składniki systemu, które posiadając niskopoziomowy dostęp do urządzeń wejścia/wyjścia, tworzą dla nich wyspecyfikowane przez OS abstrakcje,
+	są nazywane \emph{sterownikami} (ang. \emph{drivers}).
+\par
+%
+\subsubsection{Komunikacja międzyprocesowa}
+%
+\indent
+	System operacyjny udostępnia wiele mechanizmów komunikacji międzyprocesowej:
+	\begin{itemize}
+		\item potoki anonimowe (ang. \emph{pipes}) oraz nazwane (kolejki FIFO, ang. \emph{first\dywiz in first\dywiz out});
+		\item kolejki komunikatów (ang. \emph{message queues});
+		\item sygnały (ang. \emph{signals});
+		\item pamięć dzielona (ang. \emph{shared memory, SHM});
+		\item gniazda (ang. \emph{sockets}).
+	\end{itemize}
+\par
+%
+\subsubsection{Synchronizacja}
+%
+\indent
+	Bardzo często występuje sytuacja, gdy dwa procesy próbują modyfikować ten sam zasób systemu, co może prowadzić do zafałszowania
+	wyników ich działania. W~takiej sytuacji, stosowane są następujące mechanizmy synchronizacji ich działania:
+	\begin{itemize}
+		\item semafory (ang. \emph{semaphores});
+		\item muteksy (ang. \emph{mutual exclusion, mutex});
+		\item zmienne warunkowe (ang. \emph{conditional variables}), warunki (ang. \emph{conditions});
+		\item szybkie pętle (ang. \emph{spinlocks}).
+	\end{itemize}
+\par
+%
+\subsubsection{Zarządzanie i~szeregowanie wątków}
+%
+\indent
+	Do zarządzania wątkami w~ramach jednego procesu, stosuje się następujące strategie:
+	\begin{itemize}
+		\item współdzielenie obciążenia (ang. \emph{load sharing});
+		\item szeregowanie grupowe (ang. \emph{gang scheduling});
+		\item przypisanie do określonego procesora (ang. \emph{dedicated processor assignment});
+		\item szeregowanie dynamiczne (ang. \emph{dynamic scheduling}).
+	\end{itemize}
 \par
 %
 \subsection{Języki programowania}
@@ -700,41 +746,7 @@
 \subsubsection{Java}
 \section{Motywacja} 
 %
-\indent
-	O~ile ILP jest z~reguły przezroczyste dla programisty (optymalizacja jest dokonywana przez kompilator lub jest wykonywana w~trakcie wykonywania programu
-	przez jednostkę centralną),	o~tyle programista musi zaprojektować (i~zaimplementować) aplikację tak, aby mogła korzystać z~wielordzeniowej
-	architektury jednostki centralnej.
-\par
-%
-\indent
-	Współczesne systemy operacyjne udostępniają programiście narzędzia, które mogą być użyte do maksymalnego wykorzystania 
-	wielordzeniowej architektury CPU: są to \emph{procesy} oraz \emph{wątki}.
-\par
-%
-\indent
-	Aplikacja jest najczęściej zbiorem różnych zadań wykorzystujących wspólne zasoby, tak więc z~punktu widzenia systemu operacyjnego 
-	powinna działać w~obrębie procesu, który działa na udostępnianych przez system zasobach (pamięć, deskryptory plików, czas wykonania, itp.).
-	Poszczególne zadania realizowane w~ramach aplikacji winny być wątkami korzystającymi ze wspólnych zasobów.
-	Ze względu na naturę wątków, niektóre zadania wymagają wątków przestrzeni jądra (zapewniające skalowalność aplikacji), zaś inne wymagają
-	wątków przestrzeni użytkownika (wątek jest przyporządkowany do jednego rdzenia) lub \emph{włókien} (ang. \emph{fibers}, autonomiczne fragmenty
-	aplikacji, które dobrowolnie przekazują między siebie sterowanie).
-\par
-%
-\indent
-	Niektóre systemy operacyjne (NetBSD, OpenSolaris) udostępniają wątki mieszane, gdzie użytkownik decyduje, z~jakim rodzajem wątku 
-	chce związać konkretne zadanie.
-\par
-%
-\indent
-	W systemie Linux użytkownik ma do dyspozycji wątki przestrzeni jądra \linebreak (\emph{PThreads}), zgodne ze standardem POSIX0.1.
-	Dostępne są biblioteki implementujące włókna (\emph{GNU~Pth}, \emph{State~Threads}). Programista decyduje o~rodzaju użytych wątków.
-\par
-%
-\indent
-	W systemie Windows zaimplementowane są wątki przestrzeni jądra, dodatkowo można skorzystać z~włókien, które dostarcza producent systemu.
-	Niestety, ich implementacja nie jest zgodna ze standardem POSIX. Również tutaj decyzja o~wyborze rodzaju wątku dla zadania należy do użytkownika.
-\par
-%
+\begin{comment}
 \subsection{Cel}
 %
 \indent
@@ -956,4 +968,5 @@
 %\newpage
 %\input{bibliography.tex}
 %
+\end{comment}
 \end{document}
