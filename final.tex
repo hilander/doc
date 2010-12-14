@@ -8,7 +8,15 @@
 \usepackage{verbatim}
 \usepackage{multirow}
 \hyphenation{ wyj-ścia pier-wszego}
-\newcommand{\remark}{\emph}
+\newcommand{\remark}{{\bf \emph{Notatka:}} \\ \emph}
+
+%licznik tabel
+\newcounter{mgrtable}
+\newcommand{\mgrcounter}{\addtocounter{mgrtable}{1} \arabic{mgrtable}}
+\newcommand{\mgrLastCounter}{\arabic{mgrtable}}
+\newcommand{\mgrNextCounter}{\addtocounter{mgrtable}{1}\arabic{mgrtable}\addtocounter{mgrtable}{-1}}
+\setcounter{mgrtable}{0}
+
 %\usepackage{qswiss,qcourier}
 %\usepackage{sfheaders}
 
@@ -20,6 +28,7 @@
 \title{Analiza metod zarządzania wątkami mieszanymi}
 \date{\today}
 \begin{document} 
+
 
 \maketitle
 \thispagestyle{empty}
@@ -122,7 +131,7 @@
 	& IF & ID & \cellcolor{yellow} EX & MEM & WB & IF & ID & EX & MEM & WB\\ \cline{2-11} \cline{2-11}
 	Cykl zegara & 1 & 2 & \cellcolor{yellow} 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
 	\end{tabular}\par
-	\begin{small} Tabela 1. Sekwencyjne wykonanie dwóch rozkazów \end{small} \par
+	\begin{small} Tabela \mgrcounter. Sekwencyjne wykonanie dwóch rozkazów \end{small} \par
 	\end{center}\par
 \par
 %
@@ -144,7 +153,7 @@
 	5 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
 	\end{tabular}\par
-	\begin{small} Tabela 2. Potokowe wykonanie rozkazów \end{small}
+	\begin{small} Tabela \mgrcounter. Potokowe wykonanie rozkazów \end{small}
 	\end{center}
 	Metoda ta pozwala na ,,równoległe'' wykonanie kilku rozkazów na jednym procesorze, w~przykładzie opisanym w~tabeli 2, po upływie 7 cykli
 	zostaną wykonane trzy rozkazy. Gdyby rozkazy te były wykonane na jednostce sekwencyjnej, czas ich wykonania byłby ponad dwa razy dłuższy.
@@ -169,7 +178,7 @@
 	10 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
 	\end{tabular}\par
-	\begin{small} Tabela 3. Potokowe wykonanie 10 rozkazów na jednostce superskalarnej\end{small}
+	\begin{small} Tabela \mgrcounter. Potokowe wykonanie 10 rozkazów na jednostce superskalarnej\end{small}
 	\end{center}
 	Jak łatwo zauważyć, superskalarny CPU jest w~stanie przetworzyć nawet wektor instrukcji. Warunkiem koniecznym do osiągnięcia takiego
 	wyniku jest brak zależności pomiędzy wynikiem wcześniejszej a~następnej instrukcji.
@@ -263,7 +272,7 @@
 			strumieni danych     & SIMD                        & MIMD \\
 			(\emph{Multiple Data}) & 										 & 			\\\hline
 	\end{tabular}
-	\begin{small} Tabela 4. Taksonomia Flynna \end{small}
+	\begin{small} Tabela \mgrcounter. Taksonomia Flynna \end{small}
 	\end{center}
 	Klasy te możemy scharakteryzować w~następujący sposób:
 	\begin{itemize}
@@ -655,6 +664,32 @@
 \par
 %
 \indent
+	\begin{center}
+	\begin{tabular}{|l|c|c|} \hline
+		\multirow{2}{*}{Komponent} & \multirow{2}{*}{czas rzeczywisty}	& czas proporcjonalny \\ 
+					  &                   & (2 miliardy razy wolniej) \\ \hline
+		cykl procesora	& 0,5 ns & 1 sekunda \\\hline
+		dostęp do cache & 1 ns & 2 sekundy \\\hline
+		dostęp do RAM	  & 15 ns & 30 sekund \\\hline
+		przełączenie kontekstu & 5000 ns (5 $\mu$s) & 167 minut \\\hline
+		dostęp do HD		& 7000 $\mu$s (7 ms) & 162 dni \\\hline
+		kwant czasu 		& 100 ms	& 6,3 roku \\\hline
+	\end{tabular}\nopagebreak \\
+	\begin{small} 
+		Tabela \mgrcounter. Czas działania komponentów systemu komputerowego oraz proporcjonalny do niego czas
+		reakcji człowieka.
+	\end{small}
+	\end{center}
+	Warto w~tym miejscu uzmysłowić sobie różnicę w~czasie taktowania obecnych jednostek centralnych w~porównaniu do czasu dostępu do pewnych
+	elementów systemu komputerowego, przekładając te czasy na zbliżone do ludzkich miar. Jak można zauważyć w~tabeli \mgrLastCounter,
+	przełączanie kontekstu procesu jest operacją czasochłonną, gdyż w~,,normalnym'' świecie zajęła by człowiekowi ponad 2 godziny pracy.
+	Co więcej, uzyskanie dostępu do dysku twardego zajmuje czas porównywalny do prawie pół roku, co doskonale ilustruje celowość asynchronicznej
+	(nieblokującej, ang. \emph{asynchronous, non\dywiz{}blocking}) komunikacji pomiędzy procesorem a~urządzeniami zewnętznymi.
+	Tabela \mgrLastCounter~pokazuje również celowość projektowania aplikacji tak, aby jak najczęściej używana była pamięć cache w~celu uniknięcia
+	kosztownych odwołań do pamięci RAM: takie użycie pamięci może przynieść w~efekcie spore przyspieszenie działania aplikacji.
+\par
+%
+\indent
 	Systemy operacyjne, ze względu na sposób wykonywania zadań, można podzielić na cztery grupy:
 	\begin{center}
 	\begin{tabular}{|c|c|c|} \hline
@@ -665,7 +700,7 @@
 			Wiele procesów       & \multirow{2}{*}{1:N}       & \multirow{2}{*}{N:M}   \\
 			(Multiple Processes) &                             &                         \\\hline
 	\end{tabular}\\
-	\begin{small} Tabela 5. Klasyfikacja systemów operacyjnych \end{small}
+	\begin{small} Tabela \mgrcounter. Klasyfikacja systemów operacyjnych \end{small}
 	\end{center}
 \par
 %
@@ -729,30 +764,118 @@
 \subsection{Wątki przestrzeni użytkownika}
 \subsection{Języki programowania}
 \indent
-	Obecnie jedynie niewielka część systemu operacyjnego jest napisana w~języku maszynowym (asemblerze, ang. \emph{assembler}).
-	Pozostała część systemu napisana jest w~języku wyższego poziomu. Aplikacje, ze względu na przenośność, nie powinny używać języka 
-	maszynowego \emph{w~ogóle}.
+\remark
+{
+	Tutaj znajdą się informacje o~następujących mechanizmach:
+	\begin{itemize}
+		\item procedury i~ich wywołanie;
+		\item stos, ramka stosu, sterta;
+		\item kontynuacje, koprocedury, iteratory, generatory, \ldots
+	\end{itemize}
+}
 \par
 %
-\indent
-\par
-%
-\subsubsection{C}
-\indent
-	Językiem programowania, w~których napisana jest większość dostępnych systemów, jest C.~Język ten powstał zresztą w~celu stworzenia
-	systemu operacyjnego (UNIX).
-\par
-%
-\subsubsection{C++}
-\subsubsection{C\#}
-\subsubsection{Java}
 \section{Motywacja} 
 %
-\section{Linux 2.6}
+\subsection{Dotychczasowe osiągnięcia}
+\indent
+\remark
+{
+	Tutaj znajdą się odwołania do dokumentów, które opisują wyniki badań problemu zarządzania wątkami w~modelu N:M.
+}
+\par
+\subsection{Linux 2.6}
+\indent
+\remark
+{
+	Tutaj znajdą się informacje o~komponentach, które zostaną użyte w~implementacji wątków mieszanych, a~nie były
+	opisane we wstępie, np.:
+	\begin{itemize}
+		\item getcontext/swapcontext;
+		\item pthread;
+		\item POSIX: sygnały, zdarzenia, dostęp do systemu plików;
+		\item \ldots ?
+	\end{itemize}
+}
+\par
+\subsection{Cel}
+\indent
+\remark
+{
+	Under construction
+}
+\par
 \section{Opis rozwiązania}
+\subsection{Koprocedury: biblioteka {\tt libcoro}}
+\indent
+\remark
+{
+	\begin{itemize}
+		\item {\tt coroutine:abstract}
+		\item fabryka koprocedur: {\tt factory}
+		\item magazyn kontekstów: {\tt manager}
+		\itemize{ \item zarządzanie pamięcią}
+	\end{itemize}
+}
+\par
+\subsection{Planista przestrzeni użytkownika: {\tt Scheduler\_us}, \emph{uss}}
+\indent
+\remark
+{
+	\begin{itemize}
+		\item typ wątków: {\tt runnable:coroutine}
+		\item abstrakcja zasobów: {\tt resource}
+		\begin{itemize}
+			\item zasób: plik {\tt file}
+			\item zasób: gniazdo {\tt socket}
+			\item zasób: kanał informacyjny {\tt pipe}
+		\end{itemize}
+		\item implementacja jacketingu
+		\item pętla główna planisty p. użytkownika
+		%\item tworzenie nowego wątku
+		\item przechowywanie wątku
+		\item polityki stosowane przy zarządzaniu wątkami
+	\end{itemize}
+}
+\par
+\subsection{Nad\dywiz planista: {\tt ueber\_scheduler}}
+\indent
+\remark
+{
+	Odpowiedzialności nad\dywiz planisty, m. in. synchronizacja komunikacji pomiędzy wątkami uss oraz zasobami, polityka przydzielania wątków do
+	poszczególnych uss, etc.
+}
+\par
 \section{Podsumowanie}
 \subsection{Testy}
+\indent
+\remark
+{
+	\begin{itemize}
+		\item testy jednostkowe (unit tests)
+		\item testy wydajnościowe
+		\item porównanie wydajności z:
+		\begin{itemize}
+			\item pthreads
+			\item GNU Pth
+			\item Boost::Thread
+		\end{itemize}
+	\end{itemize}
+}
+\par
 \subsection{Narzędzia}
+\indent
+\remark
+{
+	\begin{itemize}
+		\item GCC
+		\item Libtool
+		\item GNU Make
+		\item GNU GDB, DDD
+		\item Valgrind (użyte narzędzia)
+	\end{itemize}
+}
+\par
 \subsection{\emph{Future work}}
 %
 \begin{comment}
