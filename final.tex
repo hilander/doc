@@ -684,7 +684,7 @@
 	elementów systemu komputerowego, przekładając te czasy na zbliżone do ludzkich miar. Jak można zauważyć w~tabeli \mgrLastCounter,
 	przełączanie kontekstu procesu jest operacją czasochłonną, gdyż w~,,normalnym'' świecie zajęła by człowiekowi ponad 2 godziny pracy.
 	Co więcej, uzyskanie dostępu do dysku twardego zajmuje czas porównywalny do prawie pół roku, co doskonale ilustruje celowość asynchronicznej
-	(nieblokującej, ang. \emph{asynchronous, non\dywiz{}blocking}) komunikacji pomiędzy procesorem a~urządzeniami zewnętznymi.
+	(nieblokującej, ang. \emph{asynchronous, non\dywiz{}blocking}) komunikacji pomiędzy procesorem a~urządzeniami zewnętrznymi.
 	Tabela \mgrLastCounter~pokazuje również celowość projektowania aplikacji tak, aby jak najczęściej używana była pamięć cache w~celu uniknięcia
 	kosztownych odwołań do pamięci RAM: takie użycie pamięci może przynieść w~efekcie spore przyspieszenie działania aplikacji.
 \par
@@ -818,7 +818,7 @@
 	\end{itemize}
 }
 \par
-\subsection{Planista przestrzeni użytkownika: {\tt Scheduler\_us}, \emph{uss}}
+\subsection{Planista przestrzeni użytkownika: {\tt scheduler\_us}, uss}
 \indent
 \remark
 {
@@ -852,9 +852,7 @@
 \remark
 {
 	\begin{itemize}
-		\item testy jednostkowe (unit tests)
-		\item testy wydajnościowe
-		\item porównanie wydajności z:
+		\item testy wydajnościowe, porównanie wydajności z:
 		\begin{itemize}
 			\item pthreads
 			\item GNU Pth
@@ -863,6 +861,8 @@
 	\end{itemize}
 }
 \par
+\subsection{Testy jednostkowe (unit tests)}
+\subsection{testy wydajnościowe, porównanie wydajności z~implementacjami KLT oraz ULT}
 \subsection{Narzędzia}
 \indent
 \remark
