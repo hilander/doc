@@ -7,6 +7,7 @@
 \usepackage[bookmarks, pdfhighlight=/P, linkbordercolor={1 1 1}, unicode=true]{hyperref}
 \usepackage{verbatim}
 \usepackage{multirow}
+\usepackage{hhline}
 \hyphenation{ wyj-ścia pier-wszego}
 \newcommand{\remark}{{\bf \emph{Notatka:}} \\ \emph}
 
@@ -127,9 +128,9 @@
 	w~oczekiwaniu na uruchomienie.
 	\begin{center}
 	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} \hline
-	& \multicolumn{5}{c|}{Rozkaz 1} & \multicolumn{5}{c|}{Rozkaz 2}  \\ \cline{2-11}
-	& IF & ID & \cellcolor{yellow} EX & MEM & WB & IF & ID & EX & MEM & WB\\ \cline{2-11} \cline{2-11}
-	Cykl zegara & 1 & 2 & \cellcolor{yellow} 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
+	\multirow{3}{*}{Cykl zegara} & \multicolumn{5}{c|}{Rozkaz 1} & \multicolumn{5}{c|}{Rozkaz 2}  \\
+	\hhline{|~|*{10}-}& IF & ID & {\cellcolor{yellow}{EX}} & MEM & WB & IF & ID & EX & MEM & WB\\
+	\hhline{|~|*{10}-}& 1 & 2 & {\cellcolor{yellow}{3}} & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
 	\end{tabular}\par
 	\begin{small} Tabela \mgrcounter. Sekwencyjne wykonanie dwóch rozkazów \end{small} \par
 	\end{center}\par
@@ -144,7 +145,7 @@
 	Jeśli wykonanie bieżącego rozkazu zakończyło się dla komponentu, może on wykonać następny rozkaz.
 	\begin{center}
 	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
-	Numer 		 & \multicolumn{7}{c|}{Stan potoku} \\
+	Numer 		 & \multicolumn{7}{c|}{\multirow{2}{*}{Stan potoku}} \\
 	rozkazu & \multicolumn{7}{c|}{} \\ \hline
 	1 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
 	2 & & IF & ID & \cellcolor{yellow} EX & MEM & WB & \\ \hline
@@ -164,7 +165,7 @@
 	każdemu krokowi odpowiada co najmniej jeden potok, jednakże występuje redundancja części funkcjonalnych procesora.
 	\begin{center}
 	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
-	Numer 		 & \multicolumn{7}{c|}{Stan potoku} \\
+	Numer 		 & \multicolumn{7}{c|}{\multirow{2}{*}{Stan potoku}} \\
 	rozkazu & \multicolumn{7}{c|}{} \\ \hline
 	1 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
 	2 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
@@ -174,7 +175,7 @@
 	6 & & & IF & \cellcolor{yellow} ID & EX & MEM & WB \\ \hline
 	7 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
 	8 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
-	9 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
+	9 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline
 	10 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
 	\end{tabular}\par
