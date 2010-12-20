@@ -8,6 +8,11 @@
 *.pdf
 *.toc
 *.dvi
+*.bib
+*.bbl
+*.blg
+*.lof
+*.lot
 *.out
 *.html
 cscope.out

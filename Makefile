@@ -4,4 +4,4 @@
 all: final
 
 final: final.tex
-		pdflatex final.tex
+		pdflatex final.tex ; bibtex final.aux ; pdflatex final.tex

@@ -1,23 +1,34 @@
+%\documentclass[11pt]{mwart}
 \documentclass{mwart}
 \usepackage{polski}
-\usepackage{antpolt}
+%\usepackage{antpolt}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage[table]{xcolor}
-\usepackage[bookmarks, pdfhighlight=/P, linkbordercolor={1 1 1}, unicode=true]{hyperref}
+\usepackage[bookmarks, pdfhighlight=/P, citebordercolor={1 1 1}, linkbordercolor={1 1 1}, unicode=true]{hyperref}
 \usepackage{verbatim}
 \usepackage{multirow}
 \usepackage{hhline}
+\usepackage[all]{hypcap}
+\bibliographystyle{plunsrt}
 \hyphenation{ wyj-ścia pier-wszego}
+
 \newcommand{\remark}{{\bf \emph{Notatka:}} \\ \emph}
 
-%licznik tabel
-\newcounter{mgrtable}
-\newcommand{\mgrcounter}{\addtocounter{mgrtable}{1} \arabic{mgrtable}}
-\newcommand{\mgrLastCounter}{\arabic{mgrtable}}
-\newcommand{\mgrNextCounter}{\addtocounter{mgrtable}{1}\arabic{mgrtable}\addtocounter{mgrtable}{-1}}
-\setcounter{mgrtable}{0}
+\usepackage{fancyhdr}
+\setlength{\headheight}{15.2pt}
+\pagestyle{fancy}
+\lhead{\leftmark}
+\chead{\empty}
+\rhead{\rightmark}
+\lfoot{\empty}
+\cfoot{\thepage}
+\rfoot{\empty}
+%\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+%\renewcommand{\sectionmark}[1]{\markright{#1}{}}
+\renewcommand{\sectionmark}[1]{\markboth{{#1}}{}}
 
+%\linespread{1.3}
 %\usepackage{qswiss,qcourier}
 %\usepackage{sfheaders}
 
@@ -37,22 +48,87 @@
 \newpage
 \tableofcontents
 \thispagestyle{empty}
-
 \newpage
+
+\begin{comment}
+\thispagestyle{empty}
+\listoftables
+\listoffigures
+\newpage
+\end{comment}
+
 % Akapity: bez wcięcia, za to z odstępem pionowym.
 % małe hackowanie latex-a: właściwości akapitu po spisie treści:)
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{1ex plus 0.7ex minus 0.1ex}
+%\setlength{\parindent}{0pt}
+%\setlength{\parskip}{1ex plus 0.7ex minus 0.1ex}
 
+\begin{comment}
 \begin{abstract}
 	\remark{Tutaj znajdzie się streszczenie pracy.}
 \end{abstract}
+\end{comment}
 
 \newpage
 %
 \section{Wstęp}
 %
-\subsection{Architektura systemów komputerowych}
+\subsection{Cel pracy}
+\indent
+	Celem niniejszej pracy było utworzenie biblioteki wątków mieszanych
+	w~języku C++.
+	Powinna ona odpowiadać za:
+	\begin{enumerate}
+		\item Zarządzanie wątkiem mieszanym:
+		\begin{itemize}
+			\item tworzenie i~destrukcja wątku;
+			\item przydział kontekstu wykonania (stosu) dla wątku;
+			\item przydział wątku do procesora;
+			\item uruchomienie wątku, wstrzymanie wątku (tzn. w~momencie wykonania operacji {\tt yield} przez wątek);
+			\item prawidłowa reakcja na wystąpienie wyjątku w~trakcie działania wątku.
+		\end{itemize}
+		\item Komunikacja:
+		\begin{itemize}
+			\item wysyłanie i~obsługa komunikatów (po stronie zarządcy i~wątku);
+			\item zdarzenia i~sygnały: detekcja wystąpienia, propagacja, obsługa.
+		\end{itemize}
+		\item Abstrakcja dla urządzeń wejścia\dywiz wyjścia (ang. \emph{jacketing}):
+		\begin{itemize}
+			\item nieblokujący dostęp do urządzeń (z~punktu widzenia zarządcy wątków);
+			\item blokujący i~nieblokujący dostęp do urządzeń (z~punktu widzenia wątku).
+		\end{itemize}
+		\item Zasoby współdzielone i~synchronizacja wątków:
+		\begin{itemize}
+			\item wzajemne wykluczanie (ang. \emph{mutual exclusion, mutex});
+			\item sekcja krytyczna;
+			\item semafory;
+			\item warunki i~zmienne warunkowe;
+			\item spotkania (ang. \emph{rendezvous});
+			\item skrzynka pocztowa (kolejka komunikatów, ang. \emph{message queue}).
+		\end{itemize}
+		\item Zarządzanie kolejnością i~czasem wykonania wątków (ang. \emph{scheduling}):
+		\begin{itemize}
+			\item bez stosowania priorytetów (\emph{round\dywiz robin});
+			\item przy zastosowaniu priorytetów.
+		\end{itemize}
+	\end{enumerate}
+\par
+%
+\subsection{Motywacja}
+\indent
+	Dostępne obecnie architektury systemów operacyjnych są z~założenia przystosowane do równoległego
+	wykonywania programów. Co więcej, architektury te obejmują wiele rodzajów urządzeń, które są obsługiwane przez system operacyjny.
+	W~rozdziale 2 została zgrubnie opisana architektura szeroko dostępnego komputera klasy PC, zaś rozdział 3 opisuje podstawowe
+	polityki oraz mechanizmy stosowane do równoległego uruchomienia aplikacji, jak również do ich dostępu do zasobów komputera.
+\par
+%
+\indent
+	Jak dotychczas, implementacja wątków mieszanych (zwanych również \emph{hybrydowymi}) była realizowana zarówno po stronie jądra,
+	jak również po stronie użytkownika. Praca \cite{anderson} opisuje mechanizmy konieczne do implementacji wątków hybrydowych 
+	zarówno w~przestrzeni jądra, jak i~w~przestrzeni użytkownika.
+\par
+%
+\newpage
+\section{Architektura systemów komputerowych}
 %
 \indent 
 	W~systemie komputerowym (lub w~skrócie: komputerze) można wyróżnić trzy podstawowe składowe:
@@ -64,9 +140,11 @@
 		\item urządzenia zewnętrzne (peryferia, I/O): służą do wymiany danych pomiędzy komputerem i~światem zewnętrznym.
 	\end{itemize}
 	Komunikacja pomiędzy nimi odbywa się za pośrednictwem szyny systemowej (ang. \emph{system bus}).
+	Poniższe podrozdziały informują o~podstawowych składnikach systemu komputerowego. Dokładny opis architektury współczesnych
+	systemów komputerowych można znaleźć w~\cite{hennessy}.
 \par
 %
-\subsubsection{Procesor}
+\subsection{Procesor}
 %
 \indent
 	Procesor jest urządzeniem, które posiada:
@@ -126,14 +204,17 @@
 	CPU zapisze wynik bieżącego. Do sekwencyjnego wykonywania rozkazów nie potrzeba żadnych dodatkowych mechanizmów,
 	jednak w~trakcie wykonania aktywna jest dokładnie jedna składowa procesora, podczas gdy pozostałe są ,,uśpione''
 	w~oczekiwaniu na uruchomienie.
-	\begin{center}
+	\begin{table}
+	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} \hline
-	\multirow{3}{*}{Cykl zegara} & \multicolumn{5}{c|}{Rozkaz 1} & \multicolumn{5}{c|}{Rozkaz 2}  \\
-	\hhline{|~|*{10}-}& IF & ID & {\cellcolor{yellow}{EX}} & MEM & WB & IF & ID & EX & MEM & WB\\
-	\hhline{|~|*{10}-}& 1 & 2 & {\cellcolor{yellow}{3}} & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
+	& \multicolumn{5}{c|}{Rozkaz 1} & \multicolumn{5}{c|}{Rozkaz 2}  \\
+	\hhline{|~|*{10}-}& IF & ID & {\cellcolor{yellow}{EX}} & MEM & WB & IF & ID & EX & MEM & WB\\ \hline \hline
+	Cykl zegara & 1 & 2 & {\cellcolor{yellow}{3}} & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
 	\end{tabular}\par
-	\begin{small} Tabela \mgrcounter. Sekwencyjne wykonanie dwóch rozkazów \end{small} \par
-	\end{center}\par
+	\caption[Sekwencyjne wykonanie dwóch rozkazów]{Sekwencyjne wykonanie dwóch rozkazów. Wyróżniona kolumna odpowiada bieżącemu krokowi wykonania
+	rozkazu.
+	}
+	\end{table}\par
 \par
 %
 \indent
@@ -143,7 +224,8 @@
 \indent 
 	Pomysł na bardziej efektywne wykorzystanie zasobów jednostki centralnej, to użycie \emph{potokowości} (ang. \emph{pipelining}):
 	Jeśli wykonanie bieżącego rozkazu zakończyło się dla komponentu, może on wykonać następny rozkaz.
-	\begin{center}
+	\begin{table}[h]
+	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
 	Numer 		 & \multicolumn{7}{c|}{\multirow{2}{*}{Stan potoku}} \\
 	rozkazu & \multicolumn{7}{c|}{} \\ \hline
@@ -153,17 +235,21 @@
 	4 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
 	5 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
-	\end{tabular}\par
-	\begin{small} Tabela \mgrcounter. Potokowe wykonanie rozkazów \end{small}
-	\end{center}
-	Metoda ta pozwala na ,,równoległe'' wykonanie kilku rozkazów na jednym procesorze, w~przykładzie opisanym w~tabeli 2, po upływie 7 cykli
+	\end{tabular}
+	\caption[Potokowe wykonanie rozkazów]{Potokowe wykonanie rozkazów. W~kolumnach umieszczone są komponenty wykonujące dany krok rozkazu.
+	W~wyróżnionej kolumnie można odczytać, że w~czwartym cyklu zegarowym pierwszy rozkaz jest w~trakcie wykonywania kroku MEM, 
+	dla drugiego wykonywany jest krok EX, itd.}
+	\label{tab:pipeline}
+	\end{table}
+	Metoda ta pozwala na ,,równoległe'' wykonanie kilku rozkazów na jednym procesorze, w~przykładzie opisanym w~tabeli \ref{tab:pipeline}, po upływie 7 cykli
 	zostaną wykonane trzy rozkazy. Gdyby rozkazy te były wykonane na jednostce sekwencyjnej, czas ich wykonania byłby ponad dwa razy dłuższy.
 \par
 %
 \indent
 	Architektura procesora, która jest uogólnieniem potokowości to \emph{Superskalarność} (ang. \emph{Superscalar}): 
 	każdemu krokowi odpowiada co najmniej jeden potok, jednakże występuje redundancja części funkcjonalnych procesora.
-	\begin{center}
+	\begin{table}[h]
+	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
 	Numer 		 & \multicolumn{7}{c|}{\multirow{2}{*}{Stan potoku}} \\
 	rozkazu & \multicolumn{7}{c|}{} \\ \hline
@@ -178,9 +264,12 @@
 	9 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline
 	10 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
-	\end{tabular}\par
-	\begin{small} Tabela \mgrcounter. Potokowe wykonanie 10 rozkazów na jednostce superskalarnej\end{small}
-	\end{center}
+	\end{tabular}
+	\caption[Potokowe wykonanie 10 rozkazów na jednostce superskalarnej]
+					{Potokowe wykonanie 10 rozkazów na jednostce superskalarnej o~dwóch potokach rozkazów: rozkazy o~numerach nieparzystych są wykonywane na 
+					pierwszej jednostce, zaś rozkazy o~numerach parzystych na drugiej. Analogicznie jak w~tabeli \ref{tab:pipeline}, wyróżniona
+					kolumna odpowiada wykonaniu programu w~czwartym cyklu zegarowym.}
+	\end{table}
 	Jak łatwo zauważyć, superskalarny CPU jest w~stanie przetworzyć nawet wektor instrukcji. Warunkiem koniecznym do osiągnięcia takiego
 	wyniku jest brak zależności pomiędzy wynikiem wcześniejszej a~następnej instrukcji.
 \par
@@ -205,17 +294,19 @@
 \indent
 	Technika wykonania określonego fragmentu kodu źródłowego jest stosowana również w~mechanizmie \emph{Wykonania poza kolejnością}
 	(ang. \emph{Out of Order execution, OoO}): jeśli pewien rozkaz używa wartości rejestru, która została już obliczona, to można go wykonać
-	poza kolejnością podaną przez autora programu. Dla sekwencji rozkazów:
-	\begin{flushleft}
+	poza kolejnością podaną przez autora programu. Dla sekwencji rozkazów z~rys.~\ref{fig:oooex}
+	można zauważyć, że rozkaz (3) korzysta z~wartości rejestru A3, który jest wyliczony w~(1), jego wykonanie nie ma wpływu na rejestry, z~których 
+	korzysta (2), a~więc sekwencja $\langle 1, 3, 2 \rangle $ da po wykonaniu wynik taki sam, jak sekwencja $\langle 1, 2, 3 \rangle $.
+	\begin{figure}[h]
 	\begin{tabular}{l}\\
 		(1) {\tt add A1,A2,A3 /* dodaj A1 do A2, wynik zapisz do A3 */ } \\
 		(2) {\tt add A1,A4,A5 } \\
 		(3) {\tt add A2,A3,A7 } \\
 		\\
 	\end{tabular}
-	\end{flushleft}
-	można zauważyć , że rozkaz (3) korzysta z~wartości rejestru A3, który jest wyliczony w~(1), jego wykonanie nie ma wpływu na rejestry, z~których 
-	korzysta (2), a~więc sekwencja $\langle 1, 3, 2 \rangle $ da po wykonaniu wynik taki sam, jak sekwencja $\langle 1, 2, 3 \rangle $.
+	\caption{Wykonanie poza kolejnością}
+	\label{fig:oooex}
+	\end{figure}
 \par
 %
 \indent
@@ -236,15 +327,17 @@
 \indent
 	Problemem, który jest naturalnie związany z~ILP to zależność od danych (ang. \emph{data dependency}).
 	Dotyczy on zachowania oryginalnej chronologii wykonywania rozkazów (zapisu wyników
-	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). W sekwencji
-	\begin{flushleft}
+	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). W sekwencji przedstawionej na rys.\ref{fig:datadep}
+	\begin{figure}[h]
 	\begin{tabular}{l l}\\
 		(1) & {\tt add Y,Z,X} \\
 		(2) & {\tt add U,V,T} \\
 		(3) & {\tt mult X,T,L /* zapisz iloczyn X}$\times${\tt T do L */} \\
 		(4) & {\tt add L,T,L} \\
-	\end{tabular}\\
-	\end{flushleft}
+	\end{tabular}
+	\caption{Ilustracja problemu zależności od danych}
+	\label{fig:datadep}
+	\end{figure}
 	instrukcje (1) i~(2) mogą wyć wykonane w~kolejności $\langle 1,2 \rangle$ jak i~$\langle 2,1 \rangle$, zaś wynik działania instrukcji
 	(3) zależy bezpośrednio od wyników działania (1) i~(2). Co więcej, instrukcja (4) nie może być wykonana wcześniej 
 	niż po zakończeniu wykonania instrukcji (1), (2) i~(3). Tak więc chronologia wykonania instrukcji (3) i~(4) nie może być zmieniona.
@@ -261,8 +354,9 @@
 %
 \indent
 	Michael J.~Flynn stworzył klasyfikację systemów komputerowych oraz programów (\emph{taksonomia Flynna}), w~której ze względu na liczbę
-	strumieni rozkazów oraz danych, wyróżniamy cztery klasy:
-	\begin{center}
+	strumieni rozkazów oraz danych, wyróżniamy cztery klasy, wymienione w~tabeli \ref{tab:flynn}.
+	\begin{table}[h]
+	\centering
 	\begin{tabular}{|c|c|c|} \hline
 													 & Jeden strumień instrukcji	 & Wiele strumieni instrukcji \\
 													 & (\emph{Single Instruction}) & (\emph{Multiple Instruction}) \\\hline
@@ -273,8 +367,9 @@
 			strumieni danych     & SIMD                        & MIMD \\
 			(\emph{Multiple Data}) & 										 & 			\\\hline
 	\end{tabular}
-	\begin{small} Tabela \mgrcounter. Taksonomia Flynna \end{small}
-	\end{center}
+	\caption{Taksonomia Flynna}
+	\label{tab:flynn}
+	\end{table}
 	Klasy te możemy scharakteryzować w~następujący sposób:
 	\begin{itemize}
 		\item SISD jest klasą programów wykonywanych sekwencyjnie na maszynie sekwencyjnej;
@@ -329,7 +424,7 @@
 	zarówno ILP jak i~MIMD wymagają odpowiednio zaprojektowanych i~zaprogramowanych aplikacji.
 \par
 %
-\subsubsection{Pamięć}
+\subsection{Pamięć}
 \indent
 	Pamięć w~systemie komputerowym możemy podzielić na dwa rodzaje: ulotną i~trwałą. Informacje znajdujące się w~pamięci ulotnej
 	nie będą odzyskane po wyłączeniu i~ponownym włączeniu komputera. Można wyróżnić dwa rodzaje pamięci ulotnej:
@@ -456,7 +551,11 @@
 	żądań dostępu do tych trafionych (ang. \emph{cache hit}) może skutkować sprawnie działającą aplikacją.
 \par
 %
-\subsubsection{Urządzenia zewnętrzne}
+\indent
+	Dokładny i~wyczerpujący opis pamięci stosowanych we współczesnych komputerach można znaleźć w~\cite{jacob}.
+\par
+%
+\subsection{Urządzenia zewnętrzne}
 \indent
 	Urządzenia zewnętrzne, znane również jako \emph{peryferia}, \emph{urządzenia wejścia\dywiz wyjścia}, \emph{I/O} (\emph{ang. Input/Output}),
 	to, oprócz pamięci trwałych, także urządzenia do komunikacji komputera ze światem zewnętrznym. 
@@ -514,7 +613,8 @@
 	komunikacja większości urządzeń I/O z~procesorem odbywa się za jego pośrednictwem.
 \par
 %
-\subsection{System operacyjny}
+\newpage
+\section{System operacyjny}
 %
 \indent
 	System operacyjny (ang. \emph{operating system, OS}, zwany dalej \emph{systemem}) jest programem, 
@@ -665,7 +765,8 @@
 \par
 %
 \indent
-	\begin{center}
+	\begin{table}[h]
+	\centering
 	\begin{tabular}{|l|c|c|} \hline
 		\multirow{2}{*}{Komponent} & \multirow{2}{*}{czas rzeczywisty}	& czas proporcjonalny \\ 
 					  &                   & (2 miliardy razy wolniej) \\ \hline
@@ -675,24 +776,25 @@
 		przełączenie kontekstu & 5000 ns (5 $\mu$s) & 167 minut \\\hline
 		dostęp do HD		& 7000 $\mu$s (7 ms) & 162 dni \\\hline
 		kwant czasu 		& 100 ms	& 6,3 roku \\\hline
-	\end{tabular}\nopagebreak \\
-	\begin{small} 
-		Tabela \mgrcounter. Czas działania komponentów systemu komputerowego oraz proporcjonalny do niego czas
-		reakcji człowieka.
-	\end{small}
-	\end{center}
+	\end{tabular}
+	\caption{
+		Czas działania komponentów systemu komputerowego oraz proporcjonalny do niego czas reakcji człowieka.
+	}
+	\label{tab:timecomp}
+	\end{table}
 	Warto w~tym miejscu uzmysłowić sobie różnicę w~czasie taktowania obecnych jednostek centralnych w~porównaniu do czasu dostępu do pewnych
-	elementów systemu komputerowego, przekładając te czasy na zbliżone do ludzkich miar. Jak można zauważyć w~tabeli \mgrLastCounter,
+	elementów systemu komputerowego, przekładając te czasy na zbliżone do ludzkich miar. Jak można zauważyć w~tabeli \ref{tab:timecomp},
 	przełączanie kontekstu procesu jest operacją czasochłonną, gdyż w~,,normalnym'' świecie zajęła by człowiekowi ponad 2 godziny pracy.
 	Co więcej, uzyskanie dostępu do dysku twardego zajmuje czas porównywalny do prawie pół roku, co doskonale ilustruje celowość asynchronicznej
 	(nieblokującej, ang. \emph{asynchronous, non\dywiz{}blocking}) komunikacji pomiędzy procesorem a~urządzeniami zewnętrznymi.
-	Tabela \mgrLastCounter~pokazuje również celowość projektowania aplikacji tak, aby jak najczęściej używana była pamięć cache w~celu uniknięcia
+	Tabela \ref{tab:timecomp}~pokazuje również celowość projektowania aplikacji tak, aby jak najczęściej używana była pamięć cache w~celu uniknięcia
 	kosztownych odwołań do pamięci RAM: takie użycie pamięci może przynieść w~efekcie spore przyspieszenie działania aplikacji.
 \par
 %
 \indent
 	Systemy operacyjne, ze względu na sposób wykonywania zadań, można podzielić na cztery grupy:
-	\begin{center}
+	\begin{table}[h]
+	\centering
 	\begin{tabular}{|c|c|c|} \hline
 													 & Jeden wątek w~procesie   	 & Wiele wątków w~procesie \\
 													 & (Single Thread)          	 & (Multiple threads)      \\\hline
@@ -701,30 +803,30 @@
 			Wiele procesów       & \multirow{2}{*}{1:N}       & \multirow{2}{*}{N:M}   \\
 			(Multiple Processes) &                             &                         \\\hline
 	\end{tabular}\\
-	\begin{small} Tabela \mgrcounter. Klasyfikacja systemów operacyjnych \end{small}
-	\end{center}
+	\caption{Klasyfikacja systemów operacyjnych}
+	\end{table}
 \par
 %
-\subsubsection{Zarządzanie pamięcią}
+\subsection{Zarządzanie pamięcią}
 %
 \indent
 	Pamięć operacyjna jest zarządzana przez komponent systemu zwany alokatorem (ang. \emph{allocator}).
 \par
 %
-\subsubsection{Zarządzanie czasem procesora}
+\subsection{Zarządzanie czasem procesora}
 %
 \indent
 	Mechanizm umożliwiający systemowi przełączanie pomiędzy procesami oraz wątkami, jest znany pod nazwą \emph{wywłaszczania}
 	(ang. \emph{preemption}).
 \par
-\subsubsection{Dostęp do I/O}
+\subsection{Dostęp do I/O}
 %
 \indent
 	Składniki systemu, które posiadając niskopoziomowy dostęp do urządzeń wejścia/wyjścia, tworzą dla nich wyspecyfikowane przez OS abstrakcje,
 	są nazywane \emph{sterownikami} (ang. \emph{drivers}).
 \par
 %
-\subsubsection{Komunikacja międzyprocesowa}
+\subsection{Komunikacja międzyprocesowa}
 %
 \indent
 	System operacyjny udostępnia wiele mechanizmów komunikacji międzyprocesowej:
@@ -737,7 +839,7 @@
 	\end{itemize}
 \par
 %
-\subsubsection{Synchronizacja}
+\subsection{Synchronizacja}
 %
 \indent
 	Bardzo często występuje sytuacja, gdy dwa procesy próbują modyfikować ten sam zasób systemu, co może prowadzić do zafałszowania
@@ -750,7 +852,7 @@
 	\end{itemize}
 \par
 %
-\subsubsection{Zarządzanie i~szeregowanie wątków}
+\subsection{Zarządzanie i~szeregowanie wątków}
 %
 \indent
 	Do zarządzania wątkami w~ramach jednego procesu, stosuje się następujące strategie:
@@ -776,38 +878,13 @@
 }
 \par
 %
-\section{Motywacja} 
-%
-\subsection{Dotychczasowe osiągnięcia}
-\indent
-\remark
-{
-	Tutaj znajdą się odwołania do dokumentów, które opisują wyniki badań problemu zarządzania wątkami w~modelu N:M.
-}
-\par
-\subsection{Linux 2.6}
-\indent
-\remark
-{
-	Tutaj znajdą się informacje o~komponentach, które zostaną użyte w~implementacji wątków mieszanych, a~nie były
-	opisane we wstępie, np.:
-	\begin{itemize}
-		\item getcontext/swapcontext;
-		\item pthread;
-		\item POSIX: sygnały, zdarzenia, dostęp do systemu plików;
-		\item \ldots ?
-	\end{itemize}
-}
-\par
-\subsection{Cel}
-\indent
-\remark
-{
-	Under construction
-}
-\par
-\section{Opis rozwiązania}
+\newpage
+\section{Analiza rozwiązania}
+\subsection{Kryteria oceny}
+\subsection{Sposób testowania}
+\subsection{Wyniki}
 \subsection{Koprocedury: biblioteka {\tt libcoro}}
+\label{sec:mmark}
 \indent
 \remark
 {
@@ -847,6 +924,7 @@
 	poszczególnych uss, etc.
 }
 \par
+\newpage
 \section{Podsumowanie}
 \subsection{Testy}
 \indent
@@ -1079,27 +1157,8 @@
 \indent
 	Algorytm jest rozwiązaniem problemu sekcji krytycznej dla dwóch wątków. 
 \par
-
-
-%\end{document}
-%
-%\newpage
-%\input{scheduling_strategies.tex}
-%
-%\newpage
-%\input{mechanisms.tex}
-%
-%\newpage
-%\input{implementation.tex}
-%
-%\newpage
-%\input{testing.tex}
-%
-%\newpage
-%\input{summary.tex}
-%
-%\newpage
-%\input{bibliography.tex}
-%
 \end{comment}
+
+\newpage
+\bibliography{bibliography}
 \end{document}
