@@ -1,9 +1,9 @@
-%\documentclass[11pt]{mwart}
-\documentclass{mwart}
+\documentclass[11pt]{mwart}
+%\documentclass{mwart}
 \usepackage{polski}
 %\usepackage{antpolt}
 \usepackage[utf8]{inputenc}
-\usepackage{graphicx}
+\usepackage[pdftex]{graphicx}
 \usepackage[table]{xcolor}
 \usepackage[bookmarks, pdfhighlight=/P, citebordercolor={1 1 1}, linkbordercolor={1 1 1}, unicode=true]{hyperref}
 \usepackage{verbatim}
@@ -72,6 +72,56 @@
 %
 \section{Wstęp}
 %
+\subsection{Motywacja}
+\indent
+	Dostępne obecnie architektury systemów operacyjnych są z~założenia przystosowane do równoległego
+	wykonywania programów. Co więcej, architektury te obejmują wiele rodzajów urządzeń, które są obsługiwane przez system operacyjny.
+	Współczesne systemy operacyjne udostępniają użytkownikowi możliwość równoległego wykonania aplikacji (przy użyciu procesów),
+	zaś poszczególne aplikacje mogą być wykonane w~sposób równoległy (podział na podprocesy lub wątki). Wątki zarządzane przez system operacyjny
+	zwane są wątkami przestrzeni jądra.
+	Drugi rodzaj wątków to wątki przestrzeni użytkownika, które są najczęściej udostępniane jako biblioteki funkcji; co więcej, system operacyjny
+	nie jest świadomy ich istnienia. Z~tych powodów zarządzanie nimi jest odpowiedzialnością użytkownika lub funkcji udostępnianych przez
+	bibliotekę takich wątków.
+\par
+%
+\indent
+	Obydwa rodzaje wątków posiadają zarówno swoje zalety, jak i~wady. Istnieje rozwiązanie pośrednie: wątki mieszane, zwane również
+	\emph{hybrydowymi}.
+	Ich implementacja była zgodna ze schematem opisanym w~\cite{anderson}, a~więc do ich uzyskania potrzeba było zmienić kod źródłowy
+	oraz zachowanie jądra systemu, jak również dodać po stronie użytkownika obsługę nowych wiadomości o~działaniu takich wątków.
+\par
+%
+\indent
+	\begin{figure}[h]
+		\label{fig:mixedintro}
+		\centering
+		\includegraphics[scale=.21]{mixedscheme.png}
+		\caption{Schemat implementacji wątków mieszanych alternatywnej do opisanej w~\cite{anderson}
+		(KLT: wątek przestrzeni jądra;
+			ULT: wątek przestrzeni użytkownika;
+			scheduler\_k: zarządca KLT;
+			scheduler\_u: zarządca włókien).
+		}
+	\end{figure}
+	Inny pomysł na implementację wątków mieszanych polega na:
+	\begin{itemize}
+		\item skorzystaniu z~wątków udostępnianych przez jądro: ich liczba może być zależna od ilości dostępnych procesorów w~komputerze
+			lub od preferencji użytkownika. Wątki te będą swego rodzaju \emph{pojemnikami}, zaś każdy z~takich wątków będzie zawierać pewną
+			liczbę wątków przestrzeni użytkownika (zarządzanych lokalnie wewnątrz każdego pojemnika). Taki schemat wątków hybrydowych pokazany jest na
+			rysunku \ref{fig:mixedintro}.
+		\item Wątek przestrzeni użytkownika (\emph{włókno}) jest wykonywany w~konkretnym wątku przestrzeni jądra, z~tym zaś jest związany
+			konkretny planista włókien, który zarządza ich wykonaniem. Można więc utożsamiać konkretnego planistę włókien z~odpowiadającym mu
+			wątkiem przestrzeni jądra.
+		\item włókna mogą \emph{wędrować} pomiędzy wątkami przestrzeni jądra, jednak w~danym momencie może nimi zarządzać dokładnie jeden
+			planista włókien.
+		\item istnieje jeden planista wątków przestrzeni jądra, który zajmuje się komunikacją pomiędzy planistami włókien (wędrówka włókien,
+			przesyłanie komunikatów, synchronizacja).
+	\end{itemize}
+	Jak łatwo zauważyć, taka implementacja może być zaimplementowana jako biblioteka, a~więc nie występuje potrzeba zmieniania jądra systemu operacyjnego.
+	Dodatkowym atutem takiego rozwiązania jest możliwość wyboru przez użytkownika, czy chce skorzystać z~wątków mieszanych, czy może tylko z~wątków
+	przestrzeni jądra.
+\par
+%
 \subsection{Cel pracy}
 \indent
 	Celem niniejszej pracy było utworzenie biblioteki wątków mieszanych
@@ -91,12 +141,12 @@
 			\item wysyłanie i~obsługa komunikatów (po stronie zarządcy i~wątku);
 			\item zdarzenia i~sygnały: detekcja wystąpienia, propagacja, obsługa.
 		\end{itemize}
-		\item Abstrakcja dla urządzeń wejścia\dywiz wyjścia (ang. \emph{jacketing}):
+		\item \label{itm:communication} Abstrakcja dla urządzeń wejścia\dywiz wyjścia (ang. \emph{jacketing}):
 		\begin{itemize}
 			\item nieblokujący dostęp do urządzeń (z~punktu widzenia zarządcy wątków);
 			\item blokujący i~nieblokujący dostęp do urządzeń (z~punktu widzenia wątku).
 		\end{itemize}
-		\item Zasoby współdzielone i~synchronizacja wątków:
+		\item \label{itm:shared} Zasoby współdzielone i~synchronizacja wątków:
 		\begin{itemize}
 			\item wzajemne wykluczanie (ang. \emph{mutual exclusion, mutex});
 			\item sekcja krytyczna;
@@ -113,23 +163,37 @@
 	\end{enumerate}
 \par
 %
-\subsection{Motywacja}
 \indent
-	Dostępne obecnie architektury systemów operacyjnych są z~założenia przystosowane do równoległego
-	wykonywania programów. Co więcej, architektury te obejmują wiele rodzajów urządzeń, które są obsługiwane przez system operacyjny.
-	W~rozdziale 2 została zgrubnie opisana architektura szeroko dostępnego komputera klasy PC, zaś rozdział 3 opisuje podstawowe
-	polityki oraz mechanizmy stosowane do równoległego uruchomienia aplikacji, jak również do ich dostępu do zasobów komputera.
+	Punkty \ref{itm:communication} oraz \ref{itm:shared} opisują tradycyjne podejście do zasobów udostępnianych wątkom, jak również
+	komunikację między nimi. Istnieją jednak inne polityki obsługi wątków i~procesów, z~których warto wymienić stworzony w~latach 70. XX wieku 
+	\emph{model aktorów} (ang. \emph{actor model}), po raz pierwszy opisany w~\cite{Hewitt1973ActorFormalism}, używany obecnie z~powodzeniem m. in. w~takich językach jak Erlang czy Scala(\cite{scala1}, \cite{scala2}).
+	Wykorzystanie tego modelu wydaje się być atrakcyjną alternatywą zarówno dla tradycyjnych implementacji jacketingu, zaś
+	użycie go do synchronizacji wątków może okazać się bardziej intuicyjne dla użytkownika niż zastosowanie mechanizmów wymienionych
+	w~punkcie~\ref{itm:shared}.
 \par
 %
+\subsection{Streszczenie pracy}
 \indent
-	Jak dotychczas, implementacja wątków mieszanych (zwanych również \emph{hybrydowymi}) była realizowana zarówno po stronie jądra,
-	jak również po stronie użytkownika. Praca \cite{anderson} opisuje mechanizmy konieczne do implementacji wątków hybrydowych 
-	zarówno w~przestrzeni jądra, jak i~w~przestrzeni użytkownika.
+	\begin{itemize}
+	\item[Rozdział \ref{sec:architecture}] opisuje architekturę współczesnego komputera klasy PC. Opis ten koncentruje się na 
+		mechanizmach umożliwiających równoległe wykonanie części lub całych rozkazów procesora oraz na zwiększeniu liczby procesorów
+		w~komputerze w~celu podniesienia wydajności obliczeń. Poruszone problemy związane z~pamięcią operacyjną jak również opis połączenia
+		poszczególnych elementów komputera między sobą, uzasadniają potrzebę projektowania oprogramowania, które będzie wykonywane równolegle.
+	\item[Rozdział \ref{sec:system}] opisuje zgrubnie współczesne systemy operacyjne, jak również zarządzanie procesami. Ponieważ wątki są 
+		uruchamiane w~ramach procesów, znajomość podstawowych pojęć wymienionych w~tym rozdziale jest pomocna w~zrozumieniu ograniczeń wątków.
+	\item[Rozdział \ref{sec:threads}] opisuje wady i~zalety wątków przestrzeni użytkownika oaz przestrzeni jądra. Dodatkowo, zostały w~nim
+		opisane powszechnie znane implementacje wątków hybrydowych.
+	\item[Rozdział \ref{sec:solution}] opisuje implementację wątków mieszanych opartą na pomyśle opisanym we wstępie.
+	\item[Rozdział \ref{sec:analysis}] określa wartość tej implementacji: jej użyteczność oraz wydajność.
+	\item[Rozdział \ref{sec:summary}] podsumowuje wykonanie założeń opisanych we wstępie, jak również wyznacza możliwe drogi rozwoju
+		powstałej implementacji
+	\end{itemize}
 \par
 %
 \newpage
 \section{Architektura systemów komputerowych}
 %
+\label{sec:architecture}
 \indent 
 	W~systemie komputerowym (lub w~skrócie: komputerze) można wyróżnić trzy podstawowe składowe:
 	\begin{itemize}
@@ -616,6 +680,7 @@
 \newpage
 \section{System operacyjny}
 %
+\label{sec:system}
 \indent
 	System operacyjny (ang. \emph{operating system, OS}, zwany dalej \emph{systemem}) jest programem, 
 	który kontroluje wykonanie aplikacji użytkownika (programów),
@@ -807,6 +872,7 @@
 	\end{table}
 \par
 %
+\begin{comment}
 \subsection{Zarządzanie pamięcią}
 %
 \indent
@@ -826,6 +892,7 @@
 	są nazywane \emph{sterownikami} (ang. \emph{drivers}).
 \par
 %
+\end{comment}
 \subsection{Komunikacja międzyprocesowa}
 %
 \indent
@@ -849,6 +916,16 @@
 		\item muteksy (ang. \emph{mutual exclusion, mutex});
 		\item zmienne warunkowe (ang. \emph{conditional variables}), warunki (ang. \emph{conditions});
 		\item szybkie pętle (ang. \emph{spinlocks}).
+	\end{itemize}
+\par
+%
+\section{Wątki}
+\label{sec:threads}
+\indent
+	Możemy wyróżnić dwa rodzaje wątków tworzonych i~uruchamianych w~ramach działającego procesu:
+	\begin{itemize}
+		\item wątki przestrzeni jądra (ang. \emph{kernel level threads, KLT});
+		\item wątki przestrzeni użytkownika (ang. \emph{user level threads, ULT}).
 	\end{itemize}
 \par
 %
@@ -879,10 +956,8 @@
 \par
 %
 \newpage
-\section{Analiza rozwiązania}
-\subsection{Kryteria oceny}
-\subsection{Sposób testowania}
-\subsection{Wyniki}
+\section{Opis rozwiązania}
+\label{sec:solution}
 \subsection{Koprocedury: biblioteka {\tt libcoro}}
 \label{sec:mmark}
 \indent
@@ -924,8 +999,16 @@
 	poszczególnych uss, etc.
 }
 \par
+%
+\newpage
+\section{Analiza rozwiązania}
+\label{sec:analysis}
+\subsection{Kryteria oceny}
+\subsection{Sposób testowania}
+\subsection{Wyniki}
 \newpage
 \section{Podsumowanie}
+\label{sec:summary}
 \subsection{Testy}
 \indent
 \remark
@@ -1160,5 +1243,6 @@
 \end{comment}
 
 \newpage
+\pagestyle{plain}
 \bibliography{bibliography}
 \end{document}
