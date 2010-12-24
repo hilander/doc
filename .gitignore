@@ -13,6 +13,10 @@
 *.blg
 *.lof
 *.lot
+*.idx
+*.ilg
+*.ind
+*.ps
 *.out
 *.html
 cscope.out

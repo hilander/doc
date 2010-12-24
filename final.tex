@@ -1,5 +1,6 @@
-\documentclass[11pt]{mwart}
+\documentclass[11pt,makeidx]{mwart}
 %\documentclass{mwart}
+\usepackage{makeidx}
 \usepackage{polski}
 %\usepackage{antpolt}
 \usepackage[utf8]{inputenc}
@@ -12,6 +13,9 @@
 \usepackage[all]{hypcap}
 \bibliographystyle{plunsrt}
 \hyphenation{ wyj-ścia pier-wszego}
+\newcommand{\code}{\texttt}
+
+\makeindex
 
 \newcommand{\remark}{{\bf \emph{Notatka:}} \\ \emph}
 
@@ -95,7 +99,7 @@
 	\begin{figure}[h]
 		\label{fig:mixedintro}
 		\centering
-		\includegraphics[scale=.21]{mixedscheme.png}
+		\includegraphics[scale=.21,draft]{mixedscheme.png}
 		\caption{Schemat implementacji wątków mieszanych alternatywnej do opisanej w~\cite{anderson}
 		(KLT: wątek przestrzeni jądra;
 			ULT: wątek przestrzeni użytkownika;
@@ -958,18 +962,33 @@
 \newpage
 \section{Opis rozwiązania}
 \label{sec:solution}
-\subsection{Koprocedury: biblioteka {\tt libcoro}}
-\label{sec:mmark}
 \indent
-\remark
-{
+	Biblioteka dostarcza implementację wątków hybrydowych, jednakże bez konieczności dokonywania zmian w~kodzie jądra systemu operacyjnego.
+	Włókna są zaimplementowane w~sposób zbliżony do tego, jaki miał miejsce w~wypadku implementacji ULT w~bibliotece GNU Pth, jednakże to
+	co różni ją od tamtej implementacji, to jej skalowalność. 
+\par
+%
+\subsection{ {\bf \code{libcoro}}: podstawowe operacje na włóknach}
+\index{libcoro|texttt}
+\label{sec:coroutine}
+\indent
+	Moduł \code{libcoro} biblioteki \code{libmixed} jest odpowiedzialny za:
 	\begin{itemize}
-		\item {\tt coroutine:abstract}
-		\item fabryka koprocedur: {\tt factory}
-		\item magazyn kontekstów: {\tt manager}
-		\itemize{ \item zarządzanie pamięcią}
+		\item utworzenie włókna (koprocedury);
+		\item inicjalizację włókna, przydzielenie mu kontekstu wykonania (stosu);
+		\item uruchomienie w~przydzielonym kontekście;
+		\item przechwytywanie sytuacji wyjątkowych;
+		\item przechwycenie sterowania po wykonaniu przez włókno operacji \code{yield};
+		\item obsługę zakończenia wykonywania włókna.
 	\end{itemize}
-}
+	Klasa \code{libcoro::coroutine} zawiera podstawowe mechanizmy potrzebne do obsługi włókna.
+	Każdy wątek tworzony przez użytkownika musi dziedziczyć po tej klasie. Dodatkowo, użytkownik musi
+	przeciążyć metodę \code{run}, która zawiera kod uruchamiany po uruchomieniu wątku (wywołanie metody \code{start}).
+	\begin{figure}[h]
+		\centering
+		\includegraphics[scale=.5,draft]{classlibcoroabstract.png}
+		\caption{Zależności pomiędzy klasami włókien}
+	\end{figure}
 \par
 \subsection{Planista przestrzeni użytkownika: {\tt scheduler\_us}, uss}
 \indent
@@ -1041,14 +1060,6 @@
 \subsection{\emph{Future work}}
 %
 \begin{comment}
-\subsection{Cel}
-%
-\indent
-	Cel tej pracy to zbadanie możliwości elastycznego zarządania wątkami mieszanymi w~taki sposób, aby zminimalizować liczbę odwołań systemowych.
-	Co więcej, wątki mają być zarządzane w~sposób przezroczysty dla użytkownika (programisty). 
-\par
-%
-
 \newpage
 \section{Podstawy}
 
@@ -1087,25 +1098,6 @@
 	zaimplementowanie TLS dla bieżącej koprocedury.
 \par
 
-\indent
-	W wielowątkowym systemie operacyjnym, proces jest jednostką o~chronionym dostępie do 
-	procesorów, innych procesów, plików oraz innych zasobów wejścia-wyjścia. Ponadto, system
-	traktuje go jako autonomiczny byt, który posiada własną przestrzeń adresową (wirtualna 
-	przestrzeń adresowa), oraz czas wykonania.
-\par
-%
-\indent
-	W~takim systemie wątek jest przyporządkowany do dokładnie jednego procesu, a~sam proces 
-	może zawierać co najmniej jeden wątek. Wątki w~obrębie procesu dzielą tę samą przestrzeń
-	adresową, jak i~pozostałe zasoby. Czas wykonania wątków jednego procesu jest równy czasowi
-	jego wykonania. Każdemu z~nich są przyporządkowane:
-	\begin{itemize}
-	\item stan (uruchomiony, gotowy, itp.);
-	\item kontekst (gdy nie jest aktualnie wykonywany);
-	\item stos wywołań;
-	\item prywatna przestrzeń adresowa (ang. \emph{Thread Local Storage, TLS}).
-	\end{itemize}
-\par
 \subsection{Wątki przestrzeni jądra}
 
 %
@@ -1211,38 +1203,14 @@
 	(ang. \emph{critical section}).
 \par
 %
-\indent
-	Sekcję krytyczną można zapisać w~następujący sposób:
-	\begin{verbatim}
-
-    Wejście_do_sekcji_krytycznej();
-
-    Sekcja_krytyczna(); // wykonanie operacji
-                        // na współdzielonych zasobach
-
-    Wyjście_z_sekcji_krytycznej();
-	\end{verbatim}
-	
-	Operacje wejścia i~wyjścia z~sekcji krytycznej muszą spełniać następujące warunki:
-	\begin{itemize}
-	\item[{\bf M}] Wzajemne wykluczanie : dokładnie jeden wątek znajduje się w~sekcji krytycznej
-	(Jeśli nastąpi przełączenie tego wątku na inny -- jest on nadal w~sekcji krytycznej, a~więc inne wątki
-	w~dalszym ciągu muszą czekać na jego wyjście z~sekcji krytycznej).
-	\item[{\bf P}] Postęp (ang. \emph{Progress}): jeśli żaden wątek nie znajduje się w~sekcji krytycznej, a~istnieją wątki oczekujące na wejście
-	do własnych sekcji krytycznych, to decyzja o~wejściu do sekcji krytycznej zapada pomiędzy wątkami, które oczekują na wejście
-	lub wychodzą z~sekcji krytycznej. Co więcej, decyzja ta musi zapaść (nie może być odraczana w~nieskończoność).
-	\item[{\bf B}] Ograniczone czekanie (ang. \emph{Bounded waiting}): wątek znajdzie się w~sekcji krytycznej najpóźniej po określonej
-	liczbie prób.
-	\end{itemize}
-\par
-\subsubsection{Algorytm Petersona}
-%
-\indent
-	Algorytm jest rozwiązaniem problemu sekcji krytycznej dla dwóch wątków. 
-\par
 \end{comment}
 
 \newpage
-\pagestyle{plain}
+\rhead{\empty}
+%\pagestyle{plain}
 \bibliography{bibliography}
+\begin{comment}
+\section*{Indeks}
+\printindex
+\end{comment}
 \end{document}
