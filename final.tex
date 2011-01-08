@@ -18,6 +18,8 @@
 \makeindex
 
 \newcommand{\remark}{{\bf \emph{Notatka:}} \\ \emph}
+\newcommand{\dcolon}{::}
+\newcommand{\procbr}{()}
 
 \usepackage{fancyhdr}
 \setlength{\headheight}{15.2pt}
@@ -72,8 +74,6 @@
 \end{abstract}
 \end{comment}
 
-\newpage
-%
 \section{Wstęp}
 %
 \subsection{Motywacja}
@@ -99,7 +99,7 @@
 	\begin{figure}[h]
 		\label{fig:mixedintro}
 		\centering
-		\includegraphics[scale=.21,draft]{mixedscheme.png}
+		\includegraphics[scale=.21]{mixedscheme.png}
 		\caption{Schemat implementacji wątków mieszanych alternatywnej do opisanej w~\cite{anderson}
 		(KLT: wątek przestrzeni jądra;
 			ULT: wątek przestrzeni użytkownika;
@@ -194,7 +194,6 @@
 	\end{itemize}
 \par
 %
-\newpage
 \section{Architektura systemów komputerowych}
 %
 \label{sec:architecture}
@@ -946,104 +945,270 @@
 \par
 %
 \subsection{Wątki przestrzeni użytkownika}
-\subsection{Języki programowania}
-\indent
-\remark
-{
-	Tutaj znajdą się informacje o~następujących mechanizmach:
-	\begin{itemize}
-		\item procedury i~ich wywołanie;
-		\item stos, ramka stosu, sterta;
-		\item kontynuacje, koprocedury, iteratory, generatory, \ldots
-	\end{itemize}
-}
-\par
-%
-\newpage
 \section{Opis rozwiązania}
 \label{sec:solution}
+\begin{figure}[h!]
+\label{fig:libmixedoverview}
+	\centering
+	\hspace*{-1cm}\includegraphics[scale=.6, angle=90]{libmixedOverview.png}
+	\caption{Zależności pomiędzy pakietami biblioteki \code{libmixed}}
+\end{figure}
 \indent
-	Biblioteka dostarcza implementację wątków hybrydowych, jednakże bez konieczności dokonywania zmian w~kodzie jądra systemu operacyjnego.
+	Biblioteka \code{libmixed} dostarcza implementację wątków hybrydowych, jednakże bez konieczności dokonywania zmian w~kodzie jądra systemu operacyjnego.
 	Włókna są zaimplementowane w~sposób zbliżony do tego, jaki miał miejsce w~wypadku implementacji ULT w~bibliotece GNU Pth, jednakże to
-	co różni ją od tamtej implementacji, to jej skalowalność. 
+	co różni ją od tamtej implementacji, to jej skalowalność: w~ramach jednej aplikacji możliwe jest zarządzanie wieloma grupami wątków.
+	Inną istotną różnicą jest również brak udostępnienia dla użytkownika mechanizmów synchronizacji wątków, zaś w~zamian zagwarantowany
+	jest wyłączny dostęp do wyróżnionych obiektów (klasy \code{fiber\dcolon resource}).
 \par
 %
-\subsection{Moduł \code{libcoro}: podstawowe operacje na włóknach}
-\index{libcoro|texttt}
-\label{sec:coroutine}
 \indent
-	Moduł \code{libcoro} biblioteki \code{libmixed} jest odpowiedzialny za:
+	Biblioteka składa się z~czterech modułów:
 	\begin{itemize}
-		\item utworzenie włókna (koprocedury);
-		\item inicjalizację włókna, przydzielenie mu kontekstu wykonania (stosu);
-		\item uruchomienie w~przydzielonym kontekście;
-		\item przechwytywanie sytuacji wyjątkowych;
-		\item przechwycenie sterowania po wykonaniu przez włókno operacji \code{yield};
-		\item obsługę zakończenia wykonywania włókna.
+		\item \code{libcoro} dostarcza podstawową dla włókien klasę \emph{koprocedur} wraz z~mechanizmami ich obsługi (m. in. obsługa  kontekstu
+			wykonania koprocedury), jak również fabrykę, która wiąże dany kontekst z~obiektem klasy \code{coroutine}, lub wytwarza takowy;
+		\item \code{libmanager} jest magazynem, który przechowuje konteksty wykonania dla obiektów klasy \code{coroutine};
+		\item \code{libfiber} dostarcza klasę wątków, z~których korzysta użytkownik;
+		\item \code{libscheduler}, który składa się z~nad-zarządcy (\code{ueber\_scheduler}) oraz bezpośrednich zarządców wątków dodawanych 
+			przez użytkownika \linebreak (\code{userspace\_scheduler}).
 	\end{itemize}
-	Klasa \code{libcoro::coroutine} zawiera podstawowe mechanizmy potrzebne do obsługi włókna.
-	Każdy wątek tworzony przez użytkownika musi dziedziczyć po tej klasie. Dodatkowo, użytkownik musi
-	przeciążyć metodę \code{run}, która zawiera kod uruchamiany po uruchomieniu wątku (wywołanie metody \code{start}).
-	\begin{figure}[h]
+	Rysunek \ref{fig:libmixedoverview} pokazuje zależności pomiędzy poszczególnymi modułami biblioteki.
+\par
+%
+\subsection{Moduł \code{libcoro}}
+\label{sec:coroutine}
+%
+\indent
+	Klasa \code{libcoro::abstract} jest \emph{interfejsem} dla koprocedury: informuje o~podstawowej funkcji, która musi być spełniona
+	przez obiekt tej klasy. Tą funkcją jest niewątpliwie możliwość uruchomienia kodu koprocedury (wirtualna metoda \code{run()}).
+	Klasa \code{libcoro::coroutine} dostarcza podstawowe mechanizmy potrzebne do obsługi koprocedury, m. in.:
+	\begin{itemize}
+		\item uruchomienie, wstrzymanie, wznowienie wykonania oraz terminacja koprocedury;
+		\item obsługę kontekstu wykonania koprocedury: inicjalizacja, przełączanie pomiędzy kontekstami;
+		\item przechwytywanie wyjątków.
+	\end{itemize}
+	Przeciążona metoda \code{run()} zawiera kod uruchamiany po uruchomieniu koprocedury,
+	zaś wywołanie metody \code{start()} powoduje jej uruchomienie.
+	Koprocedura może wstrzymać swoje działanie i~przekazać sterowanie programu do wywołującej ją koprocedury za pomocą metody \code{yield()}.
+	Jeśli takie wywołanie miało miejsce, możliwe jest wznowienie jej działania poprzez ponowne wywołanie metody \code{start()}.
+	Istnieje również możliwość przywrócenia kontekstu do stanu umożliwiającego jej ponowne uruchomienie od początku, taką funkcję spełnia
+	metoda \code{rewind\procbr}.
+	\begin{figure}[h!]
 		\centering
-		\includegraphics[scale=.5,draft]{classlibcoroabstract.png}
-		\caption{Zależności pomiędzy klasami włókien}
+		\includegraphics[scale=.5]{classlibcoroabstract.png}
+		\caption{Klasa \code{libcoro\dcolon abstract} oraz jej klasy pochodne}
+	\end{figure}
+	Podczas działania aplikacji, można wyróżnić kilka stanów koprocedury:
+	\begin{itemize}
+		\item READY: koprocedura jest zainicjalizowana i~gotowa do uruchomienia; koprocedura jest w~tym stanie również po wykonaniu metody
+			\code{yield\procbr};
+		\item RUNNING: koprocedura w~trakcie działania;
+		\item FINISHED: koprocedura zakończyła działanie;
+		\item BLOCKED: koprocedura jest zablokowana;
+		\item EXCEPTION, ERROR: wystąpił wyjątek (lub, odpowiednio - błąd) w~trakcie wykonania koprocedury;
+		\item UNDEFINED: stan koprocedury niezdefiniowany (koprocedura nie powinna znaleźć się w~tym stanie).
+	\end{itemize}
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=.7]{LibcoroStates.png}
+		\caption{Stany koprocedury oraz dozwolone przejścia pomiędzy nimi}
 	\end{figure}
 \par
-\subsection{Planista przestrzeni użytkownika: {\tt scheduler\_us}, uss}
+%
 \indent
-\remark
-{
-	\begin{itemize}
-		\item typ wątków: {\tt runnable:coroutine}
-		\item abstrakcja zasobów: {\tt resource}
-		\begin{itemize}
-			\item zasób: plik {\tt file}
-			\item zasób: gniazdo {\tt socket}
-			\item zasób: kanał informacyjny {\tt pipe}
-		\end{itemize}
-		\item implementacja jacketingu
-		\item pętla główna planisty p. użytkownika
-		%\item tworzenie nowego wątku
-		\item przechowywanie wątku
-		\item polityki stosowane przy zarządzaniu wątkami
-	\end{itemize}
-}
-\par
-\subsection{Nad\dywiz planista: {\tt ueber\_scheduler}}
-\indent
-\remark
-{
-	Odpowiedzialności nad\dywiz planisty, m. in. synchronizacja komunikacji pomiędzy wątkami uss oraz zasobami, polityka przydzielania wątków do
-	poszczególnych uss, etc.
-}
+	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu mechanizmu dostarczanego przez funkcje
+	\code{getcontext()}/\code{swapcontext()}, dostępne w~każdym systemie zgodnym ze specyfikacją POSIX lub Single Unix Specification (SUS).
+	Warto zauważyć, że jest to jeden ze sposobów obsługi kontekstu wykonania
+	ULT w~bibliotece GNU Pth (inny sposób, wykorzystujący dalekie skoki \code{setjmp\procbr}/\code{longjmp\procbr} jest opisany w~\cite{Engelschall}).
 \par
 %
-\newpage
+\indent
+	Możliwe jest przechwytywanie wyjątków standardowych: \code{std\dcolon exception}. Informacja o~wystąpieniu wyjątku może być zignorowana,
+	jak również zinterpretowana przez użytkownika w~następujący sposób:
+	\begin{enumerate}
+		\item Przeciążenie metody \code{on\_exception\procbr} w~obiekcie klasy \code{state\_controller}.
+		\item Zgłoszenie obiektu jako kontrolera stanu koprocedury za pomocą metody \code{coroutine\dcolon set\_state\_controller\procbr}.
+	\end{enumerate}
+\par
+%
+\indent
+	Aby wytworzyć koprocedurę gotową do uruchomienia, należy wytworzyć dla niej kontekst wykonania, lub też skorzystać z~już istniejącego
+	kontekstu. Co więcej, zarówno kontekst jak i~koprocedura muszą być zainicjalizowane w~specyficzny sposób (ważna jest kolejność wykonania
+	poszczególnych operacji). Obciążanie użytkownika odpowiedzialnością za wytworzenie działającej koprocedury może prowadzić do poważnych
+	konsekwencji, np. błędów w~sekwencji wytwarzania koprocedury, czy też poważnymi zmianami w~aplikacji w~momencie zmiany implementacji
+	kontekstu wykonania. Dlatego też implementacja kontekstu jest ukryta przed użytkownikiem, zaś koprocedury są wytwarzane przez funkcje znajdujące
+	się w~module \code{libcoro\dcolon factory}. Przeciążona funkcja \code{assign\_coroutine\procbr} wiąże obiekt klasy \code{coroutine\procbr}
+	z~kontekstem wykonania, który jest wytwarzany przez samą funkcję, bądź jest dostarczany wraz z~obiektem.
+\par
+%
+\subsection{Moduł \code{libmanager}}
+\indent
+	Moduł \code{libmanager} jest odpowiedzialny za zarządzanie kontekstami wykonania koprocedur. Udostępnia następujące funkcje:
+	\begin{itemize}
+		\item pobranie kontekstu z~magazynu (\code{get\procbr});
+		\item zwrócenie kontekstu do magazynu (\code{dispose\procbr}).
+	\end{itemize}
+	Obecnie moduł ten spełnia jedynie funkcje magazynu, nie posiada zaimplementowanych operacji zarządzania pamięcią.
+	Operacje \code{get\procbr} oraz \code{dispose\procbr} nie są funkcjami \emph{reentrantnymi}.
+	Mimo to, wydzielony magazyn dostarcza wygodnego mechanizmu do wytwarzania kontekstów wykonania koprocedur, zaś wydzielenie
+	go jako osobnego modułu jest przydatne w~wypadku rozszerzania go o~wcześniej wspomniane funkcje.
+\par
+%
+\subsection{Moduł \code{libfiber}}
+\indent
+	Moduł \code{libfiber} dostarcza podstawową klasę wątków używanych w~ramach biblioteki \code{libmixed}:
+	klasa \code{fiber}, będąca klasą pochodną \code{coroutine}, zawiera dane potrzebne do identyfikacji
+	konkretnego wątku, jak również dostarcza następujących mechanizmów:
+	\begin{itemize}
+		\item przesyłanie wiadomości (obiekty klasy \code{message}) pomiędzy wątkami za pomocą metod \code{send\procbr} oraz \code{receive\procbr}. 
+			Ponieważ przesłanie wiadomości pomiędzy dwoma wątkami może wymagać pośrednictwa zarówno zarządcy przestrzeni użytkownika, jak również 
+			nad\dywiz zarządcy, implementacja tego mechanizmu jest rozłożona pomiędzy te trzy komponenty. Szczegółowy opis mechanizmu przesyłania 
+			wiadomości znajduje się w~rozdziale \ref{sec:scheduler}.
+		\item \emph{Jacketing} urządzeń wejścia-wyjścia: metody \code{read\procbr} i~\code{write\procbr}, które, wywołane przez wątek, nie powodują
+			zablokowania wywołania KLT, w~ramach którego wykonywany jest wątek. Podobnie jak w~wypadku implementacji mechanizmu przesyłania wiadomości,
+			wymienione metody implementują część mechanizmu jacketingu związaną
+			z~wątkiem, zaś obiekty klas opisanych w~rozdziale \ref{sec:scheduler} posiadają zaimplementowaną część tego mechanizmu, która jest wykonywana
+			po stronie zarządcy (oraz nad\dywiz zarządcy).
+	\end{itemize}
+\par
+%
+\subsection{Moduł \code{libscheduler}}
+\label{sec:scheduler}
+\indent
+	Moduł \code{libscheduler} zawiera dwie klasy planistów: \code{userspace\_scheduler} (ULS) oraz \code{ueber\_scheduler} (OLS).
+	Klasa \code{userspace\_scheduler} jest odpowiedzialna za zarządzanie wątkami użytkownika w~obrębie jednego KLT.
+	Do jej odpowiedzialności należy:
+	\begin{itemize}
+		\item wytworzenie oraz rejestracja gotowego wątku (metoda \code{spawn\procbr});
+		\item przesyłanie wiadomości pomiędzy wątkami;
+		\item jacketing urządzeń wejścia\dywiz wyjścia (pośredniczenie pomiędzy wątkiem a~OLS);
+		\item szeregowanie wątków.
+	\end{itemize}
+	Powinnościami klasy \code{ueber\_scheduler} są:
+	\begin{itemize}
+		\item utworzenie \emph{pewnej} liczby wątków, każdy z~nich jest przyporządkowany  do obiektu klasy \code{userspace\_scheduler};
+		\item nadzór nad ULS: rozpoczęcie pracy, zakończenie działania, przesyłanie żądań utworzenia nowego wątku;
+		\item implementacja jacketingu: wykonanie wywołań systemowych, zarządzanie kolejką wątków oczekujących na I/O;
+		\item pośrednictwo w~przekazywaniu wiadomości pomiędzy wątkami;
+		\item obsługa zdarzeń systemowych oraz sygnałów.
+	\end{itemize}
+\par
+%
+\indent
+	Komunikacja pomiędzy ULS a~OLS jest realizowana za pomocą potoków anonimowych (pipe).
+\par
+%
+\indent
+	Wszystkie wątki klasy \code{fiber} muszą spełniać warunek \emph{niezawodności}: muszą one przekazywać sterowanie do ULS w~\emph{rozsądnym} czasie
+	(kończąc swoje działanie, lub poprzez operację \code{yield\procbr}).
+\par
+%
+\indent
+	Rozpoczęcie działania biblioteki jest równoznaczne z~wywołaniem metody \code{init\procbr} w~obiekcie klasy \code{ueber\_scheduler},
+	zaś zakończenie działania OLS następuje po wykonaniu wszystkich wątków rozesłanych do posiadanych przez niego ULS.
+\par
+%
+\remark
+{
+	We wtorek pojawi się opis mechanizmu wykrywania zakleszczeń.
+}
+\subsubsection{Wytworzenie wątku}
+\indent
+	Żądanie utworzenia (i~uruchomienia) wątku jest zgłaszane nad\dywiz planiście, zaś ten przekazuje je jednemu spośród ULS:
+	\begin{itemize}
+		\item metoda \code{ueber\_scheduler\dcolon spawn\procbr} przyjmuje jako argument wskaźnik do obiektu klasy \code{fiber}, który
+			jest następnie przesyłany do ULS;
+		\item po odebraniu żądania, ULS związuje kontekst z~przesłanym wątkiem i~dodaje go do kolejki wątków gotowych do uruchomienia.
+	\end{itemize}
+	\begin{figure}[h!]
+		\label{fig:threadcreation}
+		\centering
+		\hspace*{-1cm}\includegraphics[scale=.6]{ThreadCreation.png}
+		\caption{Wytworzenie wątku zarządzanego przez bibliotekę \code{libmixed}}
+	\end{figure}
+	Opisany sposób wytwarzania wątku posiada tę zaletę, że finalizacja tworzenia obiektu jest dokonywana w~miejscu rozpoczęcia jego wykonania.
+	Co więcej, wątek jest w~stanie \emph{wędrować} pomiędzy zarządzającymi nim planistami (zarówno ULS, jak też może być przechowywana przez
+	OLS).
+\par
+%
+\subsubsection{Przesyłanie wiadomości pomiędzy wątkami}
+\indent
+	Mechanizm przesyłania wiadomości pomiędzy wątkami spełnia następujące założenia:
+	\begin{itemize}
+		\item wysyłanie i~odbiór wiadomości mogą blokować działanie wątku, jednakże nie mogą blokować działania żadnego planisty biorącego udział
+			w~komunikacji międzywątkowej;
+		\item mechanizm ma być przezroczysty dla wątku: bez względu na wzajemne położenie wątków (zarządzanie przez tego samego planistę lub
+			przez dwóch innych planistów), z~perspektywy wątku komunikacja pomiędzy nimi odbywa się tak samo.
+	\end{itemize}
+	Rysunek \ref{fig:interthreadmessaging1} oraz rys.~\ref{fig:interthreadmessaging2} przedstawiają możliwe scenariusze wędrówki wiadomości 
+	pomiędzy dwoma wątkami.
+	\begin{figure}[h!]
+		\label{fig:interthreadmessaging1}
+		\centering
+		\hspace*{-1cm}\includegraphics[scale=.6,angle=90]{InterThread1.png}
+		\caption{Wysłanie wiadomości z~wątku thread1 do wątku thread2 w~ramach tego samego ULS}
+	\end{figure}
+	\begin{figure}[h!]
+		\label{fig:interthreadmessaging2}
+		\centering
+		\hspace*{-1cm}\includegraphics[scale=.6,angle=90]{InterThread2.png}
+		\caption{Wysłanie wiadomości z~wątku thread1 do wątku thread2 w~ramach tego samego ULS}
+	\end{figure}
+	W~obecnej implementacji:
+	\begin{itemize}
+		\item operacja \code{send\procbr} powoduje zablokowanie wątku wysyłającego wiadomość; po dostarczeniu wiadomości do odbiorcy, 
+			sterowanie powraca do wątku, \code{send\procbr} podaje wynik wysłania wiadomości;
+		\item operacja \code{receive\procbr} powoduje sprawdzenie bufora wiadomości dla danego wątku; jeśli jest niepusty, \code{receive\procbr}
+			przekazuje jako wynik pierwszą wiadomość z~bufora.
+	\end{itemize}
+\par
+%
+\subsubsection{Jacketing urządzeń wejścia\dywiz wyjścia}
+\indent
+	Implementacja dostarcza nieblokujący dostęp do systemu plików oraz udostępnia nieblokujące gniazda sieciowe.
+	Podobnie jak w~wypadku komunikacji międzywątkowej, wątek dokonujący odczytu lub zapisu do takiego zasobu, jest blokowany,
+	a~nadzorujący go ULS przesyła żądanie do OLS.
+	To właśnie w~nad\dywiz zarządcy znajduje się część implementacji, w~której znajdują się (nieblokujące) wywołania systemowe,
+	zaś wyniki poszczególnych operacji na zasobach systemowych są przesyłane do odpowiednich ULS.
+\par
+%
+\indent
+	Obecnie dostępne są dwa rodzaje zasobów systemowych: plik \linebreak (\code{scheduler\dcolon file}) oraz gniazdo (\code{scheduler\dcolon socket}).
+	Posiadają one metody do odczytu (\code{read\procbr}) oraz zapisu (\code{write\procbr}).
+\par
+%
 \section{Analiza rozwiązania}
 \label{sec:analysis}
 \subsection{Kryteria oceny}
-\subsection{Sposób testowania}
-\subsection{Wyniki}
-\newpage
-\section{Podsumowanie}
-\label{sec:summary}
+\indent
+	Użyteczność implementacji opisanej w~poprzednim rozdziale można określić za pomocą porównania jej wydajności z~szeroko rozpowszechnionymi
+	implementacjami wątków. Obecnie nie jest dostępna implementacja wątków, która spełniała by następujące wymogi:
+	\begin{itemize}
+		\item zaimplementowana w~C++;
+		\item nie wymaga zmian w~jądrze systemu;
+		\item model N:M.
+	\end{itemize}
+	Ponieważ bieżąca implementacja w~części odpowiedzialnej za KLT korzysta implementacji Pthreads, zaś część implementująca ULT
+	jest wzorowana na rozwiązaniach stosowanych w~bibliotece GNU Pth, naturalnym wyborem do testów porównawczych jest
+	użycie tych implementacji wątków.
+\par
+%
 \subsection{Testy}
 \indent
-\remark
-{
+	Porównanie implementacji z~istniejącymi obejmuje następujące właściwości biblioteki:
 	\begin{itemize}
-		\item testy wydajnościowe, porównanie wydajności z:
-		\begin{itemize}
-			\item pthreads
-			\item GNU Pth
-			\item Boost::Thread
-		\end{itemize}
+		\item maksymalna liczba wątków do uruchomienia w~ramach jednej aplikacji;
+		\item czas wykonania \emph{pustych} wątków (ang. \emph{null fork});
+		\item czas wykonania przeplatających się wątków (w~przypadku \code{libmixed} polega to na zastosowaniu operacji \code{yield\procbr});
+		\item operacje na współdzielonych zasobach (np. inkrementacja współdzielonego licznika);
+		\item komunikacja międzywątkowa;
+		\item szybkość działania na plikach;
+		\item wydajność gniazd sieciowych (implementacja prostego serwera).
 	\end{itemize}
-}
 \par
-\subsection{Testy jednostkowe (unit tests)}
-\subsection{testy wydajnościowe, porównanie wydajności z~implementacjami KLT oraz ULT}
+%
+\subsection{Wyniki}
+\section{Podsumowanie}
+\label{sec:summary}
 \subsection{Narzędzia}
 \indent
 \remark
@@ -1057,154 +1222,8 @@
 	\end{itemize}
 }
 \par
-\subsection{\emph{Future work}}
+\subsection{Możliwe kierunki rozwoju}
 %
-\begin{comment}
-\newpage
-\section{Podstawy}
-
-\subsection{Koprocedury}
-%
-\indent
-	Procedurę można przedstawić jako ciąg instrukcji $P=\langle c_1,c_2,\ldots ,c_n\rangle$, zaś jej wywołanie jako 
-	$C=\langle c_1^P,\ldots,c_m^P\rangle, \mathrm{ } (m \leq n)$~--~jej
-	podciąg. Dla dwóch wywołań 
-	\begin{displaymath}
-	\begin{array}{l}
-	C_1= \langle c_1^1,c_2^1,\ldots ,c_k^1 \rangle \\
-	\mathrm{oraz}\\
-	C_2= \langle c_1^2,c_2^2,\ldots ,c_l^2 \rangle \mathrm{~} (k,l > 0), 
-	\end{array}
-	\end{displaymath}
-	mamy $c_1^1 = c_2^1$, zaś ostatnie elementy tych ciągów wcale nie muszą być równe.
-\par
-\indent
-	Każda procedura posiada specyficzne dla niej obiekty zawarte w~jej \emph{rekordzie aktywacji},
-	umieszczonym na stosie tych rekordów. Rekord aktywacji zawiera stan procedury, który znika wraz 
-	z~jej zakończeniem. Tak więc, stan procedury jest ulotny.
-\par
-	Koprocedury są ,,uogólnionymi'' procedurami. O~ile procedury posiadają własne zmienne
-	przechowywane na stosie oraz mogą dostarczyć dokładnie jedną wartość po zakończeniu
-	działania, o~tyle koprocedury:
-	\begin{itemize}
-	\item posiadają własny stos wywołań;
-	\item mogą przekazać do strony wywołującej co najmniej jedną wartość.
-	\end{itemize}
-	Powyższe właściwości koprocedur predestynują je jako naturalna podstawę dla wątków:
-	nie są one tak ulotne jak procedury, gdyż po zwróceniu wyniku ich stan jest zapamiętywany,
-	a~kolejne wywołanie koprocedury jest jej kontynuacją od miejsca poprzedzającego przekazanie
-	ostatniego wyniku. Co więcej, koprocedura może wywoływać prcedury (jak również inne koprocedury)
-	we własnym kontekście, a~więc, przy minimalnym nakładzie ze strony programisty, możliwe jest
-	zaimplementowanie TLS dla bieżącej koprocedury.
-\par
-
-\subsection{Wątki przestrzeni jądra}
-
-%
-\indent
-	Wątki przestrzeni jądra (ang. \emph{Kernel--Level Threads, KLT}) są zarządzane w~całości przez system operacyjny. 
-	Większość obecnych systemów operacyjnych oferuje KLT użytkownikowi. Czasami wątki przestrzeni jądra są nazywane
-	\emph{procesami wagi lekkiej} (ang. \emph{Lightweight Proccess}), gdyż przełączanie pomiędzy nimi jest o~wiele
-	szybsze niż pomiędzy procesami, zaś każdy wątek otrzymuje od systemu określoną porcję czasu procesora.
-	KLT realizują model 1:1. Odzwierciedla on przyporządkowanie \emph{jednego wątku użytkownika dla jednego wątku jądra}.
-\par
-%
-\indent
-	Podstawowa korzyść, jaką można uzyskać z~tego powodu, to nieblokujący dostęp do urządzeń wejścia-wyjścia:
-	jeśli jeden z~wątków oczekuje na dane z~IO, wykonanie pozostałych wątków nie jest wstrzymywane.
-	Z~tego powodu aplikacje, które w~trakcie działania często odwołują się do urządzeń zewnętrznych, korzystają
-	z~KLT.
-\par
-%
-\indent
-	Inną korzyścią wątków przestrzeni jądra jest rozdystrybuowanie ich na wiele rdzeni. Mechanizm ten jest przezroczysty
-	dla użytkownika. Dzięki niemu, niezależne obliczenia mogą wykonywać się równocześnie, co może znacząco wpłynąć na
-	wydajność aplikacji.
-\par
-%
-\indent
-	Należy pamiętać, że KLT są zarządzane w~całości przez system operacyjny. Wobec tego, zmiana stanu wątku, jego uruchomienie,
-	wstrzymanie, jak również sposób zarządzania pulą wątków jest w~pełni zależna od jądra systemu i~użytkownik jest skazany
-	na decyzje systemu operacyjnego odnośnie podstawowych operacji na wątkach. Co więcej, taki sposób zarządzania wątkami,
-	jest obarczony kosztami związanymi z~komunikacją z~jądrem systemu.
-\par
-%
-\indent
-	Użytkownik korzystający z~wątków przestrzeni jądra może spotkać się z~problemem \emph{wyścigów} (ang. \emph{Race Conditions}):
-	dwa wątki w~tym samym czasie wykonują operacje na tych samych zasobach. Ponieważ system operacyjny przerywa pracę wątków w~sposób
-	niezależny od działania poszczególnych wątków, może zdarzyć się sytuacja, gdy operacje jednego wątku \emph{przeplatają się} z~operacjami
-	drugiego wątku (równie dobrze może to być o~wiele większa liczba wątków!) na tym samym zasobie. W~takiej sytuacji, wynik działania wątków
-	może prowadzić do nieprzewidywalnych wyników, które mogą wypaczyć wynik działania aplikacji, lub nawet doprowadzić do przerwania jej wykonania.
-\par
-%
-\indent
-	Aby zaradzić temu problemowi, stworzony został mechanizm \emph{wzajemnego wykluczania} (ang. \emph{Mutual Exclusion, mutex}):
-	jeśli dany zasób jest wolny, wówczas dostęp do niego otrzymuje dokładnie jeden wątek, zaś inne wątki czekają na zwolnienie tego zasobu.
-	Wątki mogą być uśpione lub oczekiwać aktywnie na przydzielenie zasobu, jednakże są one w~jakiś sposób zablokowane.  
-	Okazuje się, że mechanizm wzajemnego wykluczania wiąże się z~różnego rodzaju zagrożeniami. Najpoważniejsze z~nich to zakleszczenie 
-	(ang. \emph{deadlock}) i~zagłodzenie (ang. \emph{starvation}).
-\par
-%
-\indent
-	Zakleszczenie występuje w~momencie gdy jeden wątek wykonuje operacje na zasobie A, a~następnie (nie zwalniając A) zgłasza zapotrzebowanie
-	na zasób B, który jest zarezerwowany dla drugiego wątku, który oczekuje na zwolnienie zasobu A.
-\par
-%
-\indent
-	Zagłodzenie wątku występuje wtedy, gdy pewien wątek oczekuje na dostęp do zasobu, lecz nie jest on do tego zasobu dopuszczony.
-\par
-
-\subsection{Wątki przestrzeni użytkownika}
-%
-\indent
-	Wątki przestrzeni użytkownika (ang. \emph{User--Level Threads, ULT}) nie są widoczne dla systemu operacyjnego w~taki sposób,
-	jak ma to miejsce w~wypadku KLT. Podstawowa różnica pomiędzy tymi dwoma rodzajami wątków polega na podziale czasu pomiędzy
-	poszczególne wątki: uruchomienie (wznawianie) oraz przerywanie działania KLT jest dokonywane przez system operacyjny, zaś 
-	zarządzanie działaniem ULT jest zadaniem dla użytkownika. Strategie uruchamiania poszczególnych wątków przestrzeni jądra
-	(ang. \emph{scheduling}) jest również odpowiedzialnością systemu operacyjnego, co w~przypadku ULT jest także powinnością 
-	użytkownika. Wątki przestrzeni użytkownika są z~tego powodu o~wiele lżejsze: przełączanie pomiędzy nimi nie jest tak czasochłonne
-	jak w~wypadku KLT. Co więcej, zarządzanie ULT może być bardziej dopasowane do charakteru aplikacji: niektóre wątki potrzebują
-	prostego zarządzania (pierwszy wątek, drugi, \ldots, $n$-ty, pierwszy, \ldots -- algorytm \emph{Round-Robin}),
-	inne aplikacje wymagają nadawania poszczególnym wątkom priorytetów, itp. Co więcej, przezroczystość ULT dla systemu nie zakłóca
-	jego własnej polityki zarządzania wątkami. Model, który odpowiada wątkom przestrzeni użytkownika, to N:1.
-	ULT są nazywane \emph{zielonymi wątkami} (ang. \emph{Green Threads}).
-\par
-%
-\indent
-	Zaletą tego rozwiązania jest także łatwość uniknięcia zjawiska wyścigów. Ponieważ wszystkie ULT są wykonywane
-	w~ramach jednego procesu, wątek posiada wyłączny dostęp do wszystkich jego zasobów,
-	nie modyfikowany przez żaden inny wątek.
-\par
-%
-\indent
-	Jeśli jeden z~wątków przestrzeni
-	użytkownika zostanie zablokowany (np. podczas wykonywania operacji na IO), wówczas działanie innych wątków będzie również zablokowane.
-	Aby uniknąć takich sytuacji, operacje blokujące są często opakowane w~taki sposób, by nie blokować wykonania wątku (\emph{jacketing}).
-\par
-%
-\indent
-	Ważną cechą ULT jest ich niezależność od systemu operacyjnego, w~jakim pracują: nie potrzebują one mechanizmu wywłaszczania
-	(ang. \emph{preemption}), gdyż kontrola nad wykonaniem wątku jest wykonywana po stronie użytkownika.
-\par
-%
-\subsection{Wątki mieszane}
-%
-\indent
-	Wątki mieszane są implementacją modelu N:M. Wątki w~tym modelu są zarządzane zarówno 
-	przez system operacyjny, jak też użytkownika. Ich celem jest połączenie zalet KLT i ULT. Istnieją implementacje, które
-	modyfikują system operacyjny, jak również takie, które nie ingerują w~jego strukturę. Opisana w~tej pracy implementacja
-	wątków mieszanych stosuje drugą metodę.
-\par
-\subsection{Wzajemne wykluczanie}
-%
-\indent
-	Jak wspomniano wcześniej, wzajemne wykluczanie jest mechanizmem używanym w~celu uniknięcia zjawiska wyścigów.
-	Aby wykluczyć taką sytuację, wątki wykonują działania na współdzielonym zasobie w~ramach tzw. \emph{sekcji krytycznej}
-	(ang. \emph{critical section}).
-\par
-%
-\end{comment}
-
 \newpage
 \rhead{\empty}
 %\pagestyle{plain}
