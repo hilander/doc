@@ -8,7 +8,7 @@
 *.pdf
 *.toc
 *.dvi
-*.bib
+#*.bib
 *.bbl
 *.blg
 *.lof
