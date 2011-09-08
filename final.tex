@@ -22,6 +22,11 @@
 \newcommand{\dcolon}{::}
 \newcommand{\procbr}{()}
 
+\newcounter{figmain}
+\setcounter{figmain}{1}
+\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ \begin{flushleft}Rysunek \arabic{#1}. #3.\end{flushleft} \end{center}}
+
+
 \usepackage{fancyhdr}
 \setlength{\headheight}{15.2pt}
 \pagestyle{fancy}
@@ -91,23 +96,26 @@
 %
 \indent
 	Obydwa rodzaje wątków posiadają zarówno swoje zalety, jak i~wady. Istnieje rozwiązanie pośrednie: wątki mieszane, zwane również
-	\emph{hybrydowymi}.
-	Ich implementacja była zgodna ze schematem opisanym w~\cite{anderson}, a~więc do ich uzyskania potrzeba było zmienić kod źródłowy
-	oraz zachowanie jądra systemu, jak również dodać po stronie użytkownika obsługę nowych wiadomości o~działaniu takich wątków.
+	\emph{hybrydowymi}. W~niniejszej pracy użycie słowa ,,wątek'' oznacza odwołanie do wątku przestrzeni jądra, zaś użycie słowa ,,włókno'' oznacza odwołanie
+  do wątku mieszanego.
 \par
 %
 \indent
-	\begin{figure}[h]
-		\label{fig:mixedintro}
-		\centering
-		\includegraphics[scale=.21]{mixedscheme.png}
-		\caption{Schemat implementacji wątków mieszanych alternatywnej do opisanej w~\cite{anderson}
-		(KLT: wątek przestrzeni jądra;
-			ULT: wątek przestrzeni użytkownika;
-			scheduler\_k: zarządca KLT;
-			scheduler\_u: zarządca włókien).
-		}
-	\end{figure}
+	Istnieją dwa główne pomysły na implementację włókien. Jeden został opisany w~\cite{anderson}: włókna w~implementacji opartej na 
+  tym pomyśle wymagają wsparcia jądra systemu operacyjnego, a~co za tym idzie, zmiany zachowania systemu operacyjnego.
+  Mechanizm ten został zaimplementowany w~NetBSD, jednakże z~powodu problemów z~wydajością systemu operacyjnego, obecne wydania NetBSD
+  dają możliwość wyboru systemu z~tym mechanizmem, ale jedynie ,,na życzenie''.
+  Implementacja włókien oparta na tym pomyśle jest oferowana obecnie także w~systemie Windows 7.
+\par
+%
+\indent
+  \myownfigure{mixedintro}{mixedscheme.png}{Schemat implementacji wątków mieszanych alternatywnej do opisanej w~\cite{anderson}:
+  \begin{itemize}
+    \item KLT: wątek przestrzeni jądra;
+    \item ULT: włókno;
+    \item zarządca\_k: zarządca KLT;
+    \item zarządca\_u: zarządca włókien.
+  \end{itemize}}{.21}
 	Inny pomysł na implementację wątków mieszanych polega na:
 	\begin{itemize}
 		\item skorzystaniu z~wątków udostępnianych przez jądro: ich liczba może być zależna od ilości dostępnych procesorów w~komputerze
@@ -122,14 +130,13 @@
 		\item istnieje jeden planista wątków przestrzeni jądra, który zajmuje się komunikacją pomiędzy planistami włókien (wędrówka włókien,
 			przesyłanie komunikatów, synchronizacja).
 	\end{itemize}
-	Jak łatwo zauważyć, taka implementacja może być zaimplementowana jako biblioteka, a~więc nie występuje potrzeba zmieniania jądra systemu operacyjnego.
-	Dodatkowym atutem takiego rozwiązania jest możliwość wyboru przez użytkownika, czy chce skorzystać z~wątków mieszanych, czy może tylko z~wątków
-	przestrzeni jądra.
+	Jak łatwo zauważyć, taka implementacja może być zaimplementowana jako biblioteka, dzięki czemu nie potrzeba zmieniać zachowania jądra systemu operacyjnego.
+  W~efekcie system operacyjny działa równie wydajnie zarówno z~działajacymi włóknami, jak i~bez ich użycia.
 \par
 %
 \subsection{Cel pracy}
 \indent
-	Celem niniejszej pracy było utworzenie biblioteki wątków mieszanych
+  Celem niniejszej pracy było utworzenie biblioteki wątków mieszanych, zwanych dalej \emph{włóknami}
 	w~języku C++.
 	Powinna ona odpowiadać za:
 	\begin{enumerate}
