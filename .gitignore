@@ -20,6 +20,7 @@
 *.out
 *.html
 *.~ml
+*.bak
 cscope.out
 mktemp.sh
 doxygen/

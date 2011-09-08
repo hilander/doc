@@ -24,7 +24,8 @@
 
 \newcounter{figmain}
 \setcounter{figmain}{1}
-\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ \begin{flushleft}Rysunek \arabic{#1}. #3.\end{flushleft} \end{center}}
+\newcommand{\myfigcounter}[1]{ \begin{center}Rysunek \arabic{figmain}. #1.\end{center} \addtocounter{figmain}{1} }
+\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ Rysunek \arabic{#1}. #3. \end{center}}
 
 
 \usepackage{fancyhdr}
@@ -373,16 +374,16 @@
 	poza kolejnością podaną przez autora programu. Dla sekwencji rozkazów z~rys.~\ref{fig:oooex}
 	można zauważyć, że rozkaz (3) korzysta z~wartości rejestru A3, który jest wyliczony w~(1), jego wykonanie nie ma wpływu na rejestry, z~których 
 	korzysta (2), a~więc sekwencja $\langle 1, 3, 2 \rangle $ da po wykonaniu wynik taki sam, jak sekwencja $\langle 1, 2, 3 \rangle $.
-	\begin{figure}[h]
+	\begin{center}
 	\begin{tabular}{l}\\
 		(1) {\tt add A1,A2,A3 /* dodaj A1 do A2, wynik zapisz do A3 */ } \\
 		(2) {\tt add A1,A4,A5 } \\
 		(3) {\tt add A2,A3,A7 } \\
 		\\
 	\end{tabular}
-	\caption{Wykonanie poza kolejnością}
+  \myfigcounter{Wykonanie poza kolejnością}
 	\label{fig:oooex}
-	\end{figure}
+	\end{center}
 \par
 %
 \indent
@@ -404,16 +405,16 @@
 	Problemem, który jest naturalnie związany z~ILP to zależność od danych (ang. \emph{data dependency}).
 	Dotyczy on zachowania oryginalnej chronologii wykonywania rozkazów (zapisu wyników
 	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). W sekwencji przedstawionej na rys.\ref{fig:datadep}
-	\begin{figure}[h]
+	\begin{center}
 	\begin{tabular}{l l}\\
 		(1) & {\tt add Y,Z,X} \\
 		(2) & {\tt add U,V,T} \\
 		(3) & {\tt mult X,T,L /* zapisz iloczyn X}$\times${\tt T do L */} \\
 		(4) & {\tt add L,T,L} \\
 	\end{tabular}
-	\caption{Ilustracja problemu zależności od danych}
+	\myfigcounter{Ilustracja problemu zależności od danych}
 	\label{fig:datadep}
-	\end{figure}
+	\end{center}
 	instrukcje (1) i~(2) mogą wyć wykonane w~kolejności $\langle 1,2 \rangle$ jak i~$\langle 2,1 \rangle$, zaś wynik działania instrukcji
 	(3) zależy bezpośrednio od wyników działania (1) i~(2). Co więcej, instrukcja (4) nie może być wykonana wcześniej 
 	niż po zakończeniu wykonania instrukcji (1), (2) i~(3). Tak więc chronologia wykonania instrukcji (3) i~(4) nie może być zmieniona.
@@ -960,12 +961,9 @@
 \newpage
 \section{Opis rozwiązania}
 \label{sec:solution}
-\begin{figure}[h!]
-\label{fig:libmixedoverview}
-	\centering
-	\hspace*{-1cm}\includegraphics[scale=.6, angle=90]{libmixedOverview.png}
-	\caption{Zależności pomiędzy pakietami biblioteki \code{libmixed}}
-\end{figure}
+\begin{center}
+  \myownfigure{libmixedoverview}{libmixedOverview.png}{Zależności pomiędzy klasami biblioteki \code{libmixed}}{.7}
+\end{center}
 \indent
 	Biblioteka \code{libmixed} dostarcza implementację wątków hybrydowych, jednakże bez konieczności dokonywania zmian w~kodzie jądra systemu operacyjnego.
 	Włókna są zaimplementowane w~sposób zbliżony do tego, jaki miał miejsce w~wypadku implementacji ULT w~bibliotece GNU Pth, jednakże to
@@ -987,9 +985,15 @@
 	Rysunek \ref{fig:libmixedoverview} pokazuje zależności pomiędzy poszczególnymi modułami biblioteki.
 \par
 %
-\subsection{Moduł \code{master}}
+\subsection{Moduł \code{masters}}
 \label{sec:master}
-		\includegraphics[scale=.5]{Worker.png}
+    \myownfigure{Master}{Master.png}{Klasa master - właściciel i~koordynator robotników}{.7}
+		%\includegraphics[scale=.5]{Master.png}
+%
+\subsection{Moduł \code{fibers}}
+\label{sec:master}
+    \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacj włókna}{.7}
+		%\includegraphics[scale=.5]{Master.png}
 %
 \subsection{Moduł \code{libcoro}}
 \label{sec:coroutine}
@@ -1024,11 +1028,9 @@
 		\item EXCEPTION, ERROR: wystąpił wyjątek (lub, odpowiednio - błąd) w~trakcie wykonania koprocedury;
 		\item UNDEFINED: stan koprocedury niezdefiniowany (koprocedura nie powinna znaleźć się w~tym stanie).
 	\end{itemize}
-	\begin{figure}[h!]
-		\centering
-		\includegraphics[scale=.7]{LibcoroStates.png}
-		\caption{Stany koprocedury oraz dozwolone przejścia pomiędzy nimi}
-	\end{figure}
+	\begin{center}
+		\myownfigure{LibcoroStates}{LibcoroStates.png}{Stany koprocedury oraz dozwolone przejścia pomiędzy nimi}{.7}
+	\end{center}
 \par
 %
 \indent
