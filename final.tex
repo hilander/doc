@@ -22,6 +22,10 @@
 \newcommand{\dcolon}{::}
 \newcommand{\procbr}{()}
 
+\newcounter{tabmain}
+\setcounter{tabmain}{1}
+\newcommand{\mytabcaption}[1]{ \begin{center}Tabela \arabic{tabmain}. #1.\end{center} \addtocounter{tabmain}{1} }
+
 \newcounter{figmain}
 \setcounter{figmain}{1}
 \newcommand{\myfigcounter}[1]{ \begin{center}Rysunek \arabic{figmain}. #1.\end{center} \addtocounter{figmain}{1} }
@@ -85,6 +89,13 @@
 %
 \subsection{Motywacja}
 \indent
+  W~większości współczesnych systemów operacyjnych zrealizowano paradygmat \emph{programownia równoległego}.\\
+  \emph{Zacytować wikipedię?:)}\\
+  W~związku z~wykorzystaniem tego paradygmatu, powstały dwa podstawowe pojęcia: \emph{proces} oraz \emph{wątek}.
+  Proces jest samodzielnym bytem, któremu system operacyjny udostępnia zasoby (lub część tych zasobów, zgodnie z~polityką udzielania zasobów
+  systemu).
+  Wątek jest bytem zaleznym od procesu, a~proces posiada wiadomości o~każdym wątku.
+
 	Dostępne obecnie architektury systemów operacyjnych są z~założenia przystosowane do równoległego
 	wykonywania programów. Co więcej, architektury te obejmują wiele rodzajów urządzeń, które są obsługiwane przez system operacyjny.
 	Współczesne systemy operacyjne udostępniają użytkownikowi możliwość równoległego wykonania aplikacji (przy użyciu procesów),
@@ -301,7 +312,7 @@
 \indent 
 	Pomysł na bardziej efektywne wykorzystanie zasobów jednostki centralnej, to użycie \emph{potokowości} (ang. \emph{pipelining}):
 	Jeśli wykonanie bieżącego rozkazu zakończyło się dla komponentu, może on wykonać następny rozkaz.
-	\begin{table}[h]
+	\begin{center}
 	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
 	Numer 		 & \multicolumn{7}{c|}{\multirow{2}{*}{Stan potoku}} \\
@@ -313,11 +324,11 @@
 	5 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
 	\end{tabular}
-	\caption[Potokowe wykonanie rozkazów]{Potokowe wykonanie rozkazów. W~kolumnach umieszczone są komponenty wykonujące dany krok rozkazu.
+	\mytabcaption{Potokowe wykonanie rozkazów. W~kolumnach umieszczone są komponenty wykonujące dany krok rozkazu.
 	W~wyróżnionej kolumnie można odczytać, że w~czwartym cyklu zegarowym pierwszy rozkaz jest w~trakcie wykonywania kroku MEM, 
 	dla drugiego wykonywany jest krok EX, itd.}
 	\label{tab:pipeline}
-	\end{table}
+	\end{center}
 	Metoda ta pozwala na ,,równoległe'' wykonanie kilku rozkazów na jednym procesorze, w~przykładzie opisanym w~tabeli \ref{tab:pipeline}, po upływie 7 cykli
 	zostaną wykonane trzy rozkazy. Gdyby rozkazy te były wykonane na jednostce sekwencyjnej, czas ich wykonania byłby ponad dwa razy dłuższy.
 \par
@@ -325,7 +336,7 @@
 \indent
 	Architektura procesora, która jest uogólnieniem potokowości to \emph{Superskalarność} (ang. \emph{Superscalar}): 
 	każdemu krokowi odpowiada co najmniej jeden potok, jednakże występuje redundancja części funkcjonalnych procesora.
-	\begin{table}[h]
+	\begin{center}
 	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
 	Numer 		 & \multicolumn{7}{c|}{\multirow{2}{*}{Stan potoku}} \\
@@ -342,11 +353,10 @@
 	10 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
 	\end{tabular}
-	\caption[Potokowe wykonanie 10 rozkazów na jednostce superskalarnej]
-					{Potokowe wykonanie 10 rozkazów na jednostce superskalarnej o~dwóch potokach rozkazów: rozkazy o~numerach nieparzystych są wykonywane na 
+	\mytabcaption{Potokowe wykonanie 10 rozkazów na jednostce superskalarnej o~dwóch potokach rozkazów: rozkazy o~numerach nieparzystych są wykonywane na 
 					pierwszej jednostce, zaś rozkazy o~numerach parzystych na drugiej. Analogicznie jak w~tabeli \ref{tab:pipeline}, wyróżniona
-					kolumna odpowiada wykonaniu programu w~czwartym cyklu zegarowym.}
-	\end{table}
+					kolumna odpowiada wykonaniu programu w~czwartym cyklu zegarowym}
+	\end{center}
 	Jak łatwo zauważyć, superskalarny CPU jest w~stanie przetworzyć nawet wektor instrukcji. Warunkiem koniecznym do osiągnięcia takiego
 	wyniku jest brak zależności pomiędzy wynikiem wcześniejszej a~następnej instrukcji.
 \par
@@ -432,7 +442,7 @@
 \indent
 	Michael J.~Flynn stworzył klasyfikację systemów komputerowych oraz programów (\emph{taksonomia Flynna}), w~której ze względu na liczbę
 	strumieni rozkazów oraz danych, wyróżniamy cztery klasy, wymienione w~tabeli \ref{tab:flynn}.
-	\begin{table}[h]
+	\begin{center}
 	\centering
 	\begin{tabular}{|c|c|c|} \hline
 													 & Jeden strumień instrukcji	 & Wiele strumieni instrukcji \\
@@ -444,9 +454,9 @@
 			strumieni danych     & SIMD                        & MIMD \\
 			(\emph{Multiple Data}) & 										 & 			\\\hline
 	\end{tabular}
-	\caption{Taksonomia Flynna}
+	\mytabcaption{Taksonomia Flynna}
 	\label{tab:flynn}
-	\end{table}
+	\end{center}
 	Klasy te możemy scharakteryzować w~następujący sposób:
 	\begin{itemize}
 		\item SISD jest klasą programów wykonywanych sekwencyjnie na maszynie sekwencyjnej;
@@ -844,7 +854,7 @@
 \par
 %
 \indent
-	\begin{table}[h]
+	\begin{center}
 	\centering
 	\begin{tabular}{|l|c|c|} \hline
 		\multirow{2}{*}{Komponent} & \multirow{2}{*}{czas rzeczywisty}	& czas proporcjonalny \\ 
@@ -856,11 +866,9 @@
 		dostęp do HD		& 7000 $\mu$s (7 ms) & 162 dni \\\hline
 		kwant czasu 		& 100 ms	& 6,3 roku \\\hline
 	\end{tabular}
-	\caption{
-		Czas działania komponentów systemu komputerowego oraz proporcjonalny do niego czas reakcji człowieka.
-	}
+		\mytabcaption{Czas działania komponentów systemu komputerowego oraz proporcjonalny do niego czas reakcji człowieka}
 	\label{tab:timecomp}
-	\end{table}
+	\end{center}
 	Warto w~tym miejscu uzmysłowić sobie różnicę w~czasie taktowania obecnych jednostek centralnych w~porównaniu do czasu dostępu do pewnych
 	elementów systemu komputerowego, przekładając te czasy na zbliżone do ludzkich miar. Jak można zauważyć w~tabeli \ref{tab:timecomp},
 	przełączanie kontekstu procesu jest operacją czasochłonną, gdyż w~,,normalnym'' świecie zajęła by człowiekowi ponad 2 godziny pracy.
@@ -872,7 +880,7 @@
 %
 \indent
 	Systemy operacyjne, ze względu na sposób wykonywania zadań, można podzielić na cztery grupy:
-	\begin{table}[h]
+	\begin{center}
 	\centering
 	\begin{tabular}{|c|c|c|} \hline
 													 & Jeden wątek w~procesie   	 & Wiele wątków w~procesie \\
@@ -882,8 +890,8 @@
 			Wiele procesów       & \multirow{2}{*}{1:N}       & \multirow{2}{*}{N:M}   \\
 			(Multiple Processes) &                             &                         \\\hline
 	\end{tabular}\\
-	\caption{Klasyfikacja systemów operacyjnych}
-	\end{table}
+	\mytabcaption{Klasyfikacja systemów operacyjnych}
+	\end{center}
 \par
 %
 \begin{comment}
@@ -965,31 +973,31 @@
   \myownfigure{libmixedoverview}{libmixedOverview.png}{Zależności pomiędzy klasami biblioteki \code{libmixed}}{.7}
 \end{center}
 \indent
-	Biblioteka \code{libmixed} dostarcza implementację wątków hybrydowych, jednakże bez konieczności dokonywania zmian w~kodzie jądra systemu operacyjnego.
+	Biblioteka \code{libmixed} dostarcza implementację włókien, bez konieczności dokonywania zmian w~kodzie jądra systemu operacyjnego.
 	Włókna są zaimplementowane w~sposób zbliżony do tego, jaki miał miejsce w~wypadku implementacji ULT w~bibliotece GNU Pth, jednakże to
 	co różni ją od tamtej implementacji, to jej skalowalność: w~ramach jednej aplikacji możliwe jest zarządzanie wieloma grupami wątków.
 	Inną istotną różnicą jest również brak udostępnienia dla użytkownika mechanizmów synchronizacji wątków, zaś w~zamian zagwarantowany
 	jest wyłączny dostęp do wyróżnionych obiektów (klasy \code{fiber\dcolon resource}).
 \par
 %
-\indent
-	Biblioteka składa się z~czterech modułów:
-	\begin{itemize}
-		\item \code{libcoro} dostarcza podstawową dla włókien klasę \emph{koprocedur} wraz z~mechanizmami ich obsługi (m. in. obsługa  kontekstu
-			wykonania koprocedury), jak również fabrykę, która wiąże dany kontekst z~obiektem klasy \code{coroutine}, lub wytwarza takowy;
-		\item \code{libmanager} jest magazynem, który przechowuje konteksty wykonania dla obiektów klasy \code{coroutine};
-		\item \code{libfiber} dostarcza klasę wątków, z~których korzysta użytkownik;
-		\item \code{libscheduler}, który składa się z~nad-zarządcy (\code{ueber\_scheduler}) oraz bezpośrednich zarządców wątków dodawanych 
-			przez użytkownika \linebreak (\code{userspace\_scheduler}).
-	\end{itemize}
-	Rysunek \ref{fig:libmixedoverview} pokazuje zależności pomiędzy poszczególnymi modułami biblioteki.
-\par
-%
 \subsection{Moduł \code{masters}}
 \label{sec:masters}
-    \myownfigure{Master}{Master.png}{Klasa master - właściciel i~koordynator robotników}{.7}
+    \myownfigure{Master}{Master.png}{Moduł \code{master}}{.7}
 		%\includegraphics[scale=.5]{Master.png}
 %
+\indent
+  Moduł \code{masters} udostępnia jedną klasę: \code{master}.
+  Jest ona odpowiedzialna za inicjalizację zarządców włókien, zwanych \emph{robotnikami}.
+\par
+\indent
+  Obiekt klasy \code{master} posiada trzy pola:
+  \begin{itemize}
+    \item[\code{own\_slave}:] własny robotnik, który jest wykonywany w~tym samym KLT, co \code{master}, w~każdym kroku wykonywana jest jedna iteracja pętli głównej 
+    tego robotnika.
+    \item[\code{slaves}:] kolekcja wskaźników do robotników, które są wykonywane w~innych wątkach.
+    \item[\code{workload}:] Liczba włókien oczekujących na przekazanie i~uruchomienie w~obiektach klasy \code{worker}.
+  \end{itemize}
+\par
 \subsection{Moduł \code{fibers}}
 \label{sec:fibers}
     \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacj włókna}{.7}
@@ -1013,11 +1021,6 @@
 	Jeśli takie wywołanie miało miejsce, możliwe jest wznowienie jej działania poprzez ponowne wywołanie metody \code{start()}.
 	Istnieje również możliwość przywrócenia kontekstu do stanu umożliwiającego jej ponowne uruchomienie od początku, taką funkcję spełnia
 	metoda \code{rewind\procbr}.
-	\begin{figure}[h!]
-		\centering
-		\includegraphics[scale=.5]{classlibcoroabstract.png}
-		\caption{Klasa \code{libcoro\dcolon abstract} oraz jej klasy pochodne}
-	\end{figure}
 	Podczas działania aplikacji, można wyróżnić kilka stanów koprocedury:
 	\begin{itemize}
 		\item READY: koprocedura jest zainicjalizowana i~gotowa do uruchomienia; koprocedura jest w~tym stanie również po wykonaniu metody
@@ -1141,7 +1144,7 @@
 	\begin{figure}[h!]
 		\label{fig:threadcreation}
 		\centering
-		\hspace*{-1cm}\includegraphics[scale=.6]{ThreadCreation.png}
+		\hspace*{-1cm}\includegraphics[scale=.55]{ThreadCreation.png}
 		\caption{Wytworzenie wątku zarządzanego przez bibliotekę \code{libmixed}}
 	\end{figure}
 	Opisany sposób wytwarzania wątku posiada tę zaletę, że finalizacja tworzenia obiektu jest dokonywana w~miejscu rozpoczęcia jego wykonania.
@@ -1160,12 +1163,13 @@
 	\end{itemize}
 	Rysunek \ref{fig:interthreadmessaging1} oraz rys.~\ref{fig:interthreadmessaging2} przedstawiają możliwe scenariusze wędrówki wiadomości 
 	pomiędzy dwoma wątkami.
-	\begin{figure}[h!]
-		\label{fig:interthreadmessaging1}
+	\begin{center}
+		%\label{fig:interthreadmessaging1}
 		\centering
-		\hspace*{-1cm}\includegraphics[scale=.6,angle=90]{InterThread1.png}
-		\caption{Wysłanie wiadomości z~wątku thread1 do wątku thread2 w~ramach tego samego ULS}
-	\end{figure}
+    \myownfigure{fig:interthreadmessaging1}{interThread.png}{Wysłanie wiadomości z~wątku thread1 do wątku thread2 w~ramach tego samego ULS}{.5}
+		%\hspace*{-1cm}\includegraphics[scale=.6,angle=90]{InterThread1.png}
+		%\caption{Wysłanie wiadomości z~wątku thread1 do wątku thread2 w~ramach tego samego ULS}
+	\end{center}
 	\begin{figure}[h!]
 		\label{fig:interthreadmessaging2}
 		\centering
