@@ -29,7 +29,7 @@
 \newcounter{figmain}
 \setcounter{figmain}{1}
 \newcommand{\myfigcounter}[1]{ \begin{center}Rysunek \arabic{figmain}. #1.\end{center} \addtocounter{figmain}{1} }
-\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ Rysunek \arabic{#1}. #3. \end{center}}
+\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ \nopagebreak[4] Rysunek \arabic{#1}. #3. \end{center}}
 
 
 \usepackage{fancyhdr}
@@ -981,7 +981,6 @@
 \par
 %
 \subsection{Moduł \code{masters}}
-\label{sec:masters}
     \myownfigure{Master}{Master.png}{Moduł \code{master}}{.7}
 		%\includegraphics[scale=.5]{Master.png}
 %
@@ -998,6 +997,40 @@
     \item[\code{workload}:] Liczba włókien oczekujących na przekazanie i~uruchomienie w~obiektach klasy \code{worker}.
   \end{itemize}
 \par
+\subsection{Moduł \code{workers}}
+    \myownfigure{Worker}{Worker.png}{Klasa worker -- robotnik działający w~obrębie jednego KLT}{.7}
+		%\includegraphics[scale=.5]{Master.png}
+%
+\subsection{Moduł \code{schedulers}}
+  \myownfigure{Scheduler}{Scheduler.png}{Klasa scheduler -- planista włókien}{.7}
+  Rysunek \arabic{Scheduler} przedstawia klasę planisty włókien.
+  Planista zarządza wykonaniem włókien, które otrzymał od swojego właściciela.
+  Jeśli zarządzane przez planistę włókno zakończyło swoje działanie, planista zmienia jego stan na \code{FINISHED}.
+%
+\subsection{moduł \code{epollers}}
+  \myownfigure{Epoller}{Epoller.png}{klasa epoller -- planista włókien}{.7}
+\indent
+  Rysunek \arabic{Epoller} przedstawia klasę opakowującą podstawowe operacje mechanizmu \code{epoll}.
+  Mechanizm ten umożliwia detekcję:
+  \begin{itemize}
+    \item zdarzeń dla urządzeń I/O;
+    \item nadejścia sygnału lub zdarzenia systemowego;
+    \item upłynięcia zadanego czasu (ang. \emph{timer}).
+  \end{itemize}
+  W~obecnej implementacji biblioteki, obiekt klasy \code{epoller} jest wykorzystywany do wykrywania zdarzeń dla urządzeń wejścia-wyjścia.
+  Do tego celu wykorzystywane są wymienione funkcje:
+  \begin{itemize}
+    \item[\code{add(int f)}] -- dodaje deskryptor urządzenia do obserwowanych;
+    \item[\code{del(int f)}] -- usuwa deskryptor urządzenia z obserwowanych;
+    \item[\code{do\_epolls\procbr}] -- oczekuje przez określony czas na wystąpienie zdarzeń;
+    \item[\code{get\_last\_epoll\_result\procbr}] -- podaje listę deskryptorów urządzeń, dla których wystąpiło zdarzenie.
+  \end{itemize}
+\par
+%
+\subsection{moduł \code{message\_queues}}
+    \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
+		%\includegraphics[scale=.5]{master.png}
+%
 \subsection{Moduł \code{fibers}}
 \label{sec:fibers}
     \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacj włókna}{.7}
