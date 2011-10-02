@@ -94,7 +94,7 @@
   W~związku z~wykorzystaniem tego paradygmatu, powstały dwa podstawowe pojęcia: \emph{proces} oraz \emph{wątek}.
   Proces jest samodzielnym bytem, któremu system operacyjny udostępnia zasoby (lub część tych zasobów, zgodnie z~polityką udzielania zasobów
   systemu).
-  Wątek jest bytem zaleznym od procesu, a~proces posiada wiadomości o~każdym wątku.
+  Wątek jest bytem zależnym od procesu, a~proces posiada wiadomości o~każdym wątku.
 
 	Dostępne obecnie architektury systemów operacyjnych są z~założenia przystosowane do równoległego
 	wykonywania programów. Co więcej, architektury te obejmują wiele rodzajów urządzeń, które są obsługiwane przez system operacyjny.
@@ -114,20 +114,18 @@
 %
 \indent
 	Istnieją dwa główne pomysły na implementację włókien. Jeden został opisany w~\cite{anderson}: włókna w~implementacji opartej na 
-  tym pomyśle wymagają wsparcia jądra systemu operacyjnego, a~co za tym idzie, zmiany zachowania systemu operacyjnego.
-  Mechanizm ten został zaimplementowany w~NetBSD, jednakże z~powodu problemów z~wydajością systemu operacyjnego, obecne wydania NetBSD
-  dają możliwość wyboru systemu z~tym mechanizmem, ale jedynie ,,na życzenie''.
-  Implementacja włókien oparta na tym pomyśle jest oferowana obecnie także w~systemie Windows 7.
+  tym pomyśle wymagają wsparcia jądra systemu operacyjnego, a~co za tym idzie, zmiany działania systemu operacyjnego.
+  Mechanizm ten został zaimplementowany w~NetBSD, jednakże działanie systemu operacyjnego z~tą implementacją wpływała negatywnie na jego działanie, 
+  dlatego obecne wydania NetBSD dają możliwość wyboru systemu z~zaimplementowanym mechanizmem \emph{scheduler activations}, ale jedynie ,,na życzenie''.
+  Można zauważyć, że każda nowa próba zaimplementowania mechanizmu włókien najczęściej jest oparta na scheduler activations, nawet 
+  Implementacja włókien oparta na podobnym pomyśle jest oferowana obecnie także w~systemie Windows 7.
 \par
 %
 \indent
-  \myownfigure{mixedintro}{mixedscheme.png}{Schemat implementacji wątków mieszanych alternatywnej do opisanej w~\cite{anderson}:
-  \begin{itemize}
-    \item KLT: wątek przestrzeni jądra;
-    \item ULT: włókno;
-    \item zarządca\_k: zarządca KLT;
-    \item zarządca\_u: zarządca włókien.
-  \end{itemize}}{.21}
+  \myownfigure{mixedintro}{mixedscheme.png}{Włókna w~implementacji nie wymagającej zmian w~systemie~operacyjnym -- cel niniejszej pracy}{.21}
+\par
+\indent
+  Opisany powyżej sposób implementacji włókien
 	Inny pomysł na implementację wątków mieszanych polega na:
 	\begin{itemize}
 		\item skorzystaniu z~wątków udostępnianych przez jądro: ich liczba może być zależna od ilości dostępnych procesorów w~komputerze
@@ -143,7 +141,7 @@
 			przesyłanie komunikatów, synchronizacja).
 	\end{itemize}
 	Jak łatwo zauważyć, taka implementacja może być zaimplementowana jako biblioteka, dzięki czemu nie potrzeba zmieniać zachowania jądra systemu operacyjnego.
-  W~efekcie system operacyjny działa równie wydajnie zarówno z~działajacymi włóknami, jak i~bez ich użycia.
+  W~efekcie system operacyjny działa równie wydajnie zarówno z~działającymi włóknami, jak i~bez ich użycia.
 \par
 %
 \subsection{Cel pracy}
@@ -152,9 +150,9 @@
 	w~języku C++.
 	Powinna ona odpowiadać za:
 	\begin{enumerate}
-		\item Zarządzanie wątkiem mieszanym:
+		\item Zarządzanie włóknem:
 		\begin{itemize}
-			\item tworzenie i~destrukcja wątku;
+			\item tworzenie i~destrukcja włókna;
 			\item przydział kontekstu wykonania (stosu) dla wątku;
 			\item przydział wątku do procesora;
 			\item uruchomienie wątku, wstrzymanie wątku (tzn. w~momencie wykonania operacji {\tt yield} przez wątek);
