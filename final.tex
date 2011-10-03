@@ -89,13 +89,13 @@
 %
 \subsection{Motywacja}
 \indent
-  W~większości współczesnych systemów operacyjnych zrealizowano paradygmat \emph{programownia równoległego}.\\
-  \emph{Zacytować wikipedię?:)}\\
+  W~większości współczesnych systemów operacyjnych zrealizowano paradygmat \emph{programowania współbieżnego}.\\
   W~związku z~wykorzystaniem tego paradygmatu, powstały dwa podstawowe pojęcia: \emph{proces} oraz \emph{wątek}.
   Proces jest samodzielnym bytem, któremu system operacyjny udostępnia zasoby (lub część tych zasobów, zgodnie z~polityką udzielania zasobów
-  systemu).
-  Wątek jest bytem zależnym od procesu, a~proces posiada wiadomości o~każdym wątku.
-
+  danego systemu), zaś wątek jest bytem zależnym od procesu.
+\par
+%
+\indent
 	Dostępne obecnie architektury systemów operacyjnych są z~założenia przystosowane do równoległego
 	wykonywania programów. Co więcej, architektury te obejmują wiele rodzajów urządzeń, które są obsługiwane przez system operacyjny.
 	Współczesne systemy operacyjne udostępniają użytkownikowi możliwość równoległego wykonania aplikacji (przy użyciu procesów),
@@ -113,20 +113,18 @@
 \par
 %
 \indent
-	Istnieją dwa główne pomysły na implementację włókien. Jeden został opisany w~\cite{anderson}: włókna w~implementacji opartej na 
-  tym pomyśle wymagają wsparcia jądra systemu operacyjnego, a~co za tym idzie, zmiany działania systemu operacyjnego.
+  Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu.
+  Przykładem takiej implementacji jest \emph{scheduler activations} (SE), opisana w~\cite{anderson}.
   Mechanizm ten został zaimplementowany w~NetBSD, jednakże działanie systemu operacyjnego z~tą implementacją wpływała negatywnie na jego działanie, 
-  dlatego obecne wydania NetBSD dają możliwość wyboru systemu z~zaimplementowanym mechanizmem \emph{scheduler activations}, ale jedynie ,,na życzenie''.
-  Można zauważyć, że każda nowa próba zaimplementowania mechanizmu włókien najczęściej jest oparta na scheduler activations, nawet 
-  Implementacja włókien oparta na podobnym pomyśle jest oferowana obecnie także w~systemie Windows 7.
+  dlatego obecne wydania NetBSD dają możliwość wyboru systemu z~jądrem zmodyfikowanym przez SE, ale jedynie na wyraźne żądanie użytkownika systemu.
+  Implementacja włókien oparta na podobnym do SE pomyśle jest oferowana obecnie także w~systemie Windows 7.
 \par
 %
 \indent
   \myownfigure{mixedintro}{mixedscheme.png}{Włókna w~implementacji nie wymagającej zmian w~systemie~operacyjnym -- cel niniejszej pracy}{.21}
 \par
 \indent
-  Opisany powyżej sposób implementacji włókien
-	Inny pomysł na implementację wątków mieszanych polega na:
+	Włókna mogą być zaimplementowane również bez potrzeby dokonywania zmian w~jądrze systemu operacyjnego. Taka implementacja 
 	\begin{itemize}
 		\item skorzystaniu z~wątków udostępnianych przez jądro: ich liczba może być zależna od ilości dostępnych procesorów w~komputerze
 			lub od preferencji użytkownika. Wątki te będą swego rodzaju \emph{pojemnikami}, zaś każdy z~takich wątków będzie zawierać pewną
