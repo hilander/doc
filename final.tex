@@ -146,8 +146,7 @@
 %
 \subsection{Cel pracy}
 \indent
-  Celem niniejszej pracy było utworzenie biblioteki wątków mieszanych, zwanych dalej \emph{włóknami}
-	w~języku C++.
+  Celem niniejszej pracy było utworzenie biblioteki włókien w~języku C++.
 	Powinna ona odpowiadać za:
 	\begin{enumerate}
 		\item Zarządzanie włóknem:
@@ -158,25 +157,8 @@
 			\item uruchomienie wątku, wstrzymanie wątku (tzn. w~momencie wykonania operacji {\tt yield} przez wątek);
 			\item prawidłowa reakcja na wystąpienie wyjątku w~trakcie działania wątku.
 		\end{itemize}
-		\item Komunikacja:
-		\begin{itemize}
-			\item wysyłanie i~obsługa komunikatów (po stronie zarządcy i~wątku);
-			\item zdarzenia i~sygnały: detekcja wystąpienia, propagacja, obsługa.
-		\end{itemize}
-		\item \label{itm:communication} Abstrakcja dla urządzeń wejścia\dywiz wyjścia (ang. \emph{jacketing}):
-		\begin{itemize}
-			\item nieblokujący dostęp do urządzeń (z~punktu widzenia zarządcy wątków);
-			\item blokujący i~nieblokujący dostęp do urządzeń (z~punktu widzenia wątku).
-		\end{itemize}
-		\item \label{itm:shared} Zasoby współdzielone i~synchronizacja wątków:
-		\begin{itemize}
-			\item wzajemne wykluczanie (ang. \emph{mutual exclusion, mutex});
-			\item sekcja krytyczna;
-			\item semafory;
-			\item warunki i~zmienne warunkowe;
-			\item spotkania (ang. \emph{rendezvous});
-			\item skrzynka pocztowa (kolejka komunikatów, ang. \emph{message queue}).
-		\end{itemize}
+		\item Komunikacja: wysyłanie i~obsługa komunikatów (po stronie zarządcy i~włókna);
+		\item \label{itm:communication} Nieblokujący dostęp do  urządzeń wejścia\dywiz wyjścia (z~punktu widzenia zarządcy włókien).
 		\item Zarządzanie kolejnością i~czasem wykonania wątków (ang. \emph{scheduling}):
 		\begin{itemize}
 			\item bez stosowania priorytetów (\emph{round\dywiz robin});
