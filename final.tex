@@ -1,4 +1,4 @@
-\documentclass[11pt,makeidx]{mwart}
+\documentclass[12pt,makeidx]{mwart}
 %\documentclass{mwart}
 \usepackage{makeidx}
 \usepackage{polski}
@@ -45,6 +45,7 @@
 %\renewcommand{\sectionmark}[1]{\markright{#1}{}}
 \renewcommand{\sectionmark}[1]{\markboth{{#1}}{}}
 
+\linespread{1.6}
 %\linespread{1.3}
 %\usepackage{qswiss,qcourier}
 %\usepackage{sfheaders}
@@ -79,12 +80,6 @@
 %\setlength{\parindent}{0pt}
 %\setlength{\parskip}{1ex plus 0.7ex minus 0.1ex}
 
-\begin{comment}
-\begin{abstract}
-	\remark{Tutaj znajdzie się streszczenie pracy.}
-\end{abstract}
-\end{comment}
-
 \section{Wstęp}
 %
 \subsection{Motywacja}
@@ -117,29 +112,15 @@
   Przykładem takiej implementacji jest \emph{scheduler activations} (SE), opisana w~\cite{anderson}.
   Mechanizm ten został zaimplementowany w~NetBSD, jednakże działanie systemu operacyjnego z~tą implementacją wpływała negatywnie na jego działanie, 
   dlatego obecne wydania NetBSD dają możliwość wyboru systemu z~jądrem zmodyfikowanym przez SE, ale jedynie na wyraźne żądanie użytkownika systemu.
-  Implementacja włókien oparta na podobnym do SE pomyśle jest oferowana obecnie także w~systemie Windows 7.
+  Implementacja włókien oparta na podobnym do SE pomyśle jest oferowana także w~systemie Windows 7.
 \par
 %
 \indent
   \myownfigure{mixedintro}{mixedscheme.png}{Włókna w~implementacji nie wymagającej zmian w~systemie~operacyjnym -- cel niniejszej pracy}{.21}
 \par
 \indent
-	Włókna mogą być zaimplementowane również bez potrzeby dokonywania zmian w~jądrze systemu operacyjnego. Taka implementacja 
-	\begin{itemize}
-		\item skorzystaniu z~wątków udostępnianych przez jądro: ich liczba może być zależna od ilości dostępnych procesorów w~komputerze
-			lub od preferencji użytkownika. Wątki te będą swego rodzaju \emph{pojemnikami}, zaś każdy z~takich wątków będzie zawierać pewną
-			liczbę wątków przestrzeni użytkownika (zarządzanych lokalnie wewnątrz każdego pojemnika). Taki schemat wątków hybrydowych pokazany jest na
-			rysunku \ref{fig:mixedintro}.
-		\item Wątek przestrzeni użytkownika (\emph{włókno}) jest wykonywany w~konkretnym wątku przestrzeni jądra, z~tym zaś jest związany
-			konkretny planista włókien, który zarządza ich wykonaniem. Można więc utożsamiać konkretnego planistę włókien z~odpowiadającym mu
-			wątkiem przestrzeni jądra.
-		\item włókna mogą \emph{wędrować} pomiędzy wątkami przestrzeni jądra, jednak w~danym momencie może nimi zarządzać dokładnie jeden
-			planista włókien.
-		\item istnieje jeden planista wątków przestrzeni jądra, który zajmuje się komunikacją pomiędzy planistami włókien (wędrówka włókien,
-			przesyłanie komunikatów, synchronizacja).
-	\end{itemize}
-	Jak łatwo zauważyć, taka implementacja może być zaimplementowana jako biblioteka, dzięki czemu nie potrzeba zmieniać zachowania jądra systemu operacyjnego.
-  W~efekcie system operacyjny działa równie wydajnie zarówno z~działającymi włóknami, jak i~bez ich użycia.
+	Włókna mogą być zaimplementowane również bez potrzeby dokonywania zmian w~jądrze systemu operacyjnego.
+  Taka implementacja może być biblioteką dołączaną przez użytkownika, zaś jej użycie nie będzie mieć wpływu na działanie i~wydajność innych programów.
 \par
 %
 \subsection{Cel pracy}
@@ -153,25 +134,12 @@
 			\item przydział kontekstu wykonania (stosu) dla wątku;
 			\item przydział wątku do procesora;
 			\item uruchomienie wątku, wstrzymanie wątku (tzn. w~momencie wykonania operacji {\tt yield} przez wątek);
-			\item prawidłowa reakcja na wystąpienie wyjątku w~trakcie działania wątku.
+			\item prawidłowa reakcja na wystąpienie wyjątku w~trakcie działania wątku;
 		\end{itemize}
-		\item Komunikacja: wysyłanie i~obsługa komunikatów (po stronie zarządcy i~włókna);
-		\item \label{itm:communication} Nieblokujący dostęp do  urządzeń wejścia\dywiz wyjścia (z~punktu widzenia zarządcy włókien).
-		\item Zarządzanie kolejnością i~czasem wykonania wątków (ang. \emph{scheduling}):
-		\begin{itemize}
-			\item bez stosowania priorytetów (\emph{round\dywiz robin});
-			\item przy zastosowaniu priorytetów.
-		\end{itemize}
+		\item komunikacja: wysyłanie i~obsługa komunikatów (po stronie zarządcy i~włókna);
+		\item nieblokujący dostęp do  urządzeń wejścia\dywiz wyjścia (z~punktu widzenia zarządcy włókien);
+		\item zarządzanie kolejnością i~czasem wykonania wątków (ang. \emph{scheduling}).
 	\end{enumerate}
-\par
-%
-\indent
-	Punkty \ref{itm:communication} oraz \ref{itm:shared} opisują tradycyjne podejście do zasobów udostępnianych wątkom, jak również
-	komunikację między nimi. Istnieją jednak inne polityki obsługi wątków i~procesów, z~których warto wymienić stworzony w~latach 70. XX wieku 
-	\emph{model aktorów} (ang. \emph{actor model}), po raz pierwszy opisany w~\cite{Hewitt1973ActorFormalism}, używany obecnie z~powodzeniem m. in. w~takich językach jak Erlang czy Scala(\cite{scala1}, \cite{scala2}).
-	Wykorzystanie tego modelu wydaje się być atrakcyjną alternatywą zarówno dla tradycyjnych implementacji jacketingu, zaś
-	użycie go do synchronizacji wątków może okazać się bardziej intuicyjne dla użytkownika niż zastosowanie mechanizmów wymienionych
-	w~punkcie~\ref{itm:shared}.
 \par
 %
 \subsection{Streszczenie pracy}
@@ -270,21 +238,16 @@
 	CPU zapisze wynik bieżącego. Do sekwencyjnego wykonywania rozkazów nie potrzeba żadnych dodatkowych mechanizmów,
 	jednak w~trakcie wykonania aktywna jest dokładnie jedna składowa procesora, podczas gdy pozostałe są ,,uśpione''
 	w~oczekiwaniu na uruchomienie.
-	\begin{table}
+	\begin{center}
 	\centering
 	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} \hline
 	& \multicolumn{5}{c|}{Rozkaz 1} & \multicolumn{5}{c|}{Rozkaz 2}  \\
 	\hhline{|~|*{10}-}& IF & ID & {\cellcolor{yellow}{EX}} & MEM & WB & IF & ID & EX & MEM & WB\\ \hline \hline
 	Cykl zegara & 1 & 2 & {\cellcolor{yellow}{3}} & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
 	\end{tabular}\par
-	\caption[Sekwencyjne wykonanie dwóch rozkazów]{Sekwencyjne wykonanie dwóch rozkazów. Wyróżniona kolumna odpowiada bieżącemu krokowi wykonania
-	rozkazu.
-	}
-	\end{table}\par
-\par
-%
-\indent
-{\bf Zrównoleglenie wykonania programu na poziomie instrukcji}
+	\mytabcaption{Sekwencyjne wykonanie dwóch rozkazów. Wyróżniona kolumna odpowiada bieżącemu krokowi wykonania
+	rozkazu}
+	\end{center}\par
 \par
 %
 \indent 
@@ -541,7 +504,7 @@
 			że częstotliwość taktowania procesorów nie wzrasta w~takim stopniu, jak to miało miejsce do tego momentu. To także efekt ograniczeń,
 			jakie istnieją w~wyniku wydzielania temperatury przez jednostkę centralną.
 		\item Modularność. Po wystąpieniu awarii (np. niedziałający bit pamięci), Pamięć operacyjna, będąca urządzeniem zewnętrznym, może zostać
-			wymieniona na niewadliwą. W~przypadku umieszczenia pamięci wraz z~procesorem, taka wymiana pociągnęła by za sobą o~wiele większe
+			wymieniona na sprawną. W~przypadku umieszczenia pamięci wraz z~procesorem, taka wymiana pociągnęła by za sobą o~wiele większe
 			koszty. Co więcej, z~pamięci operacyjnej może korzystać wiele procesorów, które znajdują się w~różnych układach rozsianych po płycie głównej.
 			Z~pamięci korzystać mogą również inne urządzenia niż procesor (np. karta graficzna, dyski), więc obsługa żądań tych urządzeń mogła by być
 			sporym obciążeniem dla samego procesora. Oczywiście istnieją specjalizowane systemy komputerowe, w~których jedyną dostępną 
@@ -578,7 +541,7 @@
 \indent
 	Można zauważyć, że ,,murem'' oddzielającym procesor od pamięci (za wyjątkiem pamięci wewnętrznej) jest szyna systemowa.
 	Szyny systemowe, w~obecnych komputerach, są taktowane niższymi częstotliwościami (nawet kilkakrotnie), niż sam procesor.
-	Także sama pamięć RAM może być taktowana częstotliwością niższą zarówno od wymienionych wcześniej.
+	Także sama pamięć RAM może być taktowana niższą od wymienionych wcześniej częstotliwością.
 	Taka dysproporcja w~taktowaniu części systemu komputerowego może prowadzić do przestojów w~pracy procesora: nie może wykonać żadnego działania,
 	ponieważ nie ma kolejnych instrukcji programu! Rosnąca dysproporcja w~taktowaniu procesorów i~pamięci jest zwana \emph{murem pamięciowym}
 	(ang. \emph{memory wall}).
@@ -750,8 +713,7 @@
 %
 \indent
 	Ze względu na dostęp do zasobów komputera, procesy uruchomione przez system operacyjny można podzielić 
-	na dwie zasadnicze grupy (warstwy), które z~punktu widzenia procesów są traktowane jak środowisko, w~którym działają 
-	(lub są ich \emph{przestrzeniami}): 
+	na dwie zasadnicze grupy (przestrzenie), które z~punktu widzenia procesów są traktowane jak środowisko, w~którym działają : 
 	\emph{przestrzeń jądra} (ang. \emph{kernel space}) oraz \emph{przestrzeń użytkownika} (ang. \emph{user space}).
 \par
 %
@@ -871,78 +833,6 @@
 	\mytabcaption{Klasyfikacja systemów operacyjnych}
 	\end{center}
 \par
-%
-\begin{comment}
-\subsection{Zarządzanie pamięcią}
-%
-\indent
-	Pamięć operacyjna jest zarządzana przez komponent systemu zwany alokatorem (ang. \emph{allocator}).
-\par
-%
-\subsection{Zarządzanie czasem procesora}
-%
-\indent
-	Mechanizm umożliwiający systemowi przełączanie pomiędzy procesami oraz wątkami, jest znany pod nazwą \emph{wywłaszczania}
-	(ang. \emph{preemption}).
-\par
-\subsection{Dostęp do I/O}
-%
-\indent
-	Składniki systemu, które posiadając niskopoziomowy dostęp do urządzeń wejścia/wyjścia, tworzą dla nich wyspecyfikowane przez OS abstrakcje,
-	są nazywane \emph{sterownikami} (ang. \emph{drivers}).
-\par
-%
-\end{comment}
-\subsection{Komunikacja międzyprocesowa}
-%
-\indent
-	System operacyjny udostępnia wiele mechanizmów komunikacji międzyprocesowej:
-	\begin{itemize}
-		\item potoki anonimowe (ang. \emph{pipes}) oraz nazwane (kolejki FIFO, ang. \emph{first\dywiz in first\dywiz out});
-		\item kolejki komunikatów (ang. \emph{message queues});
-		\item sygnały (ang. \emph{signals});
-		\item pamięć dzielona (ang. \emph{shared memory, SHM});
-		\item gniazda (ang. \emph{sockets}).
-	\end{itemize}
-\par
-%
-\subsection{Synchronizacja}
-%
-\indent
-	Bardzo często występuje sytuacja, gdy dwa procesy próbują modyfikować ten sam zasób systemu, co może prowadzić do zafałszowania
-	wyników ich działania. W~takiej sytuacji, stosowane są następujące mechanizmy synchronizacji ich działania:
-	\begin{itemize}
-		\item semafory (ang. \emph{semaphores});
-		\item muteksy (ang. \emph{mutual exclusion, mutex});
-		\item zmienne warunkowe (ang. \emph{conditional variables}), warunki (ang. \emph{conditions});
-		\item szybkie pętle (ang. \emph{spinlocks}).
-	\end{itemize}
-\par
-%
-\newpage
-\section{Wątki}
-\label{sec:threads}
-\indent
-	Możemy wyróżnić dwa rodzaje wątków tworzonych i~uruchamianych w~ramach działającego procesu:
-	\begin{itemize}
-		\item wątki przestrzeni jądra (ang. \emph{kernel level threads, KLT});
-		\item wątki przestrzeni użytkownika (ang. \emph{user level threads, ULT}).
-	\end{itemize}
-\par
-%
-\subsection{Zarządzanie i~szeregowanie wątków}
-%
-\indent
-	Do zarządzania wątkami w~ramach jednego procesu, stosuje się następujące strategie:
-	\begin{itemize}
-		\item współdzielenie obciążenia (ang. \emph{load sharing});
-		\item szeregowanie grupowe (ang. \emph{gang scheduling});
-		\item przypisanie do określonego procesora (ang. \emph{dedicated processor assignment});
-		\item szeregowanie dynamiczne (ang. \emph{dynamic scheduling}).
-	\end{itemize}
-\par
-%
-\subsection{Wątki przestrzeni użytkownika}
 %
 \newpage
 \section{Opis rozwiązania}
@@ -1237,7 +1127,7 @@
 		\item operacje na współdzielonych zasobach (np. inkrementacja współdzielonego licznika);
 		\item komunikacja międzywątkowa;
 		\item szybkość działania na plikach;
-		\item wydajność gniazd sieciowych (implementacja prostego serwera).
+    \item wydajność gniazd sieciowych (implementacja problemu \emph{producent -- konsument}).
 	\end{itemize}
 \par
 %
