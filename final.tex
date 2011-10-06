@@ -854,7 +854,21 @@
 %
 \indent
   Moduł \code{masters} udostępnia jedną klasę: \code{master}.
+  Obiekt tej klasy jest wytwarza podległych mu \emph{robotników}:  
+  \begin{itemize}
+    \item funkcja \code{init()} wytwarza dokładnie tylu robotników, ile rdzeni dostępnych dla aplikacji;
+    \item funkcja \code{spawn()} służy do zgłoszenia włókna (włókien), które zostanie uruchomione po wykonaniu funkcji \code{run()};
+    \item funkcja \code{run()} jest wejściem do pętli głównej zarządcy. Wyjście z~pętli głównej następuje po ustaleniu warunku stopu;
+    \item funkcja \code{its\_time\_to\_end()} sprawdza, czy został osiągnięty warunek stopu:
+      \begin{itemize}
+        \item żaden z~robotników nie obsługuje ani jednego włókna;
+        \item \code{master} nie posiada żadnego włókna do uruchomienia.
+      \end{itemize}
+  \end{itemize}
+  zaś następnie pośredniczy w~komunikacji pomiędzy nimi, jak również sprawdza warunek stopu.
+  Wytworzenie zarządcy jest realizowane za pomocą funkcji \code{create()}: 
   Jest ona odpowiedzialna za inicjalizację zarządców włókien, zwanych \emph{robotnikami}.
+  K
 \par
 \indent
   Obiekt klasy \code{master} posiada trzy pola:
@@ -888,10 +902,10 @@
   W~obecnej implementacji biblioteki, obiekt klasy \code{epoller} jest wykorzystywany do wykrywania zdarzeń dla urządzeń wejścia-wyjścia.
   Do tego celu wykorzystywane są wymienione funkcje:
   \begin{itemize}
-    \item[\code{add(int f)}] -- dodaje deskryptor urządzenia do obserwowanych;
-    \item[\code{del(int f)}] -- usuwa deskryptor urządzenia z obserwowanych;
-    \item[\code{do\_epolls\procbr}] -- oczekuje przez określony czas na wystąpienie zdarzeń;
-    \item[\code{get\_last\_epoll\_result\procbr}] -- podaje listę deskryptorów urządzeń, dla których wystąpiło zdarzenie.
+    \item \code{add(int f)}: dodaje deskryptor urządzenia do obserwowanych;
+    \item \code{del(int f)}: usuwa deskryptor urządzenia z obserwowanych;
+    \item \code{do\_epolls\procbr}: oczekuje przez określony czas na wystąpienie zdarzeń;
+    \item \code{get\_last\_epoll\_result\procbr}: podaje listę deskryptorów urządzeń, dla których wystąpiło zdarzenie.
   \end{itemize}
 \par
 %
