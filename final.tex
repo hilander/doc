@@ -850,11 +850,10 @@
 %
 \subsection{Moduł \code{masters}}
     \myownfigure{Master}{Master.png}{Moduł \code{master}}{.7}
-		%\includegraphics[scale=.5]{Master.png}
 %
 \indent
   Moduł \code{masters} udostępnia jedną klasę: \code{master}.
-  Obiekt tej klasy jest wytwarza podległych mu \emph{robotników}:  
+  Obiekt tej klasy wytwarza podległych mu \emph{robotników}:  
   \begin{itemize}
     \item funkcja \code{init()} wytwarza dokładnie tylu robotników, ile rdzeni dostępnych dla aplikacji;
     \item funkcja \code{spawn()} służy do zgłoszenia włókna (włókien), które zostanie uruchomione po wykonaniu funkcji \code{run()};
@@ -867,21 +866,32 @@
   \end{itemize}
   zaś następnie pośredniczy w~komunikacji pomiędzy nimi, jak również sprawdza warunek stopu.
   Wytworzenie zarządcy jest realizowane za pomocą funkcji \code{create()}: 
-  Jest ona odpowiedzialna za inicjalizację zarządców włókien, zwanych \emph{robotnikami}.
-  K
+  jest ona odpowiedzialna za inicjalizację zarządców włókien, zwanych \emph{robotnikami}.
+  Każdy robotnik odpowiada jednemu z~dostępnych rdzeni, zaś
+  \code{master} komunikuje się z~nimi za pomocą kolejek wiadomości.
+  Funkcja \code{run\procbr} jest implementacją pętli głównej obiektu \code{master}. Dopóki nie zostanie spełniony warunek stopu,
+  wykonywane są dwie czynności: odczyt wiadomości przesłanych przez robotników oraz wykonanie jednej iteracji pętli głównej
+  robotnika pracującego w~bieżącym wątku.
 \par
 \indent
   Obiekt klasy \code{master} posiada trzy pola:
   \begin{itemize}
-    \item[\code{own\_slave}:] własny robotnik, który jest wykonywany w~tym samym KLT, co \code{master}, w~każdym kroku wykonywana jest jedna iteracja pętli głównej 
-    tego robotnika.
+    \item[\code{own\_slave}:] własny robotnik, który jest wykonywany w~tym samym wątku, co \code{master}, 
+      w~każdym kroku wykonywana jest jedna iteracja pętli głównej tego robotnika.
     \item[\code{slaves}:] kolekcja wskaźników do robotników, które są wykonywane w~innych wątkach.
     \item[\code{workload}:] Liczba włókien oczekujących na przekazanie i~uruchomienie w~obiektach klasy \code{worker}.
   \end{itemize}
 \par
 \subsection{Moduł \code{workers}}
-    \myownfigure{Worker}{Worker.png}{Klasa worker -- robotnik działający w~obrębie jednego KLT}{.7}
-		%\includegraphics[scale=.5]{Master.png}
+    \myownfigure{Worker}{Worker.png}{Klasa worker -- robotnik działający w~obrębie jednego wątku}{.7}
+\indent
+  Robotnik udostępnia każdemu powierzonemu włóknu:
+  \begin{itemize}
+    \item możliwość wykonania włókna;
+    \item dostęp do zasobów I/O;
+    \item komunikację pomiędzy zarządzanym włóknem, a~dowolnym innym, który działa w~aplikacji.
+  \end{itemize}
+\par
 %
 \subsection{Moduł \code{schedulers}}
   \myownfigure{Scheduler}{Scheduler.png}{Klasa scheduler -- planista włókien}{.7}
@@ -910,8 +920,10 @@
 \par
 %
 \subsection{moduł \code{message\_queues}}
+\label{sec:messagequeues}
     \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
-		%\includegraphics[scale=.5]{master.png}
+    \myownfigure{MessageQueue}{MessageQueue.png}{Klasa \code{message\_queue}}{.7}
+    \myownfigure{PrivateList}{PrivateList.png}{Klasa \code{private\_list} -- nieblokująca lista dwukierunkowa, używana jako jednokierunkowy kanał do przesyłania wiadomości}{.7}
 %
 \subsection{Moduł \code{fibers}}
 \label{sec:fibers}
