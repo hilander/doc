@@ -1,4 +1,4 @@
-\documentclass[12pt,makeidx]{mwart}
+\documentclass[12pt]{mwart}
 %\documentclass{mwart}
 \usepackage{makeidx}
 \usepackage{polski}
@@ -21,6 +21,7 @@
 \newcommand{\remark}{{\bf \emph{Notatka:}} \\ \emph}
 \newcommand{\dcolon}{::}
 \newcommand{\procbr}{()}
+\newcommand{\function}[1]{\code{#1\procbr}}
 
 \newcounter{tabmain}
 \setcounter{tabmain}{1}
@@ -45,7 +46,7 @@
 %\renewcommand{\sectionmark}[1]{\markright{#1}{}}
 \renewcommand{\sectionmark}[1]{\markboth{{#1}}{}}
 
-\linespread{1.6}
+\linespread{1.3}
 %\linespread{1.3}
 %\usepackage{qswiss,qcourier}
 %\usepackage{sfheaders}
@@ -887,9 +888,17 @@
 \indent
   Robotnik udostępnia każdemu powierzonemu włóknu:
   \begin{itemize}
-    \item możliwość wykonania włókna;
-    \item dostęp do zasobów I/O;
+    \item możliwość wykonania włókna -- tę funkcję spełnia obiekt klasy \code{scheduler}, będący własnością robotnika;
+    \item dostęp do zasobów I/O (gniazd sieciowych);
     \item komunikację pomiędzy zarządzanym włóknem, a~dowolnym innym, który działa w~aplikacji.
+  \end{itemize}
+\par
+\indent
+  Dostęp do I/O (w~obecnej implementacji: gniazd sieciowych) jest realizowany w~sposób przezroczysty dla włókna. 
+  Funkcje \function{block\_on\_io} oraz \function{do\_connect} blokują wykonanie wywołującego włókna, do momentu, w~którym 
+  żądane zasoby systemowe będą dostępne:
+  \begin{itemize}
+    \item
   \end{itemize}
 \par
 %
