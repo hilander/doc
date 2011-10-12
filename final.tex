@@ -896,10 +896,22 @@
 \indent
   Dostęp do I/O (w~obecnej implementacji: gniazd sieciowych) jest realizowany w~sposób przezroczysty dla włókna. 
   Funkcje \function{block\_on\_io} oraz \function{do\_connect} blokują wykonanie wywołującego włókna, do momentu, w~którym 
-  żądane zasoby systemowe będą dostępne:
+  żądane zasoby systemowe będą dostępne. włókno jest blokowane, a~jego stan odpowiada wykonywanej operacji:
   \begin{itemize}
-    \item
+    \item \code{BLOCKED\_FOR\_ACCEPT} odpowiada wywołaniu funkcji \function{accept};
+    \item \code{BLOCKED\_FOR\_CONNECT} odpowiada wywołaniu funkcji \function{connect};
+    \item \code{BLOCKED\_FOR\_READ} odpowiada wywołaniu funkcji \function{read};
+    \item \code{BLOCKED\_FOR\_WRITE} odpowiada wywołaniu funkcji \function{write}.
   \end{itemize}
+\par
+\indent
+  Dowolne dwa włókna mogą wymieniać między sobą wiadomości. Ze względu na przynależność włókien do zarządzających nimi robotników, możliwe są dwie możliwości:
+  przesyłania wiadomości pomiędzy włóknami:
+  \begin{enumerate}
+    \item obydwa włókna są zarządzane przez tego samego robotnika.
+    \item Każde włókno jest zarządzane przez innego robotnika.
+  \end{enumerate}
+  Obydwie możliwości są 
 \par
 %
 \subsection{Moduł \code{schedulers}}
