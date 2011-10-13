@@ -150,14 +150,11 @@
 		mechanizmach umożliwiających równoległe wykonanie części lub całych rozkazów procesora oraz na zwiększeniu liczby procesorów
 		w~komputerze w~celu podniesienia wydajności obliczeń. Poruszone problemy związane z~pamięcią operacyjną jak również opis połączenia
 		poszczególnych elementów komputera między sobą, uzasadniają potrzebę projektowania oprogramowania, które będzie wykonywane równolegle.
-	\item[Rozdział \ref{sec:system}] opisuje zgrubnie współczesne systemy operacyjne, jak również zarządzanie procesami. Ponieważ wątki są 
-		uruchamiane w~ramach procesów, znajomość podstawowych pojęć wymienionych w~tym rozdziale jest pomocna w~zrozumieniu ograniczeń wątków.
-	\item[Rozdział \ref{sec:threads}] opisuje wady i~zalety wątków przestrzeni użytkownika oaz przestrzeni jądra. Dodatkowo, zostały w~nim
-		opisane powszechnie znane implementacje wątków hybrydowych.
-	\item[Rozdział \ref{sec:solution}] opisuje implementację wątków mieszanych opartą na pomyśle opisanym we wstępie.
+	\item[Rozdział \ref{sec:system}] opisuje zgrubnie współczesne systemy operacyjne, jak również zarządzanie procesami.
+	\item[Rozdział \ref{sec:solution}] opisuje implementację włókien opartą na pomyśle opisanym we wstępie.
 	\item[Rozdział \ref{sec:analysis}] określa wartość tej implementacji: jej użyteczność oraz wydajność.
 	\item[Rozdział \ref{sec:summary}] podsumowuje wykonanie założeń opisanych we wstępie, jak również wyznacza możliwe drogi rozwoju
-		powstałej implementacji
+		powstałej implementacji.
 	\end{itemize}
 \par
 %
@@ -908,20 +905,35 @@
   Dowolne dwa włókna mogą wymieniać między sobą wiadomości. Ze względu na przynależność włókien do zarządzających nimi robotników, możliwe są dwie możliwości:
   przesyłania wiadomości pomiędzy włóknami:
   \begin{enumerate}
-    \item obydwa włókna są zarządzane przez tego samego robotnika.
-    \item Każde włókno jest zarządzane przez innego robotnika.
+    \item Obydwa włókna są zarządzane przez tego samego robotnika. Robotnik przesyła wiadomość do wewnętrznej kolejki włókna.
+    \item Każde włókno jest zarządzane przez innego robotnika. W~tej sytuacji robotnik wysyła wiadomość do nadzorcy (obiekt klasy \code{master}), żądając
+      przesłania jej do wszystkich robotników w~systemie, nie oczekując na odpowiedź.
   \end{enumerate}
-  Obydwie możliwości są 
+\par
+\indent
+  Robotnik, po wstępnej inicjalizacji, jest gotów do wejścia w~pętlę główną, w~której wykonuje następujące czynności:
+  \begin{itemize}
+    \item przegląda swoją kolejkę wiadomości, a~następnie podejmuje akcje odpowiednie do otrzymanych komunikatów (czynności zlecone przez zarządcę 
+      lub przesłanie wiadomości do włókien);
+    \item zleca planiście wykonanie wszystkich niezablokowanych włókien;
+    \item zleca obiektowi klasy \code{epoller} sprawdzenie stanu (oraz dostępności) zasobów I/O.
+  \end{itemize}
 \par
 %
 \subsection{Moduł \code{schedulers}}
   \myownfigure{Scheduler}{Scheduler.png}{Klasa scheduler -- planista włókien}{.7}
+\indent
   Rysunek \arabic{Scheduler} przedstawia klasę planisty włókien.
   Planista zarządza wykonaniem włókien, które otrzymał od swojego właściciela.
-  Jeśli zarządzane przez planistę włókno zakończyło swoje działanie, planista zmienia jego stan na \code{FINISHED}.
+  Posiada swój własny kontekst oraz stos wywołań. Jest uprawniony do zmian następujących właściwości włókna:
+  \begin{itemize}
+    \item może zmienić jego stan na \code{FINISHED}, po zakończeniu pracy włókna;
+    \item może zmienić obecnego właściciela włókna.
+  \end{itemize}
+\par
 %
-\subsection{moduł \code{epollers}}
-  \myownfigure{Epoller}{Epoller.png}{klasa epoller -- planista włókien}{.7}
+\subsection{Moduł \code{epollers}}
+  \myownfigure{Epoller}{Epoller.png}{klasa epoller -- nakładka na mechanizm systemowy \code{epoll}}{.7}
 \indent
   Rysunek \arabic{Epoller} przedstawia klasę opakowującą podstawowe operacje mechanizmu \code{epoll}.
   Mechanizm ten umożliwia detekcję:
@@ -940,36 +952,37 @@
   \end{itemize}
 \par
 %
-\subsection{moduł \code{message\_queues}}
+\subsection{Moduł \code{message\_queues}}
 \label{sec:messagequeues}
     \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
+\indent
+  Moduł \code{message\_queues} udostępnia użytkownikowi podstawową klasę \code{message} oraz dwie klasy pochodne: \code{service\_message} oraz
+  \code{fiber\_message}, które służą do wymiany wiadomości pomiędzy zarządcami oraz włóknami.
+\par
     \myownfigure{MessageQueue}{MessageQueue.png}{Klasa \code{message\_queue}}{.7}
+\indent
+  Obiekt klasy \code{message\_queue} zawiera dwie nieblokujące jednokierunkowe kolejki komunikatów, które służą do wymiany wiadomości
+  pomiędzy dwoma równoległymi wątkami. Tak więc \code{message\_queue} implementuje mechanizm \emph{half\dywiz duplex}, znany z~potoków,
+  udostępnianych przez systemy uniksowe.
+\par
     \myownfigure{PrivateList}{PrivateList.png}{Klasa \code{private\_list} -- nieblokująca lista dwukierunkowa, używana jako jednokierunkowy kanał do przesyłania wiadomości}{.7}
+\indent
+  Obiekt klasy \code{private\_list} jest listą dwukierunkową. Dane wkładane do niej nie są buforowane,
+  jej rozmiar jest zależny jedynie od ilości dostępnej pamięci. Podczas wkładania lub wyciągania wiadomości z~listy nie są stosowane żadne mechanizmy
+  synchronizacji międzywątkowej. Każde wywołanie funkcji \function{push} jest zakończone sukcesem, zaś wywołanie funkcji \function{top} powiedzie się wtedy, gdy lista zawiera
+  co najmniej jeden element do przekazania. Żadna z~tych funkcji nie wykonuje jakiegokolwiek wywołania systemowego.
+\par
 %
 \subsection{Moduł \code{fibers}}
 \label{sec:fibers}
-    \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacj włókna}{.7}
-		%\includegraphics[scale=.5]{Master.png}
+    \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacja włókna}{.7}
 %
-\subsection{Moduł \code{libcoro}}
+\subsection{Moduł \code{coroutines}}
 \label{sec:coroutine}
 %
+\myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
 \indent
-	Klasa \code{libcoro::abstract} jest \emph{interfejsem} dla koprocedury: informuje o~podstawowej funkcji, która musi być spełniona
-	przez obiekt tej klasy. Tą funkcją jest niewątpliwie możliwość uruchomienia kodu koprocedury (wirtualna metoda \code{run()}).
-	Klasa \code{libcoro::coroutine} dostarcza podstawowe mechanizmy potrzebne do obsługi koprocedury, m. in.:
-	\begin{itemize}
-		\item uruchomienie, wstrzymanie, wznowienie wykonania oraz terminacja koprocedury;
-		\item obsługę kontekstu wykonania koprocedury: inicjalizacja, przełączanie pomiędzy kontekstami;
-		\item przechwytywanie wyjątków.
-	\end{itemize}
-	Przeciążona metoda \code{run()} zawiera kod uruchamiany po uruchomieniu koprocedury,
-	zaś wywołanie metody \code{start()} powoduje jej uruchomienie.
-	Koprocedura może wstrzymać swoje działanie i~przekazać sterowanie programu do wywołującej ją koprocedury za pomocą metody \code{yield()}.
-	Jeśli takie wywołanie miało miejsce, możliwe jest wznowienie jej działania poprzez ponowne wywołanie metody \code{start()}.
-	Istnieje również możliwość przywrócenia kontekstu do stanu umożliwiającego jej ponowne uruchomienie od początku, taką funkcję spełnia
-	metoda \code{rewind\procbr}.
-	Podczas działania aplikacji, można wyróżnić kilka stanów koprocedury:
+  Koprocedura jest 
 	\begin{itemize}
 		\item READY: koprocedura jest zainicjalizowana i~gotowa do uruchomienia; koprocedura jest w~tym stanie również po wykonaniu metody
 			\code{yield\procbr};
@@ -1010,144 +1023,6 @@
 	z~kontekstem wykonania, który jest wytwarzany przez samą funkcję, bądź jest dostarczany wraz z~obiektem.
 \par
 %
-\subsection{Moduł \code{libmanager}}
-\indent
-	Moduł \code{libmanager} jest odpowiedzialny za zarządzanie kontekstami wykonania koprocedur. Udostępnia następujące funkcje:
-	\begin{itemize}
-		\item pobranie kontekstu z~magazynu (\code{get\procbr});
-		\item zwrócenie kontekstu do magazynu (\code{dispose\procbr}).
-	\end{itemize}
-	Obecnie moduł ten spełnia jedynie funkcje magazynu, nie posiada zaimplementowanych operacji zarządzania pamięcią.
-	Operacje \code{get\procbr} oraz \code{dispose\procbr} nie są funkcjami \emph{reentrantnymi}.
-	Mimo to, wydzielony magazyn dostarcza wygodnego mechanizmu do wytwarzania kontekstów wykonania koprocedur, zaś wydzielenie
-	go jako osobnego modułu jest przydatne w~wypadku rozszerzania go o~wcześniej wspomniane funkcje.
-\par
-%
-\subsection{Moduł \code{libfiber}}
-\indent
-	Moduł \code{libfiber} dostarcza podstawową klasę wątków używanych w~ramach biblioteki \code{libmixed}:
-	klasa \code{fiber}, będąca klasą pochodną \code{coroutine}, zawiera dane potrzebne do identyfikacji
-	konkretnego wątku, jak również dostarcza następujących mechanizmów:
-	\begin{itemize}
-		\item przesyłanie wiadomości (obiekty klasy \code{message}) pomiędzy wątkami za pomocą metod \code{send\procbr} oraz \code{receive\procbr}. 
-			Ponieważ przesłanie wiadomości pomiędzy dwoma wątkami może wymagać pośrednictwa zarówno zarządcy przestrzeni użytkownika, jak również 
-			nad\dywiz zarządcy, implementacja tego mechanizmu jest rozłożona pomiędzy te trzy komponenty. Szczegółowy opis mechanizmu przesyłania 
-			wiadomości znajduje się w~rozdziale \ref{sec:scheduler}.
-		\item \emph{Jacketing} urządzeń wejścia-wyjścia: metody \code{read\procbr} i~\code{write\procbr}, które, wywołane przez wątek, nie powodują
-			zablokowania wywołania KLT, w~ramach którego wykonywany jest wątek. Podobnie jak w~wypadku implementacji mechanizmu przesyłania wiadomości,
-			wymienione metody implementują część mechanizmu jacketingu związaną
-			z~wątkiem, zaś obiekty klas opisanych w~rozdziale \ref{sec:scheduler} posiadają zaimplementowaną część tego mechanizmu, która jest wykonywana
-			po stronie zarządcy (oraz nad\dywiz zarządcy).
-	\end{itemize}
-\par
-%
-\subsection{Moduł \code{libscheduler}}
-\label{sec:scheduler}
-\indent
-	Moduł \code{libscheduler} zawiera dwie klasy planistów: \code{userspace\_scheduler} (ULS) oraz \code{ueber\_scheduler} (OLS).
-	Klasa \code{userspace\_scheduler} jest odpowiedzialna za zarządzanie wątkami użytkownika w~obrębie jednego KLT.
-	Do jej odpowiedzialności należy:
-	\begin{itemize}
-		\item wytworzenie oraz rejestracja gotowego wątku (metoda \code{spawn\procbr});
-		\item przesyłanie wiadomości pomiędzy wątkami;
-		\item jacketing urządzeń wejścia\dywiz wyjścia (pośredniczenie pomiędzy wątkiem a~OLS);
-		\item szeregowanie wątków.
-	\end{itemize}
-	Powinnościami klasy \code{ueber\_scheduler} są:
-	\begin{itemize}
-		\item utworzenie \emph{pewnej} liczby wątków, każdy z~nich jest przyporządkowany  do obiektu klasy \code{userspace\_scheduler};
-		\item nadzór nad ULS: rozpoczęcie pracy, zakończenie działania, przesyłanie żądań utworzenia nowego wątku;
-		\item implementacja jacketingu: wykonanie wywołań systemowych, zarządzanie kolejką wątków oczekujących na I/O;
-		\item pośrednictwo w~przekazywaniu wiadomości pomiędzy wątkami;
-		\item obsługa zdarzeń systemowych oraz sygnałów.
-	\end{itemize}
-\par
-%
-\indent
-	Komunikacja pomiędzy ULS a~OLS jest realizowana za pomocą potoków anonimowych (pipe).
-\par
-%
-\indent
-	Wszystkie wątki klasy \code{fiber} muszą spełniać warunek \emph{niezawodności}: muszą one przekazywać sterowanie do ULS w~\emph{rozsądnym} czasie
-	(kończąc swoje działanie, lub poprzez operację \code{yield\procbr}).
-\par
-%
-\indent
-	Rozpoczęcie działania biblioteki jest równoznaczne z~wywołaniem metody \code{init\procbr} w~obiekcie klasy \code{ueber\_scheduler},
-	zaś zakończenie działania OLS następuje po wykonaniu wszystkich wątków rozesłanych do posiadanych przez niego ULS.
-\par
-%
-\remark
-{
-	We wtorek pojawi się opis mechanizmu wykrywania zakleszczeń.
-}
-\subsubsection{Wytworzenie wątku}
-\indent
-	Żądanie utworzenia (i~uruchomienia) wątku jest zgłaszane nad\dywiz planiście, zaś ten przekazuje je jednemu spośród ULS:
-	\begin{itemize}
-		\item metoda \code{ueber\_scheduler\dcolon spawn\procbr} przyjmuje jako argument wskaźnik do obiektu klasy \code{fiber}, który
-			jest następnie przesyłany do ULS;
-		\item po odebraniu żądania, ULS związuje kontekst z~przesłanym wątkiem i~dodaje go do kolejki wątków gotowych do uruchomienia.
-	\end{itemize}
-	\begin{figure}[h!]
-		\label{fig:threadcreation}
-		\centering
-		\hspace*{-1cm}\includegraphics[scale=.55]{ThreadCreation.png}
-		\caption{Wytworzenie wątku zarządzanego przez bibliotekę \code{libmixed}}
-	\end{figure}
-	Opisany sposób wytwarzania wątku posiada tę zaletę, że finalizacja tworzenia obiektu jest dokonywana w~miejscu rozpoczęcia jego wykonania.
-	Co więcej, wątek jest w~stanie \emph{wędrować} pomiędzy zarządzającymi nim planistami (zarówno ULS, jak też może być przechowywana przez
-	OLS).
-\par
-%
-\subsubsection{Przesyłanie wiadomości pomiędzy wątkami}
-\indent
-	Mechanizm przesyłania wiadomości pomiędzy wątkami spełnia następujące założenia:
-	\begin{itemize}
-		\item wysyłanie i~odbiór wiadomości mogą blokować działanie wątku, jednakże nie mogą blokować działania żadnego planisty biorącego udział
-			w~komunikacji międzywątkowej;
-		\item mechanizm ma być przezroczysty dla wątku: bez względu na wzajemne położenie wątków (zarządzanie przez tego samego planistę lub
-			przez dwóch innych planistów), z~perspektywy wątku komunikacja pomiędzy nimi odbywa się tak samo.
-	\end{itemize}
-	Rysunek \ref{fig:interthreadmessaging1} oraz rys.~\ref{fig:interthreadmessaging2} przedstawiają możliwe scenariusze wędrówki wiadomości 
-	pomiędzy dwoma wątkami.
-	\begin{center}
-		%\label{fig:interthreadmessaging1}
-		\centering
-    \myownfigure{fig:interthreadmessaging1}{interThread.png}{Wysłanie wiadomości z~wątku thread1 do wątku thread2 w~ramach tego samego ULS}{.5}
-		%\hspace*{-1cm}\includegraphics[scale=.6,angle=90]{InterThread1.png}
-		%\caption{Wysłanie wiadomości z~wątku thread1 do wątku thread2 w~ramach tego samego ULS}
-	\end{center}
-	\begin{figure}[h!]
-		\label{fig:interthreadmessaging2}
-		\centering
-		\hspace*{-1cm}\includegraphics[scale=.6,angle=90]{InterThread2.png}
-		\caption{Wysłanie wiadomości z~wątku thread1 do wątku thread2 w~ramach tego samego ULS}
-	\end{figure}
-	W~obecnej implementacji:
-	\begin{itemize}
-		\item operacja \code{send\procbr} powoduje zablokowanie wątku wysyłającego wiadomość; po dostarczeniu wiadomości do odbiorcy, 
-			sterowanie powraca do wątku, \code{send\procbr} podaje wynik wysłania wiadomości;
-		\item operacja \code{receive\procbr} powoduje sprawdzenie bufora wiadomości dla danego wątku; jeśli jest niepusty, \code{receive\procbr}
-			przekazuje jako wynik pierwszą wiadomość z~bufora.
-	\end{itemize}
-\par
-%
-\subsubsection{Jacketing urządzeń wejścia\dywiz wyjścia}
-\indent
-	Implementacja dostarcza nieblokujący dostęp do systemu plików oraz udostępnia nieblokujące gniazda sieciowe.
-	Podobnie jak w~wypadku komunikacji międzywątkowej, wątek dokonujący odczytu lub zapisu do takiego zasobu, jest blokowany,
-	a~nadzorujący go ULS przesyła żądanie do OLS.
-	To właśnie w~nad\dywiz zarządcy znajduje się część implementacji, w~której znajdują się (nieblokujące) wywołania systemowe,
-	zaś wyniki poszczególnych operacji na zasobach systemowych są przesyłane do odpowiednich ULS.
-\par
-%
-\indent
-	Obecnie dostępne są dwa rodzaje zasobów systemowych: plik \linebreak (\code{scheduler\dcolon file}) oraz gniazdo (\code{scheduler\dcolon socket}).
-	Posiadają one metody do odczytu (\code{read\procbr}) oraz zapisu (\code{write\procbr}).
-\par
-%
-\newpage
 \section{Analiza rozwiązania}
 \label{sec:analysis}
 \subsection{Kryteria oceny}
