@@ -957,26 +957,116 @@
     \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
 \indent
   Moduł \code{message\_queues} udostępnia użytkownikowi podstawową klasę \code{message} oraz dwie klasy pochodne: \code{service\_message} oraz
-  \code{fiber\_message}, które służą do wymiany wiadomości pomiędzy zarządcami oraz włóknami.
+  \code{fiber\_message}, które służą do wymiany wiadomości odpowiednio pomiędzy zarządcami oraz włóknami. Dwa pola klasy \code{message}:
+  \code{prev} oraz \code{next}, są wykorzystywane przez obiekt klasy \code{private\_list}.
 \par
     \myownfigure{MessageQueue}{MessageQueue.png}{Klasa \code{message\_queue}}{.7}
 \indent
-  Obiekt klasy \code{message\_queue} zawiera dwie nieblokujące jednokierunkowe kolejki komunikatów, które służą do wymiany wiadomości
-  pomiędzy dwoma równoległymi wątkami. Tak więc \code{message\_queue} implementuje mechanizm \emph{half\dywiz duplex}, znany z~potoków,
+  Obiekt klasy \code{message\_queue} zawiera dwie nieblokujące listy komunikatów, które służą do wymiany wiadomości
+  pomiędzy dwoma wątkami. Dla łatwej identyfikacji wątków, wątek A~został nazwany \code{master}, zaś wątek B~--\code{slave},
+  jednak są one traktowane jako dwa równorzędne byty. Lista \code{master\_queue} służy do komunikacji \code{slave}$\to$\code{master},
+  a~lista \code{slave\_queue} do \code{master}$\to$\code{slave}.
+  Tak więc \code{message\_queue} implementuje mechanizm \emph{half\dywiz duplex}, znany z~potoków,
   udostępnianych przez systemy uniksowe.
 \par
     \myownfigure{PrivateList}{PrivateList.png}{Klasa \code{private\_list} -- nieblokująca lista dwukierunkowa, używana jako jednokierunkowy kanał do przesyłania wiadomości}{.7}
 \indent
   Obiekt klasy \code{private\_list} jest listą dwukierunkową. Dane wkładane do niej nie są buforowane,
   jej rozmiar jest zależny jedynie od ilości dostępnej pamięci. Podczas wkładania lub wyciągania wiadomości z~listy nie są stosowane żadne mechanizmy
-  synchronizacji międzywątkowej. Każde wywołanie funkcji \function{push} jest zakończone sukcesem, zaś wywołanie funkcji \function{top} powiedzie się wtedy, gdy lista zawiera
-  co najmniej jeden element do przekazania. Żadna z~tych funkcji nie wykonuje jakiegokolwiek wywołania systemowego.
+  synchronizacji międzywątkowej. Użytkownik tej listy ma do dyspozycji dwie funkcje:
+  \begin{enumerate}
+    \item Funkcja \function{push} służy do wkładania nowego elementu do listy. Jej wywołanie zawsze jest zakończone sukcesem.
+    \item Funkcja \function{top} służy do wyjmowania elementu z~listy -- \emph{głowy} listy. Jeśli lista zawiera co najmniej jeden element, operacja się
+    powiedzie (wynik wywołania -- \code{true}), w~przeciwnym wypadku wynikiem wywołania funkcji jest \code{false}.
+  \end{enumerate}
+  Żadna z~tych funkcji nie wykonuje jakiegokolwiek wywołania systemowego.
+\par
+\indent
+  Każdy element listy, oprócz pól \code{prev} i~\code{next}, posiada również pole \code{used}, które jest używane do stwierdzenia, czy dany element był już
+  użyty (\code{true}), czy jest gotowy do użycia (\code{false}).
+  Lista posiada zawsze co najmniej jeden element, który jest jej \emph{głową} (\code{head}).
+  Lista posiada również wiadomość o~ostatnim elemencie, \emph{wartowniku} (\code{guard}).
+\par
+\indent
+  Funkcja \code{push( in m )} wykonuje następujące operacje:
+  \begin{enumerate}
+    \item \code{m->prev} $\gets$ \code{guard};
+    \item \code{guard->next} $\gets$ \code{m};
+    \item \code{guard} $\gets$ \code{m}.
+  \end{enumerate}
+\par
+  \myownfigure{PrivateListPush}{PrivateListPush.png}{Operacja \function{push}}{.7}
+\indent
+  Implementacja funkcji \code{pop( out m )} jest bardziej skomplikowana:\\
+  Czy można użyć \code{head}?
+  \begin{enumerate}
+    \item TAK -- \code{m}$\gets$\code{head}
+    \begin{enumerate}
+      \item Czy \code{head->next}$\neq$\code{0}?
+      \item TAK -- \code{head}$\gets$\code{head->next}, \code{head->prev->next}$\gets$\code{0}, \code{head->prev}$\gets$\code{0}.
+      \item \code{return true}.
+    \end{enumerate}
+    \item NIE -- Czy \code{head->next}$\neq$\code{0}?
+    \begin{enumerate}
+      \item TAK -- \code{head}$\gets$\code{head->next}, \code{head->prev->next}$\gets$\code{0}, \code{head->prev}$\gets$\code{0}.
+      \item \code{head->used}$\gets$\code{true}, \code{return true}.
+      \item NIE -- \code{return false}.
+    \end{enumerate}
+  \end{enumerate}
+\par
+  \myownfigure{PrivateListPop1}{PrivateListPop1.png}{Operacja \function{pop} -- pierwsza gałąź algorytmu}{.7}
+  \myownfigure{PrivateListPop2}{PrivateListPop2.png}{Operacja \function{pop} -- druga gałąź algorytmu}{.7}
+\indent
+  Czy powyższa implementacja jest poprawna?
+  \begin{enumerate}
+    \item Gdy lista jest używana sekwencyjnie, każdy ciąg operacji \function{push} i~\function{pop} nie zaburza wzajemnego położenia głowy i~wartownika (stan \emph{stabilny} listy).
+    \item Podczas operacji \function{push} może wystąpić przeplot z~wątkiem wykonującym na tej samej liście operację \function{pop}. 
+    Gdy nowa wiadomość nie jest widoczna (rys. \arabic{PrivateListPush}),
+    dowolny przeplot obydwu funkcji nie zaburza stanu stabilnego listy. Jedyna możliwość zaburzenia stanu stabilnego może wystąpić w~następującym scenariuszu:
+      \begin{center}
+      \centering
+      \begin{tabular}{|c|c|c|c|} \hline
+        Wątek               & Operacja                         & \code{head} & \code{guard} \\ \hline
+        A (\function{push}) & \code{guard->next} $\gets$ \code{b} & \code{a} & \code{a} \\ \hline
+        B (\function{pop})  & \code{head}$\gets$\code{b}          & \code{b} & \code{a} \\
+                            & \code{b->prev->next}$\gets$\code{0} & \code{b} & \code{a} \\
+                            & \code{b->prev}$\gets$\code{0}       & \code{b} & \code{a} \\ \hline
+        A                   & \code{guard}$\gets$\code{b}         & \code{b} & \code{b} \\ \hline
+      \end{tabular}
+      	\mytabcaption{Przeplot zaburzający stan stabilny listy}
+      \label{tab:stableestate}
+      \end{center}
+    Jak łatwo zauważyć, zaburzenie to jest chwilowe, a~po zakończeniu wywołań funkcji w~przeplatających się wątkach lista wraca do stanu stabilnego. 
+    Każde kolejne wywołanie funkcji \function{pop} przy zablokowanym wywołaniu \function{push}
+    nie zmieni żadnego dowiązania w~liście, gdyż element \code{b}~nie ma następnika.
+    \item Jeśli wykonanie operacji \function{pop} zostanie przerwane i~nastąpi przeplot z~funkcją \function{push}, która działa na tej samej liście,
+    to każdy taki przeplot jest bezpieczny:
+    \begin{enumerate}
+      \item każdy przeplot operacji obu funkcji zachowuje stan stabilny listy;
+      \item każda operacja wykonywana w~\function{pop} dotyczy \emph{lewej strony} elementu listy (informacje dotyczące poprzednika), zaś
+      operacje funkcji \function{push} dotyczą \emph{prawej strony} elementu.
+    \end{enumerate}
+  \end{enumerate}
+\par
+\indent
+  Czy jeszcze jedna implementacja listy dwukierunkowej jest potrzebna, skoro biblioteka standardowa
+  oferuje gotową implementację list dwukierunkowych? Odpowiedź na to pytanie jest oczywista: tak, ponieważ listy
+  udostępnione przez bibliotekę standardową nie są przewidziane dla więcej niż jednego wątku.
 \par
 %
 \subsection{Moduł \code{fibers}}
 \label{sec:fibers}
     \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacja włókna}{.7}
 %
+\indent
+  Klasa \code{fiber} jest bazą dla włókien, które użytkownik zgłasza zarządcy (obiektowi klasy \code{master}) do uruchomienia.
+  Posiada ona następujące udogodnienia:
+  \begin{enumerate}
+    \item Komunikacja: wymiana wiadomości z~innymi włóknami. Po wytworzeniu wiadomości, można ją przesłać do odbiorcy za pomocą nieblokującej funkcji \function{send\_message}.
+    Do odbioru wiadomości służą funkcje \function{receive\_message} (blokująca) oraz \function{receive\_message\_nonblock} (nieblokująca).
+    \item Wytworzenie włókna: funkcja \function{spawn} umożliwia uruchomienie włókna w~przestrzeni włókien bieżącego zarządcy (obiektu klas \code{master}).
+  \end{enumerate}
+\par
 \subsection{Moduł \code{coroutines}}
 \label{sec:coroutine}
 %
