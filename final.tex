@@ -1060,15 +1060,28 @@
           \linebreak i~\function{do\_close} odpowiadają operacjom \function{accept} oraz \function{close}. Wywołanie każdej funkcji blokuje wykonanie włókna do momentu wystąpienia  
           zdarzenia związanego z~podanym deskryptorem.
       \end{enumerate}
+    \item Przekazanie sterowania z~włókna do zarządcy -- funkcja \function{yield}, dziedziczona z~klasy \code{coroutine}.
   \end{enumerate}
   Należy mieć na uwadze, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika nie jest wstrzymywana.
 \par
 \indent
   Każde włókno posiada bufor używany podczas zapisu/odczytu do i~z~I/O. W~bieżącej implementacji jest on kolekcją standardową klasy \code{vector<char>}. 
   Oprócz podanych wyżej funkcji, każde włókno posiada zestaw funkcji używanych przez zarządzające nim obiekty biblioteki:
-  \begin{itemize}
-    \item 
-  \end{itemize}
+  \begin{enumerate}
+    \item Do ustawienia bieżącego stanu służy funkcja \function{set\_state}, a~\function{get\_state} informuje o~bieżącym stanie włókna.
+    Włókno, ze względu na wykonywane operacje, znajduje się w~jednym ze stanów:
+    \begin{itemize}
+      \item \code{READY}: włókno gotowe do pracy;
+      \item \code{FINISHED}: włókno zakończyło działanie;
+      \item \code{BLOCKED\_FOR\_READ}: włókno zablokowane podczas próby odczytu z~I/O;
+      \item \code{BLOCKED\_FOR\_WRITE}:  włókno zablokowane podczas próby zapisu \linebreak do I/O;
+      \item \code{BLOCKED\_FOR\_ACCEPT}:  włókno zablokowane podczas operacji \code{accept};
+      \item \code{BLOCKED\_FOR\_CONNECT}:  włókno zablokowane podczas operacji \code{connect};
+      \item \code{BLOCKED\_FOR\_MESSAGE}:  włókno oczekuje na nadejście wiadomości.
+    \end{itemize}
+    \item Funkcja \function{set\_owner} służy do ustawienia pola \code{owner}, które jest wskaźnikiem na obiekt klasy \code{worker} -- robotnika 
+    zarządzającego włóknem. Pole to jest używane przez funkcje udostępnione dla użytkownika, a~odpowiedzialne za komunikację z~innymi włóknami oraz dostęp do I/O.
+  \end{enumerate}
 \par
 \subsection{Moduł \code{coroutines}}
 \label{sec:coroutine}
@@ -1120,14 +1133,15 @@
 \label{sec:analysis}
 \subsection{Kryteria oceny}
 \indent
-	Użyteczność implementacji opisanej w~poprzednim rozdziale można określić za pomocą porównania jej wydajności z~szeroko rozpowszechnionymi
-	implementacjami wątków. Obecnie nie jest dostępna implementacja wątków, która spełniała by następujące wymogi:
+	Użyteczność implementacji opisanej w~poprzednim rozdziale można określić na podstawie:
 	\begin{itemize}
-		\item zaimplementowana w~C++;
+		\item wygody jej użytkowania w~porównaniu z~dostępnymi implementacjami wątków. Ponieważ powszechnie używaną implementacją wątków jest Pthreads,
+      porównanie podstawowych scenariuszy użycia tej biblioteki z~analogicznymi scenariuszami użycia biblioteki \code{libmixed} powinno dać jasny pogląd
+      na użyteczność \code{libmixed}.
 		\item nie wymaga zmian w~jądrze systemu;
 		\item model N:M.
 	\end{itemize}
-	Ponieważ bieżąca implementacja w~części odpowiedzialnej za KLT korzysta implementacji Pthreads, zaś część implementująca ULT
+	Ponieważ bieżąca implementacja w~części odpowiedzialnej za wątki korzysta z~implementacji Pthreads, zaś część implementująca włókna
 	jest wzorowana na rozwiązaniach stosowanych w~bibliotece GNU Pth, naturalnym wyborem do testów porównawczych jest
 	użycie tych implementacji wątków.
 \par
