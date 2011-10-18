@@ -1059,13 +1059,28 @@
     \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacja włókna}{.7}
 %
 \indent
-  Klasa \code{fiber} jest bazą dla włókien, które użytkownik zgłasza zarządcy (obiektowi klasy \code{master}) do uruchomienia.
+  \code{fiber} jest klasą bazową dla włókien, które użytkownik zgłasza zarządcy (obiektowi klasy \code{master}) do uruchomienia.
   Posiada ona następujące udogodnienia:
   \begin{enumerate}
     \item Komunikacja: wymiana wiadomości z~innymi włóknami. Po wytworzeniu wiadomości, można ją przesłać do odbiorcy za pomocą nieblokującej funkcji \function{send\_message}.
-    Do odbioru wiadomości służą funkcje \function{receive\_message} (blokująca) oraz \function{receive\_message\_nonblock} (nieblokująca).
+    Do odbioru wiadomości służą funkcje \linebreak \function{receive\_message} (blokująca) oraz \function{receive\_message\_nonblock} (nieblokująca).
     \item Wytworzenie włókna: funkcja \function{spawn} umożliwia uruchomienie włókna w~przestrzeni włókien bieżącego zarządcy (obiektu klas \code{master}).
+    \item Obsługa wejścia-wyjścia: włókno udostępnia następujące udogodnienia:
+      \begin{enumerate}
+        \item blokujące operacje odczytu (\function{do\_read}) oraz zapisu (\function{do\_write});
+        \item podstawową obsługę gniazd sieciowych: funkcja \function{do\_connect} odpowiada systemowej operacji \function{connect}, a~funkcje \function{do\_accept} 
+          \linebreak i~\function{do\_close} odpowiadają operacjom \function{accept} oraz \function{close}. Wywołanie każdej funkcji blokuje wykonanie włókna do momentu wystąpienia  
+          zdarzenia związanego z~podanym deskryptorem.
+      \end{enumerate}
   \end{enumerate}
+  Należy mieć na uwadze, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika nie jest wstrzymywana.
+\par
+\indent
+  Każde włókno posiada bufor używany podczas zapisu / odczytu do i~z~I/O. W~bieżącej implementacji jest on kolekcją standardową klasy \code{vector<char>}. 
+  Oprócz podanych wyżej funkcji, każde włókno posiada zestaw funkcji używanych przez zarządzające nim obiekty biblioteki:
+  \begin{itemize}
+    \item 
+  \end{itemize}
 \par
 \subsection{Moduł \code{coroutines}}
 \label{sec:coroutine}
