@@ -881,7 +881,7 @@
 \indent
   Dostęp do I/O (w~obecnej implementacji: gniazd sieciowych) jest realizowany w~sposób przezroczysty dla włókna. 
   Funkcje \function{block\_on\_io} oraz \function{do\_connect} blokują wykonanie wywołującego włókna, do momentu, w~którym 
-  żądane zasoby systemowe będą dostępne. włókno jest blokowane, a~jego stan odpowiada wykonywanej operacji:
+  żądane zasoby systemowe będą dostępne. Włókno jest blokowane, a~jego stan odpowiada wykonywanej operacji:
   \begin{itemize}
     \item \code{BLOCKED\_FOR\_ACCEPT} odpowiada wywołaniu funkcji \function{accept};
     \item \code{BLOCKED\_FOR\_CONNECT} odpowiada wywołaniu funkcji \function{connect};
@@ -1134,19 +1134,36 @@
 \subsection{Kryteria oceny}
 \indent
 	Użyteczność implementacji opisanej w~poprzednim rozdziale można określić na podstawie:
-	\begin{itemize}
-		\item wygody jej użytkowania w~porównaniu z~dostępnymi implementacjami wątków. Ponieważ powszechnie używaną implementacją wątków jest Pthreads,
+	\begin{enumerate}
+		\item Wygody jej używania w~porównaniu z~dostępnymi implementacjami wątków. Ponieważ powszechnie używaną implementacją wątków jest \code{Pthreads},
       porównanie podstawowych scenariuszy użycia tej biblioteki z~analogicznymi scenariuszami użycia biblioteki \code{libmixed} powinno dać jasny pogląd
       na użyteczność \code{libmixed}.
-		\item nie wymaga zmian w~jądrze systemu;
-		\item model N:M.
-	\end{itemize}
-	Ponieważ bieżąca implementacja w~części odpowiedzialnej za wątki korzysta z~implementacji Pthreads, zaś część implementująca włókna
-	jest wzorowana na rozwiązaniach stosowanych w~bibliotece GNU Pth, naturalnym wyborem do testów porównawczych jest
-	użycie tych implementacji wątków.
+    \item Poprawności działania poszczególnych elementów biblioteki na podstawie testów jednostkowych.
+		\item Wydajności biblioteki \code{libmixed}, a~więc porównania czasu działania programów używających \code{libmixed}
+      oraz analogicznych programów używających biblioteki \code{Pthreads}.
+	\end{enumerate}
 \par
 %
-\subsection{Testy}
+\subsection{Wygoda użytkowania}
+\indent
+  Podstawowe scenariusze, na podstawie których można sprawdzić wygodę użytkowania biblioteki \code{libmixed}, to:
+  \begin{enumerate}
+    \item Uruchomienie środowiska zarządzającego włóknami.
+    \item Wytworzenie włókna gotowego do uruchomienia.
+    \item Uruchomienie włókna.
+    \item Blokujące oczekiwanie na zakończenie włókna.
+    \item Zakończenie działania włókna.
+    \item Przesłanie wiadomości do innego włókna.
+    \item Użycie I/O
+    \begin{enumerate}
+      \item Gniazda sieciowe.
+      \item Stoper (ang. \emph{timer}).
+    \end{enumerate}
+    \item Obsługa wyjątków.
+  \end{enumerate}
+\par
+\subsection{Testy jednostkowe}
+\subsection{Testy wydajnościowe}
 \indent
 	Porównanie implementacji z~istniejącymi obejmuje następujące właściwości biblioteki:
 	\begin{itemize}
