@@ -25,13 +25,15 @@
 
 \newcounter{tabmain}
 \setcounter{tabmain}{1}
-\newcommand{\mytabcaption}[1]{ \begin{center}Tabela \arabic{tabmain}. #1.\end{center} \addtocounter{tabmain}{1} }
+\newcommand{\mytabcaption}[1]{ \begin{center}\normalsize{Tabela \arabic{tabmain}. #1.}\end{center} \addtocounter{tabmain}{1} }
 
 \newcounter{figmain}
 \setcounter{figmain}{1}
 \newcommand{\myfigcounter}[1]{ \begin{center}Rysunek \arabic{figmain}. #1.\end{center} \addtocounter{figmain}{1} }
 \newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ \nopagebreak[4] Rysunek \arabic{#1}. #3. \end{center}}
 
+\usepackage{xtab}
+\tabletail{\hline}
 
 \usepackage{fancyhdr}
 \setlength{\headheight}{15.2pt}
@@ -834,12 +836,11 @@
 	jest wyłączny dostęp do wyróżnionych obiektów (klasy \code{fiber\dcolon resource}).
 \par
 %
-\subsection{Moduł \code{masters}}
-    \myownfigure{Master}{Master.png}{Moduł \code{master}}{.7}
+\subsection{Klasa \code{master}}
+    \myownfigure{Master}{Master.png}{Klasa \code{master} -- zarządca robotników}{.7}
 %
 \indent
-  Moduł \code{masters} udostępnia jedną klasę: \code{master}.
-  Obiekt tej klasy wytwarza podległych mu \emph{robotników}:  
+  Obiekt klasy \code{master} wytwarza podległych mu \emph{robotników}:  
   \begin{itemize}
     \item funkcja \code{init()} wytwarza dokładnie tylu robotników, ile rdzeni dostępnych dla aplikacji;
     \item funkcja \code{spawn()} służy do zgłoszenia włókna (włókien), które zostanie uruchomione po wykonaniu funkcji \code{run()};
@@ -850,7 +851,7 @@
         \item \code{master} nie posiada żadnego włókna do uruchomienia.
       \end{itemize}
   \end{itemize}
-  zaś następnie pośredniczy w~komunikacji pomiędzy nimi, jak również sprawdza warunek stopu.
+  Po wytworzeniu robotników, \code{master} pośredniczy w~komunikacji pomiędzy nimi, jak również sprawdza warunek stopu.
   Wytworzenie zarządcy jest realizowane za pomocą funkcji \code{create()}: 
   jest ona odpowiedzialna za inicjalizację zarządców włókien, zwanych \emph{robotnikami}.
   Każdy robotnik odpowiada jednemu z~dostępnych rdzeni, zaś
@@ -1065,7 +1066,9 @@
   Należy mieć na uwadze, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika nie jest wstrzymywana.
 \par
 \indent
-  Każde włókno posiada bufor używany podczas zapisu/odczytu do i~z~I/O. W~bieżącej implementacji jest on kolekcją standardową klasy \code{vector<char>}. 
+  Każde włókno posiada bufor używany podczas zapisu/odczytu do i~z~I/O. W~bieżącej implementacji jest on kolekcją standardową klasy \code{vector<char>},
+  bezpośredni dostęp do bufora (dla włókna) zapewnia pole \code{rw\_buffer}, zaś funkcje \function{set\_last\_read} oraz \function{set\_last\_write} 
+  informują o~ilości bajtów odczytanych/zapisanych podczas ostatnio wykonanej operacji odczytu/zapisu.
   Oprócz podanych wyżej funkcji, każde włókno posiada zestaw funkcji używanych przez zarządzające nim obiekty biblioteki:
   \begin{enumerate}
     \item Do ustawienia bieżącego stanu służy funkcja \function{set\_state}, a~\function{get\_state} informuje o~bieżącym stanie włókna.
@@ -1083,50 +1086,50 @@
     zarządzającego włóknem. Pole to jest używane przez funkcje udostępnione dla użytkownika, a~odpowiedzialne za komunikację z~innymi włóknami oraz dostęp do I/O.
   \end{enumerate}
 \par
+\indent
+  \myownfigure{LibcoroStates}{LibcoroStates.png}{Stany włókna oraz dozwolone przejścia pomiędzy nimi}{.55}
+\par
 \subsection{Moduł \code{coroutines}}
 \label{sec:coroutine}
 %
-\myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
 \indent
-  Koprocedura jest 
-	\begin{itemize}
-		\item READY: koprocedura jest zainicjalizowana i~gotowa do uruchomienia; koprocedura jest w~tym stanie również po wykonaniu metody
-			\code{yield\procbr};
-		\item RUNNING: koprocedura w~trakcie działania;
-		\item FINISHED: koprocedura zakończyła działanie;
-		\item BLOCKED: koprocedura jest zablokowana;
-		\item EXCEPTION, ERROR: wystąpił wyjątek (lub, odpowiednio - błąd) w~trakcie wykonania koprocedury;
-		\item UNDEFINED: stan koprocedury niezdefiniowany (koprocedura nie powinna znaleźć się w~tym stanie).
-	\end{itemize}
-	\begin{center}
-		\myownfigure{LibcoroStates}{LibcoroStates.png}{Stany koprocedury oraz dozwolone przejścia pomiędzy nimi}{.7}
-	\end{center}
-\par
-%
-\indent
+  Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje poniższa tabela:
+    \begin{center}
+    \centering
+    \begin{tabular}{|l|l|} \hline
+      \multicolumn{1}{|c|}{Procedura} & \multicolumn{1}{c|}{Koprocedura} \\ \hline
+      jeden punkt wejścia (ang. \emph{entry point}& jeden punkt wejścia \\ \hline
+      brak możliwości kontynuacji  & możliwość kontynuacji  \\
+      działania po wyjściu         & działania po wyjściu \\ \hline
+      jednorazowe przekazanie & przekazanie częściowego \\
+      wyniku obliczeń  & wyniku obliczeń \\ \hline
+      współdzielony stos wywołań & własny stos wywołań \\ \hline
+      współdzielony kontekst wykonania & własny kontekst wykonania \\ \hline
+      współdzielony czas działania & współdzielony czas działania \\ \hline
+    \end{tabular}
+    	\mytabcaption{Porównanie procedury i~koprocedury}
+    \label{tab:routinecoroutine}
+    \end{center}
+  klasa \code{coroutine} jest implementacją koprocedury. Jest ona klasą bazową dla klasy \code{fiber},
+  a~więc każde włókno jest koprocedurą.
+  \myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
 	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu mechanizmu dostarczanego przez funkcje
 	\code{getcontext()}/\code{swapcontext()}, dostępne w~każdym systemie zgodnym ze specyfikacją POSIX lub Single Unix Specification (SUS).
-	Warto zauważyć, że jest to jeden ze sposobów obsługi kontekstu wykonania
-	ULT w~bibliotece GNU Pth (inny sposób, wykorzystujący dalekie skoki \code{setjmp\procbr}/\code{longjmp\procbr} jest opisany w~\cite{Engelschall}).
 \par
 %
 \indent
-	Możliwe jest przechwytywanie wyjątków standardowych: \code{std\dcolon exception}. Informacja o~wystąpieniu wyjątku może być zignorowana,
-	jak również zinterpretowana przez użytkownika w~następujący sposób:
-	\begin{enumerate}
-		\item Przeciążenie metody \code{on\_exception\procbr} w~obiekcie klasy \code{state\_controller}.
-		\item Zgłoszenie obiektu jako kontrolera stanu koprocedury za pomocą metody \code{coroutine\dcolon set\_state\_controller\procbr}.
-	\end{enumerate}
-\par
-%
-\indent
-	Aby wytworzyć koprocedurę gotową do uruchomienia, należy wytworzyć dla niej kontekst wykonania, lub też skorzystać z~już istniejącego
-	kontekstu. Co więcej, zarówno kontekst jak i~koprocedura muszą być zainicjalizowane w~specyficzny sposób (ważna jest kolejność wykonania
-	poszczególnych operacji). Obciążanie użytkownika odpowiedzialnością za wytworzenie działającej koprocedury może prowadzić do poważnych
-	konsekwencji, np. błędów w~sekwencji wytwarzania koprocedury, czy też poważnymi zmianami w~aplikacji w~momencie zmiany implementacji
-	kontekstu wykonania. Dlatego też implementacja kontekstu jest ukryta przed użytkownikiem, zaś koprocedury są wytwarzane przez funkcje znajdujące
-	się w~module \code{libcoro\dcolon factory}. Przeciążona funkcja \code{assign\_coroutine\procbr} wiąże obiekt klasy \code{coroutine\procbr}
-	z~kontekstem wykonania, który jest wytwarzany przez samą funkcję, bądź jest dostarczany wraz z~obiektem.
+  Klasa \code{coroutine} udostępnia użytkownikowi następujące funkcje:
+  \begin{itemize}
+    \item \function{init}: funkcja inicjalizująca koprocedurę. Każdy obiekt klasy \code{coroutine} musi być zainicjalizowany za pomocą tej funkcji,
+      gdyż w~przeciwnym wypadku nie zostanie utworzony stos wywołań dla koprocedury, a~co za tym idzie -- działanie programu będzie przerwane.
+    \item Funkcja \function{run} odpowiada za przełączenie bieżącego kontekstu wykonania na kontekst koprocedury. 
+      Po przełączeniu kontekstu wykonywana jest funkcja \function{start} -- już w~nowym kontekście i~ze stosem wywołań koprocedury. Funkcja \function{go}
+      \emph{powinna} być wywołana z~funkcji \function{start}. Funkcja \function{start} ma służyć użytkownikowi do przygotowania przed uruchomieniem koprocedury,
+      zaś funkcja~\function{go} jest jej \emph{ciałem}. Celem funkcji \function{start} jest także wykrycie zakończenia działania koprocedury.
+      Dodatkowo, w~ciele tej funkcji można umieścić mechanizm detekcji oraz propagacji wyjątków.
+    \item Funkcja \function{yield} służy do przekazania częściowego wyniku działania koprocedury. Do użytkownika należy sposób, w~jaki wynik jest przekazywany,
+      gdyż \function{yield} jedynie przełącza kontekst koprocedury na kontekst wywołujący koprocedurę.
+  \end{itemize}
 \par
 %
 \section{Analiza rozwiązania}
@@ -1151,8 +1154,7 @@
     \item Uruchomienie środowiska zarządzającego włóknami.
     \item Wytworzenie włókna gotowego do uruchomienia.
     \item Uruchomienie włókna.
-    \item Blokujące oczekiwanie na zakończenie włókna.
-    \item Zakończenie działania włókna.
+    \item Zakończenie działania włókna (po zakończeniu jego działania).
     \item Przesłanie wiadomości do innego włókna.
     \item Użycie I/O
     \begin{enumerate}
@@ -1162,23 +1164,49 @@
     \item Obsługa wyjątków.
   \end{enumerate}
 \par
+\indent
+  \newcounter{mixedpthread} \setcounter{mixedpthread}{\value{tabmain}}
+  Tabela \arabic{mixedpthread} zawiera przykłady kodu źródłowego, jaki musi być dodany do programu użytkownika w~celu uzyskania
+  wyżej wymienionych celów.
+  \begin{center}
+  \centering
+\footnotesize{
+  \begin{xtabular}{|c|l|l|} \hline
+    \tablehead{\hline Lp & \multicolumn{1}{c|}{\code{libmixed}} & \multicolumn{1}{c|}{\code{Pthreads}} \\ }
+    \tablelasthead{\hline Lp & \multicolumn{1}{c|}{\code{libmixed}} & \multicolumn{1}{c|}{\code{Pthreads}} \\ }
+    Lp & \multicolumn{1}{c|}{\code{libmixed}} & \multicolumn{1}{c|}{\code{Pthreads}} \\ \hline
+    1  & \parbox[t]{6cm}{\code{master\dcolon ptr m = master\dcolon create\procbr}}& \parbox[t]{6cm}{\code{--}} \\ \hline
+    2  & \parbox[t]{6cm}{\code{class f:public fiber\{ {\ldots} \};\\myfiber f;\\f.init();}} & \parbox[t]{6cm}{\code{void f() \{ {\ldots} \};\\pthread:t t;}} \\ \hline
+    3  & \parbox[t]{6cm}{\code{m->spawn( shared\_ptr(f) );}} & \parbox[t]{6cm}{\code{pthread\_create( \&t, 0, f, 0);}} \\ \hline
+    4  & \parbox[t]{6cm}{zakończenie działania funkcji \code{f.go()}.} & \parbox[t]{6cm}{zakończenie działania funkcji \code{f()}.} \\ \hline
+    5  & \parbox[t]{6cm}{\code{fiber\_message\dcolon ptr fm(new fiber\_message);\\fm->receiver = f';\\f.send\_message(fm);}} & \parbox[t]{6cm}{Brak dedykowanego rozwiązania} \\ \hline
+    7  & \parbox[t]{6cm}{\code{f\dcolon start()\{\\try\{ go\procbr; \}\\catch( exception e ) \{ {\ldots}  \}\\\}}} & \parbox[t]{6cm}{\code{void go\procbr \{ {\ldots} \}\\void f\procbr\{\\try\{ go\procbr; \}\\catch( exception e ) \{ {\ldots}  \}\\\}}} \\ \hline
+  \end{xtabular}
+}
+  	\mytabcaption{Porównanie procedury i~koprocedury}
+  \end{center}
+\par
 \subsection{Testy jednostkowe}
+\indent
+  Testy jednostkowe należy podzielić na trzy grupy:
+  \begin{enumerate}
+    \item Testy koprocedur.
+    \item Testy modułu \code{message\_queues}.
+    \item Testy zarządcy włókien wszystkich podległych mu elementów.
+  \end{enumerate}
+\par
 \subsection{Testy wydajnościowe}
 \indent
-	Porównanie implementacji z~istniejącymi obejmuje następujące właściwości biblioteki:
+	Porównanie wydajności \code{libmixed} z~\code{Pthreads} można sprawdzić za pomocą następujących testów:
 	\begin{itemize}
 		\item maksymalna liczba wątków do uruchomienia w~ramach jednej aplikacji;
 		\item czas wykonania \emph{pustych} wątków (ang. \emph{null fork});
 		\item czas wykonania przeplatających się wątków (w~przypadku \code{libmixed} polega to na zastosowaniu operacji \code{yield\procbr});
 		\item operacje na współdzielonych zasobach (np. inkrementacja współdzielonego licznika);
-		\item komunikacja międzywątkowa;
-		\item szybkość działania na plikach;
     \item wydajność gniazd sieciowych (implementacja problemu \emph{producent -- konsument}).
 	\end{itemize}
 \par
 %
-\subsection{Wyniki}
-\newpage
 \section{Podsumowanie}
 \label{sec:summary}
 \subsection{Narzędzia}
