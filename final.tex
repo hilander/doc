@@ -1156,11 +1156,7 @@
     \item Uruchomienie włókna.
     \item Zakończenie działania włókna (po zakończeniu jego działania).
     \item Przesłanie wiadomości do innego włókna.
-    \item Użycie I/O
-    \begin{enumerate}
-      \item Gniazda sieciowe.
-      \item Stoper (ang. \emph{timer}).
-    \end{enumerate}
+    \item Użycie I/O: gniazda sieciowe.
     \item Obsługa wyjątków.
   \end{enumerate}
 \par
@@ -1171,9 +1167,7 @@
   \begin{center}
   \centering
 \footnotesize{
-  \begin{xtabular}{|c|l|l|} \hline
-    \tablehead{\hline Lp & \multicolumn{1}{c|}{\code{libmixed}} & \multicolumn{1}{c|}{\code{Pthreads}} \\ }
-    \tablelasthead{\hline Lp & \multicolumn{1}{c|}{\code{libmixed}} & \multicolumn{1}{c|}{\code{Pthreads}} \\ }
+  \begin{tabular}{|c|l|l|} \hline
     Lp & \multicolumn{1}{c|}{\code{libmixed}} & \multicolumn{1}{c|}{\code{Pthreads}} \\ \hline
     1  & \parbox[t]{6cm}{\code{master\dcolon ptr m = master\dcolon create\procbr}}& \parbox[t]{6cm}{\code{--}} \\ \hline
     2  & \parbox[t]{6cm}{\code{class f:public fiber\{ {\ldots} \};\\myfiber f;\\f.init();}} & \parbox[t]{6cm}{\code{void f() \{ {\ldots} \};\\pthread:t t;}} \\ \hline
@@ -1181,30 +1175,78 @@
     4  & \parbox[t]{6cm}{zakończenie działania funkcji \code{f.go()}.} & \parbox[t]{6cm}{zakończenie działania funkcji \code{f()}.} \\ \hline
     5  & \parbox[t]{6cm}{\code{fiber\_message\dcolon ptr fm(new fiber\_message);\\fm->receiver = f';\\f.send\_message(fm);}} & \parbox[t]{6cm}{Brak dedykowanego rozwiązania} \\ \hline
     7  & \parbox[t]{6cm}{\code{f\dcolon start()\{\\try\{ go\procbr; \}\\catch( exception e ) \{ {\ldots}  \}\\\}}} & \parbox[t]{6cm}{\code{void go\procbr \{ {\ldots} \}\\void f\procbr\{\\try\{ go\procbr; \}\\catch( exception e ) \{ {\ldots}  \}\\\}}} \\ \hline
-  \end{xtabular}
+  \end{tabular}
 }
-  	\mytabcaption{Porównanie procedury i~koprocedury}
+  	\mytabcaption{Kod źródłowy potrzebny do realizacji scenariuszy 1\ppauza 5 i~7}
   \end{center}
+%\par
+%\indent
+  Operacje wejścia--wyjścia można stworzyć na wiele sposobów, ale jeżeli \code{libmixed} udostępnia blokujące (z~punktu widzenia włókna) funkcje obsługujące I/O,
+  to w~przypadku wątków rozważane będą także blokujące wywołania funkcji I/O.
+  Aby wytworzyć nasłuchujące gniazdo sieciowe, należy wykonać odpowiedni ciąg wywołań systemowych, np. \function{socket}, \function{bind}, \function{listen}
+  (dokładniejszy opis można znaleźć na stronie podręcznika dla \code{socket}, rozdział 7). Następnie należy wykonać wywołanie \function{accept} 
+  (dla włókna należy użyć funkcji \function{do\_accept}), po którym
+  należy uruchomić wątek/włókno obsługujące otwarte połączenie. Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący sposób:
+  \begin{itemize}
+    \item odczyt 10 bajtów z~gniazda o~deskryptorze \code{my\_socket};
+    \item zapis 10 bajtów do gniazda;
+    \item zamknięcie gniazda.
+  \end{itemize}
+  Implementacja obsługi połączenia:
+  \begin{enumerate}
+    \item Przy użyciu \code{Pthreads}:
+\begin{verbatim}
+  count = ::read( my_socket, rdbuf, 10 );
+  count = ::write( my_socket, sndbuf, 10 );
+  ::close( my_socket );
+\end{verbatim}
+    \item Przy użyciu \code{libmixed}:
+\begin{verbatim}
+  // pobierane/zapisywane dane znajdują się w rw_buffer
+  count = do_read( my_socket, 10 ); 
+  count = do_write( my_socket, 10 );
+  do_close( my_socket );
+\end{verbatim}
+  \end{enumerate}
+\par
+\indent
+  Jak łatwo zauważyć, zarówno \code{Pthreads}, jak też \code{libmixed} nie wymagają od użytkownika wykonania skomplikowanych
+  wywołań w~celu osiągnięcia pożądanych wyników. Tak więc \code{libmixed} jest \emph{równie} wygodna w~użyciu, jak \code{Pthreads}.
 \par
 \subsection{Testy jednostkowe}
 \indent
   Testy jednostkowe należy podzielić na trzy grupy:
   \begin{enumerate}
-    \item Testy koprocedur.
-    \item Testy modułu \code{message\_queues}.
-    \item Testy zarządcy włókien wszystkich podległych mu elementów.
+    \item Testy koprocedur:
+      \begin{enumerate}
+        \item test operacji \function{yield}: przełączenie pomiędzy bieżącym kontekstem a~kontekstem koprocedury, również wielokrotne.
+      \end{enumerate}
+    \item Testy modułu \code{message\_queues}:
+      \begin{enumerate}
+        \item test klasy \code{private\_list}: przesyłanie wiadomości pomiędzy dwoma wątkami, z~których jeden prowadzi aktywny nasłuch (zapętlone wywoływanie
+          funkcji \function{top});
+        \item test klasy \code{message\_queue}: stabilne przesyłanie wiadomości w~obie strony pomiędzy dwoma wątkami;
+      \end{enumerate}
+    \item Testy zarządcy włókien wszystkich podległych mu elementów:
+      \begin{enumerate}
+        \item przesyłanie wiadomości pomiędzy dwoma włóknami -- w~ramach tego samego robotnika;
+        \item przesyłanie wiadomości pomiędzy dwoma włóknami -- w~ramach dwóch różnych robotników;
+        \item zwrócenie sterowania do zarządcy -- \function{yield};
+        \item wytworzenie, inicjalizacja i~uruchomienie (\function{spawn}) nowego włókna przez bieżące.
+      \end{enumerate}
   \end{enumerate}
+  Wszystkie wymienione testy są spełnione przez bieżącą implementację włókna. Dlatego też można uznać, że jest ona przydatna w~sytuacjach zdefiniowanych
+  przez te testy.
 \par
 \subsection{Testy wydajnościowe}
 \indent
 	Porównanie wydajności \code{libmixed} z~\code{Pthreads} można sprawdzić za pomocą następujących testów:
-	\begin{itemize}
-		\item maksymalna liczba wątków do uruchomienia w~ramach jednej aplikacji;
+	\begin{enumerate}
 		\item czas wykonania \emph{pustych} wątków (ang. \emph{null fork});
 		\item czas wykonania przeplatających się wątków (w~przypadku \code{libmixed} polega to na zastosowaniu operacji \code{yield\procbr});
-		\item operacje na współdzielonych zasobach (np. inkrementacja współdzielonego licznika);
+		\item operacje na współdzielonych zasobach (inkrementacja współdzielonego licznika);
     \item wydajność gniazd sieciowych (implementacja problemu \emph{producent -- konsument}).
-	\end{itemize}
+	\end{enumerate}
 \par
 %
 \section{Podsumowanie}
