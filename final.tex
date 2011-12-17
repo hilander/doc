@@ -806,22 +806,6 @@
 	kosztownych odwołań do pamięci RAM: takie użycie pamięci może przynieść w~efekcie spore przyspieszenie działania aplikacji.
 \par
 %
-\indent
-	Systemy operacyjne, ze względu na sposób wykonywania zadań, można podzielić na cztery grupy:
-	\begin{center}
-	\centering
-	\begin{tabular}{|c|c|c|} \hline
-													 & Jeden wątek w~procesie   	 & Wiele wątków w~procesie \\
-													 & (Single Thread)          	 & (Multiple threads)      \\\hline
-			Jeden proces         & \multirow{2}{*}{1:1} 	     & \multirow{2}{*}{N:1}	 \\
-			(Single Process)     &  										   		 &  									     \\\hline
-			Wiele procesów       & \multirow{2}{*}{1:N}       & \multirow{2}{*}{N:M}   \\
-			(Multiple Processes) &                             &                         \\\hline
-	\end{tabular}\\
-	\mytabcaption{Klasyfikacja systemów operacyjnych}
-	\end{center}
-\par
-%
 \newpage
 \section{Opis rozwiązania}
 \label{sec:solution}
@@ -1098,11 +1082,9 @@
     \centering
     \begin{tabular}{|l|l|} \hline
       \multicolumn{1}{|c|}{Procedura} & \multicolumn{1}{c|}{Koprocedura} \\ \hline
-      jeden punkt wejścia (ang. \emph{entry point}& jeden punkt wejścia \\ \hline
-      brak możliwości kontynuacji  & możliwość kontynuacji  \\
-      działania po wyjściu         & działania po wyjściu \\ \hline
-      jednorazowe przekazanie & przekazanie częściowego \\
-      wyniku obliczeń  & wyniku obliczeń \\ \hline
+      jeden punkt wejścia & jeden punkt wejścia \\ \hline
+      \parbox[t]{6cm}{ brak możliwości kontynuacji działania po wyjściu z~procedury } & \parbox[t]{7cm}{możliwość kontynuacji działania po wyjściu z~koprocedury } \\ \hline
+      \parbox[t]{6cm}{jednorazowe przekazanie wyniku obliczeń} & \parbox[t]{6cm}{przekazanie częściowego wyniku obliczeń} \\ \hline
       współdzielony stos wywołań & własny stos wywołań \\ \hline
       współdzielony kontekst wykonania & własny kontekst wykonania \\ \hline
       współdzielony czas działania & współdzielony czas działania \\ \hline
@@ -1113,8 +1095,8 @@
   klasa \code{coroutine} jest implementacją koprocedury. Jest ona klasą bazową dla klasy \code{fiber},
   a~więc każde włókno jest koprocedurą.
   \myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
-	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu mechanizmu dostarczanego przez funkcje
-	\code{getcontext()}/\code{swapcontext()}, dostępne w~każdym systemie zgodnym ze specyfikacją POSIX lub Single Unix Specification (SUS).
+	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu funkcji
+	\code{getcontext()}/\code{swapcontext()}, dostępnych w~każdym systemie zgodnym ze specyfikacją POSIX lub Single Unix Specification (SUS).
 \par
 %
 \indent
@@ -1159,11 +1141,6 @@
     \item Użycie I/O: gniazda sieciowe.
     \item Obsługa wyjątków.
   \end{enumerate}
-\par
-\indent
-  \newcounter{mixedpthread} \setcounter{mixedpthread}{\value{tabmain}}
-  Tabela \arabic{mixedpthread} zawiera przykłady kodu źródłowego, jaki musi być dodany do programu użytkownika w~celu uzyskania
-  wyżej wymienionych celów.
   \begin{center}
   \centering
 \footnotesize{
@@ -1179,14 +1156,22 @@
 }
   	\mytabcaption{Kod źródłowy potrzebny do realizacji scenariuszy 1\ppauza 5 i~7}
   \end{center}
-%\par
-%\indent
+\par
+\indent
+  \newcounter{mixedpthread} \setcounter{mixedpthread}{\value{tabmain}}
+  Tabela \arabic{mixedpthread} zawiera przykłady kodu źródłowego, jaki musi być dodany do programu użytkownika w~celu uzyskania
+  wyżej wymienionych celów.
+\par
+\indent
   Operacje wejścia--wyjścia można stworzyć na wiele sposobów, ale jeżeli \code{libmixed} udostępnia blokujące (z~punktu widzenia włókna) funkcje obsługujące I/O,
   to w~przypadku wątków rozważane będą także blokujące wywołania funkcji I/O.
   Aby wytworzyć nasłuchujące gniazdo sieciowe, należy wykonać odpowiedni ciąg wywołań systemowych, np. \function{socket}, \function{bind}, \function{listen}
   (dokładniejszy opis można znaleźć na stronie podręcznika dla \code{socket}, rozdział 7). Następnie należy wykonać wywołanie \function{accept} 
   (dla włókna należy użyć funkcji \function{do\_accept}), po którym
-  należy uruchomić wątek/włókno obsługujące otwarte połączenie. Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący sposób:
+  należy uruchomić wątek/włókno obsługujące otwarte połączenie. 
+%\par
+%\indent
+Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący sposób:
   \begin{itemize}
     \item odczyt 10 bajtów z~gniazda o~deskryptorze \code{my\_socket};
     \item zapis 10 bajtów do gniazda;
@@ -1245,10 +1230,11 @@
 \indent
 	Porównanie wydajności \code{libmixed} z~\code{Pthreads} można sprawdzić za pomocą następujących testów:
 	\begin{enumerate}
-		\item czas wykonania \emph{pustych} wątków (ang. \emph{null fork});
-		\item czas wykonania przeplatających się wątków (w~przypadku \code{libmixed} polega to na zastosowaniu operacji \code{yield\procbr});
-		\item operacje na współdzielonych zasobach (inkrementacja współdzielonego licznika);
-    \item wydajność gniazd sieciowych (implementacja problemu \emph{producent -- konsument}).
+		\item Czas wykonania \emph{pustych} wątków (ang. \emph{null fork}). Test ten da odpowiedź na pytanie o~wydajność biblioteki w~zakresie
+      wytwarzania i~uruchamiania włókien.
+    \item Czas wykonania przeplatających się wątków. Zarówno włókna, jak i~wątki mogą oddać sterowanie do zarządcy za pomocą wywołania funkcji \function{yield}.
+		\item Operacje na współdzielonych zasobach (inkrementacja współdzielonego licznika).
+    \item Wydajność gniazd sieciowych (implementacja problemu \emph{producent -- konsument}).
 	\end{enumerate}
 \par
 %
