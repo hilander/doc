@@ -1200,7 +1200,7 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \par
 \subsection{Testy jednostkowe}
 \indent
-  Testy jednostkowe zostały zaimplementowane przy użyciu środowiska \code{GoogleTest}.
+  Testy jednostkowe zostały zaimplementowane przy użyciu \linebreak środowiska \code{GoogleTest}.
 \par
 \indent
   Testy jednostkowe należy podzielić na trzy grupy:
@@ -1231,10 +1231,13 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 	Porównanie wydajności \code{libmixed} z~\code{Pthreads} można sprawdzić za pomocą następujących testów:
 	\begin{enumerate}
 		\item Czas wykonania \emph{pustych} wątków (ang. \emph{null fork}). Test ten da odpowiedź na pytanie o~wydajność biblioteki w~zakresie
-      wytwarzania i~uruchamiania włókien.
-    \item Czas wykonania przeplatających się wątków. Zarówno włókna, jak i~wątki mogą oddać sterowanie do zarządcy za pomocą wywołania funkcji \function{yield}.
-		\item Operacje na współdzielonych zasobach (inkrementacja współdzielonego licznika).
-    \item Wydajność gniazd sieciowych (implementacja problemu \emph{producent -- konsument}).
+      wytwarzania i~uruchamiania włókien. Liczba \emph{obiektów} (wątków/włókien) jest podstawowym parametrem tego testu: wraz ze wzrostem liczby obiektów do
+      uruchomienia, będzie można zmierzyć również wzrost czasu ich obsługi.
+    \item Czas wykonania przeplatających się wątków. Zarówno włókna, jak i~wątki mogą oddać sterowanie do zarządcy za pomocą wywołania funkcji 
+      \function{yield}. Test ten można sparametryzować przez liczbę obiektów do wykonania oraz liczbę operacji \function{yield} wykonywanych
+      w~pojedynczym obiekcie.
+		\item Czas zapisu danych na standardowe wyjście. Ten test można sparametryzować przez liczbę paczek danych do wysłania (każda w~osobnym obiekcie)
+      oraz wielkość każdej pojedynczej paczki.
 	\end{enumerate}
 \par
 %
