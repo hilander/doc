@@ -823,7 +823,7 @@
   \end{enumerate}
 \par
 %
-\subsection{Moduł \code{coroutines}}
+\subsection{Koprocedury -- klasa \code{coroutine}}
 \label{sec:coroutine}
 %
 \indent
@@ -863,7 +863,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   \end{itemize}
 \par
 %
-\subsection{Moduł \code{fibers}}
+\subsection{Klasa bazowa włókna -- \code{fiber}}
 \label{sec:fibers}
     \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacja włókna}{.7}
 %
@@ -883,7 +883,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
       \end{enumerate}
     \item Przekazanie sterowania z~włókna do zarządcy -- funkcja \function{yield}, dziedziczona z~klasy \code{coroutine}.
   \end{enumerate}
-  Należy mieć na uwadze, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika nie jest wstrzymywana.
+  Należy mieć na uwadze, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika (obiektu klasy \code{worker}, właściciela włókna) nie jest wstrzymywana.
 \par
 \indent
   Każde włókno posiada bufor używany podczas zapisu/odczytu do i~z~I/O. W~bieżącej implementacji jest on kolekcją standardową klasy \code{vector<char>},
@@ -920,7 +920,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
     \myownfigure{MessageQueue}{MessageQueue.png}{Klasa \code{message\_queue}}{.7}
 \indent
   Obiekt klasy \code{message\_queue} zawiera dwie nieblokujące listy komunikatów, które służą do wymiany wiadomości
-  pomiędzy dwoma wątkami. Dla łatwej identyfikacji wątków, wątek A~został nazwany \code{master}, zaś wątek B~--\code{slave},
+  pomiędzy dwoma wątkami. Dla łatwej identyfikacji wątków, wątek A~został nazwany \code{master}, zaś wątek B~-- \code{slave},
   jednak są one traktowane jako dwa równorzędne byty. Lista \code{master\_queue} służy do komunikacji \code{slave}$\to$\code{master},
   a~lista \code{slave\_queue} do \code{master}$\to$\code{slave}.
   Tak więc \code{message\_queue} implementuje mechanizm \emph{half\dywiz duplex}, znany z~potoków,
@@ -1244,6 +1244,7 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 	\end{enumerate}
 \par
 %
+\newpage
 \section{Podsumowanie}
 \label{sec:summary}
 %\subsection{Możliwe kierunki rozwoju}
