@@ -30,3 +30,5 @@ libcoro_tests
 
 #all vim .swp files
 *.swp
+diff.tex
+newfinal.tex

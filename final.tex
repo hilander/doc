@@ -11,7 +11,6 @@
 \usepackage{verbatim}
 \usepackage{multirow}
 \usepackage{hhline}
-\usepackage[all]{hypcap}
 \bibliographystyle{plunsrt}
 \hyphenation{ wyj-ścia pier-wszego}
 \newcommand{\code}{\texttt}
@@ -115,21 +114,22 @@
 \par
 %
 \subsection{Cel pracy}
+\label{sec:target}
 \indent
   Celem niniejszej pracy było utworzenie biblioteki włókien w~języku C++.
 	Powinna ona odpowiadać za:
 	\begin{enumerate}
 		\item Zarządzanie włóknem:
 		\begin{itemize}
-			\item tworzenie i~destrukcja włókna;
-			\item przydział kontekstu wykonania (stosu) dla wątku;
-			\item przydział wątku do procesora;
-			\item uruchomienie wątku, wstrzymanie wątku (tzn. w~momencie wykonania operacji {\tt yield} przez wątek);
-			\item prawidłowa reakcja na wystąpienie wyjątku w~trakcie działania wątku;
+			\item tworzenie i~destrukcja;
+			\item przydział kontekstu wykonania (stosu);
+			\item przydział włókna do procesora;
+			\item uruchomienie i~wstrzymanie(tzn. w~momencie wywołania operacji \function{yield});
+			\item prawidłowa reakcja na wystąpienie wyjątku w~trakcie działania.
 		\end{itemize}
-		\item komunikacja: wysyłanie i~obsługa komunikatów (po stronie zarządcy i~włókna);
-		\item nieblokujący dostęp do  urządzeń wejścia\dywiz wyjścia (z~punktu widzenia zarządcy włókien);
-		\item zarządzanie kolejnością i~czasem wykonania wątków (ang. \emph{scheduling}).
+		\item Komunikację: wysyłanie i~obsługa komunikatów (po stronie zarządcy i~włókna).
+		\item Nieblokujący dostęp do  urządzeń wejścia\dywiz wyjścia (z~punktu widzenia zarządcy włókien).
+    \item Zarządzanie kolejnością i~czasem wykonania włókien (ang. \emph{scheduling}). \label{enm:timesch}
 	\end{enumerate}
 \par
 %
@@ -809,6 +809,24 @@
 \newpage
 \section{Opis rozwiązania}
 \label{sec:solution}
+\subsection{Wstęp}
+\indent 
+  Biblioteka \code{libmixed} spełnia wymagania wymienione w~rozdziale \ref{sec:target}, za wyjątkiem warunku \ref{enm:timesch}:
+  istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
+\par
+\indent
+  Każda składowa biblioteki działa w~jednej z~warstw:
+  \begin{enumerate}
+    \item Systemowej, w~której następuje analiza dostępnych zasobów systemowych, a~następnie są one rozdzielane pomiędzy wytworzone
+      jednostki wykonawcze zarządzające włóknami.
+    \item Nadzorczej: każdy byt tej warstwy ma za zadanie obsługę włókna (uruchomienie, komunikacja pomiędzy włóknami, udostępnienie
+      zasobów I/O).
+    \item Włókna: są to udogodnienia biblioteki dostępne bezpośrednio z~poziomu włókna, a~więc dostępne dla użytkownika \code{libmixed}.
+  \end{enumerate}
+\par
+\indent
+  
+\par
 \begin{center}
   \myownfigure{libmixedoverview}{libmixedOverview.png}{Zależności pomiędzy klasami biblioteki \code{libmixed}}{.7}
 \end{center}
