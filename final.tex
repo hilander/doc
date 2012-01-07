@@ -468,76 +468,12 @@
 \par
 %
 \indent
-	Występuje następująca hierarchia pomiędzy rodzajami pamięci:
-	\begin{enumerate}
-		\item pamięć znajdująca się na płycie głównej (ang. \emph{inboard storage}), czyli rejestry, cache, RAM oraz ROM;
-		\item pamięć poza płytą główną (ang. \emph{outboard storage}): dyski, płyty CD, DVD, BD;
-		\item pamięć niepodłączona (ang. \emph{off\dywiz line storage}), przede wszystkim taśmy magnetyczne,
-			na których składowane są dane, ale dostęp do nich jest sporadyczny (dane są zapisywane w~czasie sesji zapisu,
-			podobnie limitowany jest odczyt z~tego rodzaju pamięci).
-	\end{enumerate}
-	Najwyżej w~tej hierarchii stoi pamięć na płycie głównej: z~punktu widzenia procesora, czas dostępu do rejestrów jest natychmiastowy,
-	podobnie rzecz ma się z~pamięcią cache. Dostęp do pamięci RAM (ROM) wymaga minimalnie więcej czasu, niż ma to miejsce przy dwóch
-	wcześniej wymienionych rodzajach pamięci. Nasuwają się pytania: ,,czy nie lepiej, zamiast pamięci RAM, umieścić całą
-	pamięć operacyjną w~kości procesora, rezygnując z~pośrednictwa szyny systemowej\mbox{}? Co jest przyczyną takiej organizacji pamięci ulotnej\mbox{}?''
-	Jest kilka odpowiedzi na te pytania:
-	\begin{enumerate}
-		\item Koszty wytworzenia pamięci. Najdrożej jest wytworzyć pamięć najszybszą przy wymaganej niezawodności oraz szybkości działania.
-			Dlatego rejestry procesorach mają rozmiar co najwyżej kilkaset bajtów, cache pierwszego poziomu (ang. \emph{level one cache})
-			jest wielkości liczonej w~kilobajtach, cache drugiego (a~także trzeciego) poziomu liczony jest w~megabajtach, zaś
-			rozmiar pamięci RAM to kilka (do kilkunastu) gigabajtów.
-		\item Technologia, w~jakiej wytwarzane są obecnie pamięci oraz procesory nie pozwala na umieszczenie na jednej kości kilku rdzeni
-			wraz z~kilkoma gigabajtami pamięci operacyjnej. Obecnie kości zawierające kilka rdzeni wydzielają bardzo dużo ciepła, a~po dodaniu
-			pamięci, taki układ elektroniczny z~powodu wydzielania ciepła byłby bardzo niestabilny. Od roku 2006 można zauważyć,
-			że częstotliwość taktowania procesorów nie wzrasta w~takim stopniu, jak to miało miejsce do tego momentu. To także efekt ograniczeń,
-			jakie istnieją w~wyniku wydzielania temperatury przez jednostkę centralną.
-		\item Modularność. Po wystąpieniu awarii (np. niedziałający bit pamięci), Pamięć operacyjna, będąca urządzeniem zewnętrznym, może zostać
-			wymieniona na sprawną. W~przypadku umieszczenia pamięci wraz z~procesorem, taka wymiana pociągnęła by za sobą o~wiele większe
-			koszty. Co więcej, z~pamięci operacyjnej może korzystać wiele procesorów, które znajdują się w~różnych układach rozsianych po płycie głównej.
-			Z~pamięci korzystać mogą również inne urządzenia niż procesor (np. karta graficzna, dyski), więc obsługa żądań tych urządzeń mogła by być
-			sporym obciążeniem dla samego procesora. Oczywiście istnieją specjalizowane systemy komputerowe, w~których jedyną dostępną 
-			pamięcią operacyjną jest cache (architektura COMA, ang. \emph{cache only memory architecture}).
-	\end{enumerate}
-\par
-%
-\indent
-	W~powszechnych zastosowaniach używa się architektur pamięci, w~których występuje RAM. Są to:
-	\begin{itemize}
-		\item pamięć niejednorodna (ang. \emph{non\dywiz uniform memory architecture, NUMA}): każdy procesor posiada własną pamięć operacyjną
-			(która nie jest współdzielona z~innymi jednostkami), a~dodatkowo posiada dostęp do pamięci operacyjnej współdzielonej z~innymi CPU.
-			Niektóre procesory mogą mieć priorytet w~dostępie do pamięci dzielonej.
-		\item Pamięć jednorodna (ang. \emph{uniform memory architecture, UMA}): wszystkie procesory mają dostęp do dzielonej pamięci operacyjnej.
-			Każdy z~nich posiada równoprawny dostęp do tej pamięci.
-	\end{itemize}
-	Powyższe architektury mogą być zastosowane zarówno w~maszynach SMP, jak również w~AMP.
-\par
-%
-\indent
-	Pamięci trwałe, znajdujące się poza płytą główną systemu komputerowego, posiadają jedną zasadniczą cechę: ich koszt w~przeliczeniu na jednostkę
-	(np. bajt) jest o~wiele niższy niż w~wypadku pamięci znajdującej się na płycie głównej. Okupione jest to znacznie dłuższym czasem dostępu 
-	do nich, dlatego w~powszechnym użyciu stosowane jest rozwiązanie polegające na wymianie komunikatów o~pobraniu/przesłaniu danych pomiędzy
-	procesorem a~urządzeniem, zaś same dane do tego typu operacji znajdują się w~pamięci RAM i~są tam przesyłane (lub pobierane) przez urządzenie.
-	Mechanizm, który umożliwia takie przesyłanie danych zwany jest bezpośrednim dostępem do pamięci (ang. \emph{direct memory access}).
-\par
-%
-\indent
-	Pamięci typu off\dywiz line są używane przede wszystkim jako magazyn do przechowywania danych w~ilości przekraczającej rozmiary pamięci trwałej.
-	W~porównaniu do pamięci stojących wyżej w~hierarchii, takie pamięci posiadają bardzo duży rozmiar, jednakże czas dostępu do danych w~nich
-	zawartych jest liczony w~minutach, lub nawet godzinach.
-\par
-%
-\indent
-	Można zauważyć, że ,,murem'' oddzielającym procesor od pamięci (za wyjątkiem pamięci wewnętrznej) jest szyna systemowa.
-	Szyny systemowe, w~obecnych komputerach, są taktowane niższymi częstotliwościami (nawet kilkakrotnie), niż sam procesor.
+	%Można zauważyć, że ,,murem'' oddzielającym procesor od pamięci (za wyjątkiem pamięci wewnętrznej) jest szyna systemowa.
+	W~obecnych komputerach szyny systemowe są taktowane niższymi częstotliwościami (nawet kilkakrotnie), niż sam procesor.
 	Także sama pamięć RAM może być taktowana niższą od wymienionych wcześniej częstotliwością.
 	Taka dysproporcja w~taktowaniu części systemu komputerowego może prowadzić do przestojów w~pracy procesora: nie może wykonać żadnego działania,
-	ponieważ nie ma kolejnych instrukcji programu! Rosnąca dysproporcja w~taktowaniu procesorów i~pamięci jest zwana \emph{murem pamięciowym}
+	ponieważ nie ma kolejnych instrukcji programu. Rosnąca dysproporcja w~taktowaniu procesorów i~pamięci jest zwana \emph{murem pamięciowym}
 	(ang. \emph{memory wall}).
-\par
-%
-\indent
-	Okazuje się, że wywołanie spekulatywne może być pomocne podczas rozstrzygania problemu pobierania właściwych danych zawierających 
-	dane programu. W~celu uniknięcia przestojów jednostki centralnej, stosowany jest również cache dla instrukcji procesora.
 \par
 %
 \indent
@@ -556,15 +492,6 @@
 	\end{itemize}
 	Oczywiście, jeśli następuje zmiana zawartości pamięci podręcznej, zawartość zmienionej komórki musi zostać przesłana do pamięci operacyjnej
 	(jest to sytuacja, która została określona jako ,,później'').
-\par
-%
-\indent
-	Powyższy opis zastosowania pamięci podręcznej pozwala uzmysłowić intensywność jej użycia, a~także jej niebanalne we współczesnych
-	systemach komputerowych: tworząc jakikolwiek program, dobrze jest mieć na uwadze rozmiary pamięci cache, 
-	gdyż jeśli program będzie wykonywać operacje na komórkach pamięci, bardzo często będzie dochodzić wtedy do \emph{rozminięcia} zawartości
-	cache\dywiz u z~żądanymi danymi, które procesor będzie musiał pobierać z~pamięci operacyjnej (ang. \emph{cache miss}), co zaowocuje
-	długimi przestojami w~pracy procesora, a~w~konsekwencji może doprowadzić do spadku wydajności aplikacji. Obniżenie liczby nietrafionych 
-	żądań dostępu do tych trafionych (ang. \emph{cache hit}) może skutkować sprawnie działającą aplikacją.
 \par
 %
 \indent
@@ -1260,6 +1187,10 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 		\item Czas zapisu danych na standardowe wyjście. Ten test można sparametryzować przez liczbę paczek danych do wysłania (każda w~osobnym obiekcie)
       oraz wielkość każdej pojedynczej paczki.
 	\end{enumerate}
+\par
+\subsection{Wyniki dla testu \code{nullfork}}
+\indent
+\vspace*{-1cm} \myownfigure{nullfork}{nullfork.png}{Wykres porównawczy dla testu \code{nullfork}}{.7}
 \par
 %
 \newpage
