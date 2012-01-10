@@ -8,6 +8,7 @@
 \usepackage{graphics}
 \usepackage[table]{xcolor}
 \usepackage[bookmarks, pdfhighlight=/P, citebordercolor={1 1 1}, linkbordercolor={1 1 1}, unicode=true]{hyperref}
+\usepackage{amsfonts}
 \usepackage{verbatim}
 \usepackage{multirow}
 \usepackage{hhline}
@@ -212,7 +213,7 @@
 	\item Pobranie (ang. \emph{Instruction Fetch, IF}): wymaga komunikacji z~pamięcią.
 		Pobrany rozkaz po pobraniu jest gotowy do dalszego przetwarzania.
 	\item Dekodowanie (ang. \emph{Instruction Decode, ID}):  liczba bajtów, które należy pobrać, może być zmienna:
-		nawet gdy długość rozkazu jest niezmienna (np. 2 bajty), jego argumenty (\emph{opkodów}, ang. \emph{opcode}) mogą być zmiennej długości.
+		nawet gdy długość rozkazu jest niezmienna (np. 2 bajty), jego argumenty (\emph{opkody}, ang. \emph{opcode}) mogą być zmiennej długości.
 	\item Wykonanie (ang. \emph{Execute, EX}): poszczególne części procesora wykonują działanie w~kolejności określonej przez aktualnie
 		wykonywany rozkaz.
 	\item Dostęp do pamięci (ang. \emph{Memory Access, MEM}): rozkazy mogą korzystać z~danych zawartych w~komórkach pamięci. Jeśli bieżący rozkaz
@@ -239,7 +240,7 @@
 \par
 %
 \indent 
-	Pomysł na bardziej efektywne wykorzystanie zasobów jednostki centralnej, to użycie \emph{potokowości} (ang. \emph{pipelining}):
+	Pomysł na lepsze wykorzystanie zasobów jednostki centralnej, to użycie \emph{potokowości} (ang. \emph{pipelining}):
 	Jeśli wykonanie bieżącego rozkazu zakończyło się dla komponentu, może on wykonać następny rozkaz.
 	\begin{center}
 	\centering
@@ -253,12 +254,12 @@
 	5 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
 	\end{tabular}
+  \newcounter{pipeline} \setcounter{pipeline}{\value{tabmain}}
 	\mytabcaption{Potokowe wykonanie rozkazów. W~kolumnach umieszczone są komponenty wykonujące dany krok rozkazu.
 	W~wyróżnionej kolumnie można odczytać, że w~czwartym cyklu zegarowym pierwszy rozkaz jest w~trakcie wykonywania kroku MEM, 
 	dla drugiego wykonywany jest krok EX, itd.}
-	\label{tab:pipeline}
 	\end{center}
-	Metoda ta pozwala na ,,równoległe'' wykonanie kilku rozkazów na jednym procesorze, w~przykładzie opisanym w~tabeli \ref{tab:pipeline}, po upływie 7 cykli
+	Metoda ta pozwala na ,,równoległe'' wykonanie kilku rozkazów na jednym procesorze, w~przykładzie opisanym w~tabeli \arabic{pipeline}, po upływie 7 cykli
 	zostaną wykonane trzy rozkazy. Gdyby rozkazy te były wykonane na jednostce sekwencyjnej, czas ich wykonania byłby ponad dwa razy dłuższy.
 \par
 %
@@ -283,7 +284,7 @@
 	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
 	\end{tabular}
 	\mytabcaption{Potokowe wykonanie 10 rozkazów na jednostce superskalarnej o~dwóch potokach rozkazów: rozkazy o~numerach nieparzystych są wykonywane na 
-					pierwszej jednostce, zaś rozkazy o~numerach parzystych na drugiej. Analogicznie jak w~tabeli \ref{tab:pipeline}, wyróżniona
+					pierwszej jednostce, zaś rozkazy o~numerach parzystych na drugiej. Analogicznie jak w~tabeli \arabic{pipeline}, wyróżniona
 					kolumna odpowiada wykonaniu programu w~czwartym cyklu zegarowym}
 	\end{center}
 	Jak łatwo zauważyć, superskalarny CPU jest w~stanie przetworzyć nawet wektor instrukcji. Warunkiem koniecznym do osiągnięcia takiego
@@ -299,18 +300,19 @@
 %
 \indent
 	W~celu zniwelowania niedogodności związanych z~,,nietrafionymi'' skokami warunkowymi, zaczęto stosować technikę 
-	\emph{przewidywania skoku} (ang. \emph{branch prediction}): stosowane są heurystyki, które określają najbardziej prawdopodobny
-	wynik instrukcji skoku. Dzięki stosowaniu tych heurystyk, udaje się w~dużej liczbie przypadków uniknąć niepotrzebnych obliczeń,
+	\emph{przewidywania skoku} (ang. \emph{branch prediction}): stosowane są heurystyki, które określają prawdopodobny
+	wynik instrukcji skoku. Dzięki ich stosowaniu, udaje się w~dużej liczbie przypadków uniknąć niepotrzebnych obliczeń,
 	a~wykonywane są te rozkazy, które rzeczywiście są potrzebne do wykonania programu.
 	Przewidywanie skoku jest jedną z~technik stosowanych w~mechanizmie zwanym \emph{Wykonaniem spekulatywnym} (ang. \emph{Speculative execution}):
 	wykonanie spekulatywne dopuszcza również wykonanie (przy spełnieniu określonych założeń) części programu znajdującego się za skokiem warunkowym,
 	ale jeszcze \emph{przed} wykonaniem tego skoku.
 \par
 %
+\newcounter{oooex} \setcounter{oooex}{\value{figmain}}
 \indent
 	Technika wykonania określonego fragmentu kodu źródłowego jest stosowana również w~mechanizmie \emph{Wykonania poza kolejnością}
 	(ang. \emph{Out of Order execution, OoO}): jeśli pewien rozkaz używa wartości rejestru, która została już obliczona, to można go wykonać
-	poza kolejnością podaną przez autora programu. Dla sekwencji rozkazów z~rys.~\ref{fig:oooex}
+	poza kolejnością podaną przez autora programu. Dla sekwencji rozkazów z~rys.~\arabic{oooex}
 	można zauważyć, że rozkaz (3) korzysta z~wartości rejestru A3, który jest wyliczony w~(1), jego wykonanie nie ma wpływu na rejestry, z~których 
 	korzysta (2), a~więc sekwencja $\langle 1, 3, 2 \rangle $ da po wykonaniu wynik taki sam, jak sekwencja $\langle 1, 2, 3 \rangle $.
 	\begin{center}
@@ -321,7 +323,6 @@
 		\\
 	\end{tabular}
   \myfigcounter{Wykonanie poza kolejnością}
-	\label{fig:oooex}
 	\end{center}
 \par
 %
@@ -340,10 +341,14 @@
 	sobą zwiększenie liczby tranzystorów, a~co za tym idzie, zwiększenie temperatury wydzielanej przez CPU.
 \par
 %
+\newcounter{datadep} \setcounter{datadep}{\value{figmain}}
 \indent
 	Problemem, który jest naturalnie związany z~ILP to zależność od danych (ang. \emph{data dependency}).
 	Dotyczy on zachowania oryginalnej chronologii wykonywania rozkazów (zapisu wyników
-	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). W sekwencji przedstawionej na rys.\ref{fig:datadep}
+	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). W sekwencji przedstawionej na rys.\arabic{datadep}
+	instrukcje (1) i~(2) mogą wyć wykonane w~kolejności $\langle 1,2 \rangle$ jak i~$\langle 2,1 \rangle$, zaś wynik działania instrukcji
+	(3) zależy bezpośrednio od wyników działania (1) i~(2). Co więcej, instrukcja (4) nie może być wykonana wcześniej 
+	niż po zakończeniu wykonania instrukcji (1), (2) i~(3). Tak więc chronologia wykonania instrukcji (3) i~(4) nie może być zmieniona.
 	\begin{center}
 	\begin{tabular}{l l}\\
 		(1) & {\tt add Y,Z,X} \\
@@ -352,11 +357,7 @@
 		(4) & {\tt add L,T,L} \\
 	\end{tabular}
 	\myfigcounter{Ilustracja problemu zależności od danych}
-	\label{fig:datadep}
 	\end{center}
-	instrukcje (1) i~(2) mogą wyć wykonane w~kolejności $\langle 1,2 \rangle$ jak i~$\langle 2,1 \rangle$, zaś wynik działania instrukcji
-	(3) zależy bezpośrednio od wyników działania (1) i~(2). Co więcej, instrukcja (4) nie może być wykonana wcześniej 
-	niż po zakończeniu wykonania instrukcji (1), (2) i~(3). Tak więc chronologia wykonania instrukcji (3) i~(4) nie może być zmieniona.
 \par
 %
 \indent
@@ -368,9 +369,17 @@
 	Dobrą ilustracją problemu przyspieszania działania procesora jest prawo Amdahla, opisane w~dalszej części tego dokumentu.
 \par
 %
+\newcounter{flynn} \setcounter{flynn}{\value{tabmain}}
 \indent
 	Michael J.~Flynn stworzył klasyfikację systemów komputerowych oraz programów (\emph{taksonomia Flynna}), w~której ze względu na liczbę
-	strumieni rozkazów oraz danych, wyróżniamy cztery klasy, wymienione w~tabeli \ref{tab:flynn}.
+	strumieni rozkazów oraz danych, wyróżniamy cztery klasy, wymienione w~tabeli \arabic{flynn}.
+	Klasy te możemy scharakteryzować w~następujący sposób:
+	\begin{itemize}
+		\item SISD jest klasą programów wykonywanych sekwencyjnie na maszynie sekwencyjnej;
+		\item SIMD odpowiada programom wykonywanym na maszynie superskalarnej lub na procesorach przetwarzających sygnały (DSP);
+		\item MISD jest klasą maszyn i~programów, która ma zastosowanie tam, gdzie liczy się minimalizacja błędów;
+		\item MIMD odpowiada programom wykonywanym na wielu procesorach.
+	\end{itemize}
 	\begin{center}
 	\centering
 	\begin{tabular}{|c|c|c|} \hline
@@ -382,17 +391,9 @@
 			Wiele                &     												 &      \\
 			strumieni danych     & SIMD                        & MIMD \\
 			(\emph{Multiple Data}) & 										 & 			\\\hline
-	\end{tabular}
+	\end{tabular} \nopagebreak
 	\mytabcaption{Taksonomia Flynna}
-	\label{tab:flynn}
 	\end{center}
-	Klasy te możemy scharakteryzować w~następujący sposób:
-	\begin{itemize}
-		\item SISD jest klasą programów wykonywanych sekwencyjnie na maszynie sekwencyjnej;
-		\item SIMD odpowiada programom wykonywanym na maszynie superskalarnej lub na procesorach przetwarzających sygnały (DSP);
-		\item MISD jest klasą maszyn i~programów, która ma zastosowanie tam, gdzie liczy się minimalizacja błędów;
-		\item MIMD odpowiada programom wykonywanym na wielu procesorach.
-	\end{itemize}
 \par
 \indent
 	Komputery sklasyfikowane jako MIMD, ze względu na rodzaj komunikacji pomiędzy procesorami, można podzielić na dwie podklasy:
@@ -511,52 +512,9 @@
 \par
 %
 \indent
-	Komunikacja procesora z~peryferiami odbywa się poprzez szynę systemową. Sposób połączenia tych urządzeń z~szyna systemową może się różnić
-	i~być jednym z~podanych:
-	\begin{itemize}
-		\item procesor oraz wszystkie peryferia są podłączone do jednej szyny systemowej. Możliwa jest komunikacja pomiędzy różnymi urządzeniami
-			w~systemie komputerowym. Takie połączenie urządzeń wymusza uczestnictwo procesora w~wymianie danych z~I/O.
-		\item Procesor oraz pamięć operacyjna podłączone są do szyny systemowej, zaś pozostałe urządzenia są podłączone do jednostki bezpośredniego
-			dostępu do pamięci. Taka architektura systemu komputerowego może być zorganizowana na dwa sposoby:
-			\begin{itemize}
-				\item DMA jest jednym urządzeniem podłączonym do szyny systemowej, do którego współdzielony dostęp posiadają wszystkie urządzenia
-					zewnętrzne. Komunikacja pomiędzy peryferiami a~DMA odbywa się przy użyciu \emph{szyny wejścia\dywiz wyjścia} 
-					(ang. \emph{I/O bus}).
-				\item Istnieje wiele urządzeń DMA, podłączonych do szyny systemowej, a~grupy urządzeń podłączonych do każdego z~nich mają do niego
-					bezpośredni dostęp.
-			\end{itemize}
-	\end{itemize}
+	Komunikacja procesora z~peryferiami odbywa się poprzez szynę systemową.
 \par
 %
-\indent
-	Komunikacja pomiędzy procesorem, a~peryferiami jest rozwiązana dwojako:
-	\begin{itemize}
-		\item bez użycia przerwań: stosuje się wówczas technikę \emph{aktywnego czekania} (ang. \emph{busy waiting}). Metoda ta
-			wymaga od procesora nieustannego sprawdzania stanu urządzeń. W~razie zmiany stanu urządzenia, podejmowana jest odpowiednia
-			akcja, stosowna do rodzaju zdarzenia, jak i~urządzenia.
-		\item Stosowany jest mechanizm przerwań. Zmiana stanu urządzenia wejścia\dywiz wyjścia powoduje wysłanie sygnału,
-			który wyzwala określone przerwanie \linebreak 
-			w~procesorze: wykonanie dotychczasowych instrukcji jest zawieszane, a~uruchamiana jest
-			procedura obsługi danego przerwania. Można wyróżnić dwa sposoby przesyłania danych pomiędzy procesorem a~I/O:
-			\begin{itemize}
-				\item procesor, po uprzednim pobraniu danych, przesyła je do urządzenia. Ponieważ przesyłanie dużych ilości danych w~niedużych
-					porcjach (np. bajt) powodowało by bardzo dużą liczbę przerwań oraz duży narzut czasowy na ich pobieranie z~pamięci operacyjnej,
-					do takiego rodzaju przesyłania danych stosuje się \emph{bufory}, zawierające większą porcję danych, które są przesyłane 
-					na raz do urządzenia zewnętrznego. W~zależności od potrzeb, bufor może być pojedynczym blokiem pamięci, może składać się 
-					z~kilku bloków z~wyróżnionym blokiem do przesłania (jak również może być to blok, który zostanie zapełniony danymi przesłanymi
-					z~urządzenia peryferyjnego) do I/O w~danym momencie, a~aktualny blok jest wybierany cyklicznie z~puli dostępnych. W~zależności
-					od potrzeb oraz możliwości systemu komputerowego, kształt bufora jest określany przez politykę obsługi I/O oraz dostępne 
-					mechanizmy, które można zastosować.
-				\item Procesor jest informowany o~wystąpieniu zdarzenia w~urządzeniu I/O (lub sam wysyła do niego odpowiedni komunikat), zaś
-					dane są przesyłane przez DMA bezpośrednio z~pamięci do odpowiedniego urządzenia, bądź w~kierunku przeciwnym.
-					Rozwiązanie to wymaga od procesora jedynie reakcji na zdarzenie, zaś transfer danych odbywa się bez jego udziału.
-			\end{itemize}
-	\end{itemize}
-	Jak można zauważyć, przy użyciu DMA udział procesora w~komunikacji z~peryferiami ograniczony jest do absolutnego minimum. Dlatego też
-	komunikacja większości urządzeń I/O z~procesorem odbywa się za jego pośrednictwem.
-\par
-%
-\newpage
 \newpage
 \section{System operacyjny}
 %
@@ -565,57 +523,8 @@
 	System operacyjny (ang. \emph{operating system, OS}, zwany dalej \emph{systemem}) jest programem, 
 	który kontroluje wykonanie aplikacji użytkownika (programów),
 	może być postrzegany jako pośrednik (interfejs) pomiędzy aplikacją a~sprzętem (systemem komputerowym), na którym jest wykonywany.
-	Musi spełniać następujące warunki:
-	\begin{itemize}
-		\item wygoda: system sprawia, że komputer jest wygodny w~użyciu;
-		\item wydajność: system wydajnie zarządza zasobami komputera;
-		\item rozszerzalność: OS powinien być zaprojektowany w~sposób umożliwiający łatwe rozszerzanie o~kolejne funkcje;
-			również usprawnienia dotychczasowych funkcji powinny odbywać się tak, aby zmiany nie zmuszały użytkownika do zmian w~aplikacji
-			-- zmiany powinny być dla niego \emph{przezroczyste}.
-	\end{itemize}
 	Najważniejszą zyskiem z~używania systemu jest możliwość uruchomienia aplikacji na różnych systemach komputerowych, na których
 	jest on dostępny, a~więc aplikacja jest \emph{przenośna}.
-\par
-%
-\indent
-	Powinnościami systemu operacyjnego są:
-	\begin{itemize}
-		\item wykonanie programu: aplikacje użytkownika są uruchamiane w~środowisku dostarczanym przez system operacyjny. Środowisko to 
-			udostępnia zasoby, których aplikacje te potrzebują. Dodatkowo, OS zarządza kolejnością wykonania tych programów (ang. \emph{scheduling}).
-		\item Rozwój aplikacji: OS dostarcza zestaw narzędzi do tworzenia i~rozwijania aplikacji użytkownika począwszy od
-			edytorów po kompilatory. Większość aplikacji jest pisana w~językach programowania wysokiego poziomu (o~których szerzej w~dalszej części
-			tej pracy), a~to właśnie kompilator odpowiada za generację kodu maszynowego, który zostanie wykonany w~optymalny sposób
-			na procesorze (lub procesorach), z~wykorzystaniem ILP.
-		\item Dostęp do I/O: system operacyjny jest pośrednikiem pomiędzy programem a~peryferiami. Ze względu na swoją unikalność,
-			każde urządzenie zewnętrzne jest unikatowe, lecz system operacyjny przydziela je do odpowiednich klas abstrakcji, dzięki czemu
-			użytkownik nie musi na przykład dbać o~to, czy dane pochodzą z~dysku twardego, posiadającego obracające się talerze a~odczyt/zapis danych
-			jest wykonywany za pomocą głowic, czy może urządzeniem tym jest dysk SSD posiadający kości pamięci Flash.
-		\item Kontrolowany dostęp do plików: dane składowane w~pamięciach zewnętrznych składowane są w~postaci \emph{plików} (ang. \emph{files}).
-			Jest to konsekwencją ogromnego rozmiaru pamięci zewnętrznych (w~porównaniu do pamięci operacyjnej). Dodatkowo, dane te muszą być przedstawione
-			człowiekowi w~zrozumiałej formie. Dlatego też powstała idea systemu plików (ang. \emph{file system}). Obecnie istnieją rozwiązania, 
-			które oferują wytworzenie, w~sposób przezroczysty, systemu plików, który obejmuje zawartość wielu (często rozproszonych) systemów plików.
-			OS może uznać, że dana aplikacja \emph{nie powinna} używać pewnych plików, niektóre z~nich może używać tylko do odczytu, zaś pewne z~nich
-			może zarówno odczytać, jak również modyfikować. W~tym celu musi posiadać mechanizmy do limitowania dostępu do plików.
-		\item Dostęp do systemu: pewne zasoby systemu mogą być używane jedynie przez jego własne komponenty, np. wspomniany wyżej bezpośredni
-			(niskopoziomowy, ang. \emph{low\dywiz level}) dostęp do peryferiów. Jak okaże się w~dalszej części tego tekstu, niektóre dane znajdujące się 
-			w~pamięci operacyjnej mogą być używane przez dokładnie jedną aplikację; do tego celu stosowany jest mechanizm stronicowania pamięci
-			(ang. \emph{memory paging}).
-		\item Wykrywanie błędów oraz reakcja na nie: w~trakcie działania systemu operacyjnego może wystąpić sytuacja awaryjna:
-		\begin{itemize}
-			\item awaria może wystąpić w~jednym z~urządzeń zewnętrznych, np. błąd w~odczycie z~dysku twardego;
-			\item jedna z~wykonywanych aplikacji użytkownika może wykonać niedozwoloną operację, np. próba niedozwolonej operacji na pewnym zasobie;
-			\end{itemize}
-			w~takiej sytuacji OS musi zareagować stosownie do wykrytego błędu, np. poinformować aplikację o~niemożności odczytu danych z~dysku, lub
-			poinformowanie o~braku dostępu do zasobu.
-		\item Księgowanie: śledzenie zachowania aplikacji, wytwarzanie bazy informacji, a~następnie ich analiza może dać efekt w~postaci
-			nowej wersji systemu, która, przy uwzględnieniu wniosków płynących z~analiz, będzie w~większym stopniu odpowiadać wymaganiom aplikacji,
-			a~co za tym idzie, spowoduje szybsze działanie systemu. Większość współczesnych systemów operacyjnych posiada określone zastosowania
-			(np. system Windows 7 wykonywany jest dla jednego użytkownika, który pracuje na jednej stacji roboczej, zaś system GNU/Linux
-			powinien w~założeniu obsługiwać wielu użytkowników jednocześnie, niekoniecznie za pomocą interfejsu graficznego), dlatego gromadzenie
-			i~analiza informacji o~specyficznych dla tych systemów kombinacjach uruchomionych aplikacji w~danym momencie oraz samym zachowaniu użytkownika,
-			może dać efekt w~postaci zwiększenia wydajności najczęściej (najbardziej intensywnie) używanych składowych systemu, nawet kosztem
-			zmniejszenia wydajności innych składowych systemu.
-	\end{itemize}
 \par
 %
 \indent
@@ -627,14 +536,14 @@
 \par
 %
 \indent
-	Ze względu na dostęp do zasobów komputera, procesy uruchomione przez system operacyjny można podzielić 
-	na dwie zasadnicze grupy (przestrzenie), które z~punktu widzenia procesów są traktowane jak środowisko, w~którym działają : 
+	Ze względu na dostęp do zasobów komputera, procesy są uruchamiane przez system operacyjny 
+	w~dwóch warstwach (przestrzeniach), które z~punktu widzenia procesów są traktowane jak środowisko, w~którym działają: 
 	\emph{przestrzeń jądra} (ang. \emph{kernel space}) oraz \emph{przestrzeń użytkownika} (ang. \emph{user space}).
 \par
 %
 \indent
 	Jądro systemu to jego podstawa, która jest odpowiedzialna za zarządzanie jego usługami, jak również zasobami, m. in. pamięcią, I/O,
-	przydzielaniem czasu procesora poszczególnym programom. Instrukcje procesu jądra wykonywane są w~przestrzeni jądra. Dzięki temu,
+	przydzielaniem czasu procesora poszczególnym procesom. Instrukcje procesu jądra wykonywane są w~przestrzeni jądra. Dzięki temu,
 	mają one dostęp do wszystkich zasobów systemu komputera i~mogą je dowolnie zmieniać. Dlatego też procesy uruchamiane w~przestrzeni
 	jądra muszą być zaprojektowane zgodnie ze wszystkimi wymaganiami stawianymi danemu systemowi operacyjnemu, wraz z~podstawowym wymaganiem:
 	muszą one być \emph{niezawodne}, gdyż w~razie wystąpienia poważnego błędu w~trakcie wykonywania programu uruchomionego w~przestrzeni jądra,
@@ -645,9 +554,9 @@
 			wykonywane są w~ramach jednego procesu, co daje w~efekcie prowadzi do wysokiej wydajności działania takiego jądra. Wadą takiego jądra
 			jest fakt, że w~momencie błędu w~działaniu jednego z~jego składników, może dojść do załamania pracy całego procesu, a~w~konsekwencji,
 			do załamania pracy całego systemu.
-			Przykładem jądra monolitycznego jest jądro systemu Linux, w~którym obsługa pamięci i~urządzeń zewnętrznych oraz zarządzanie czasem procesora
-			dokonywana jest w~przestrzeni jądra. Jądro Linuksa jest \emph{zmodularyzowane}: jego poszczególne elementy (moduły) mogą być załadowane
-			jak również wyłączone z~jądra.
+			Jądro systemu Linux posiada wiele cech jądra monolitycznego, dodatkowo udostępnia możliwość wprowadzania (oraz usuwania) rozszerzeń 
+      (obsługa nowych urządzeń, itp.) w~trakcie działania,
+      dlatego można mówić o~nim, że jest jądrem \emph{modularnym}.
 		\item Mikrojądro (ang. \emph{microkernel}), które w~odróżnieniu od monolitycznego, w~przestrzeni jądra posiada proces zawierający
 			obsługę minimalnych składników systemu operacyjnego. Obsługa reszty składników systemu dokonywana jest w~innych procesach
 			(zwanych również \emph{serwerami}). Podstawową zaletą takiej organizacji jądra systemu jest bardzo wysoka stabilność, gdyż w~momencie
@@ -659,6 +568,7 @@
 	\end{itemize}
 \par
 %
+\subsection{Procesy}
 \indent
 	Programy (procesy uruchomione w~ramach takich programów) uruchamiane w~przestrzeni użytkownika posiadają limitowany dostęp do zasobów komputera:
 	\begin{itemize}
@@ -697,6 +607,7 @@
 	a~procesor będzie zmuszony do przestoju w~obliczeniach.
 \par
 %
+\subsection{Wątki}
 \indent
 	Rozwiązaniem kosztownego problemu przełączania pomiędzy przestrzeniami adresowymi procesów jest zastosowanie \emph{wątków} (ang. \emph{threads}).
 	Wątki w~ramach jednego procesu posiadają wspólną przestrzeń adresową, sumaryczny czas ich wykonania jest równy czasowi przydzielonemu dla 
@@ -708,6 +619,7 @@
 	dlatego też, podczas projektowania aplikacji należy dokonać takiego podziału zadań na procesy i~wątki, aby zachować zakładaną ochronę danych.
 \par
 %
+\begin{comment}
 \indent
 	\begin{center}
 	\centering
@@ -732,6 +644,7 @@
 	Tabela \ref{tab:timecomp}~pokazuje również celowość projektowania aplikacji tak, aby jak najczęściej używana była pamięć cache w~celu uniknięcia
 	kosztownych odwołań do pamięci RAM: takie użycie pamięci może przynieść w~efekcie spore przyspieszenie działania aplikacji.
 \par
+\end{comment}
 %
 \newpage
 \section{Opis rozwiązania}
@@ -742,25 +655,31 @@
   istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
 \par
 \indent
-  Każda składowa biblioteki działa w~jednej z~warstw:
+  Każda składowa biblioteki działa w~jednej z~dwóch warstw:
   \begin{enumerate}
-    \item Systemowej, w~której następuje analiza dostępnych zasobów systemowych, a~następnie są one rozdzielane pomiędzy wytworzone
-      jednostki wykonawcze zarządzające włóknami.
     \item Nadzorczej: każdy byt tej warstwy ma za zadanie obsługę włókna (uruchomienie, komunikacja pomiędzy włóknami, udostępnienie
       zasobów I/O).
     \item Włókna: są to udogodnienia biblioteki dostępne bezpośrednio z~poziomu włókna, a~więc dostępne dla użytkownika \code{libmixed}.
   \end{enumerate}
 \par
-\indent
-  
-\par
 \begin{center}
   \myownfigure{libmixedoverview}{libmixedOverview.png}{Zależności pomiędzy klasami biblioteki \code{libmixed}}{.7}
 \end{center}
 \indent
-	Biblioteka \code{libmixed} udostępnia użytkownikowi interfejs włókien, jak również system nimi zarządzający.
-  Rysunek \arabic{libmixedoverview} przedstawia zależności pomiędzy klasami biblioteki. Najważniejsze dwie klasy z~punktu widzenia użytkownika
-  to:
+  Rysunek \arabic{libmixedoverview} przedstawia zależności pomiędzy klasami biblioteki \code{libmixed}.
+  Do warstwy nadzorczej należą klasy:
+  \begin{itemize}
+    \item \code{master}: zarządza \emph{robotnikami} (obiektami klasy \code{worker}), pośredniczy w~komunikacji między włóknami;
+    \item \code{worker}: zarządza obsługą przydzielonych mu włókien, odpowiada za poprawne wykonanie operacji I/O (\function{read}, \function{write}, \ldots);
+    \item \code{scheduler}: odpowiada za szeregowanie włókien;
+    \item \code{epoller}: rejestruje wystąpienie zdarzeń powiązanych z~obserwowanymi urządzeniami I/O;
+    \item \code{message\_queue}: udostępnia mechanizm służący do wymiany wiadomości pomiędzy włóknami.
+  \end{itemize}
+  Do warstwy włókna należy klasa \code{fiber}, która udostępnia użytkownikowi wszystkie mechanizmy oraz udogodnienia biblioteki \code{libmixed} w~postaci
+  zwartego interfejsu.
+\par
+\indent
+  Rysunek przedstawia zależności pomiędzy klasami biblioteki. Z~punktu widzenia użytkownika, najważniejsze dwie klasy \arabic{libmixedoverview} to:
   \begin{enumerate}
     \item \code{fiber}: baza każdego włókna, użytkownik definiuje (nadpisując funkcję \function{fiber\dcolon go}) jej działanie.
     \item \code{master}: każdy obiekt tej klasy jest tożsamy z~całym podsystemem zarządzającym włóknami. W~ramach jednego procesu możliwe jest działanie wielu
@@ -768,6 +687,7 @@
   \end{enumerate}
 \par
 %
+\newpage
 \subsection{Koprocedury -- klasa \code{coroutine}}
 \label{sec:coroutine}
 %
@@ -956,8 +876,8 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   udostępnione przez bibliotekę standardową mogą być używane przez co najwyżej jeden wątek w~danej chwili.
 \par
 %
-\subsection{Moduł \code{schedulers}}
-  \myownfigure{Scheduler}{Scheduler.png}{Klasa scheduler -- planista włókien}{.7}
+\subsection{Klasa \code{scheduler}}
+\myownfigure{Scheduler}{Scheduler.png}{\code{scheduler} -- planista włókien}{.7}
 \indent
   Rysunek \arabic{Scheduler} przedstawia klasę planisty włókien.
   Planista zarządza wykonaniem włókien, które otrzymał od swojego właściciela.
@@ -968,8 +888,8 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   \end{itemize}
 \par
 %
-\subsection{Moduł \code{epollers}}
-  \myownfigure{Epoller}{Epoller.png}{klasa epoller -- nakładka na mechanizm systemowy \code{epoll}}{.7}
+\subsection{Klasa \code{epoller}}
+\myownfigure{Epoller}{Epoller.png}{\code{epoller} -- nakładka na mechanizm systemowy \code{epoll}}{.7}
 \indent
   Rysunek \arabic{Epoller} przedstawia klasę opakowującą podstawowe operacje mechanizmu \code{epoll}.
   Mechanizm ten umożliwia detekcję:
@@ -983,13 +903,13 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   \begin{itemize}
     \item \code{add(int f)}: dodaje deskryptor urządzenia do obserwowanych;
     \item \code{del(int f)}: usuwa deskryptor urządzenia z obserwowanych;
-    \item \code{do\_epolls\procbr}: oczekuje przez określony czas na wystąpienie zdarzeń;
-    \item \code{get\_last\_epoll\_result\procbr}: podaje listę deskryptorów urządzeń, dla których wystąpiło zdarzenie.
+    \item \function{do\_epolls}: oczekuje przez określony czas na wystąpienie zdarzeń;
+    \item \function{get\_last\_epoll\_result}: podaje listę deskryptorów urządzeń, dla których wystąpiło zdarzenie.
   \end{itemize}
 \par
 %
-\subsection{Moduł \code{workers}}
-    \myownfigure{Worker}{Worker.png}{Klasa worker -- robotnik działający w~obrębie jednego wątku}{.7}
+\subsection{Klasa \code{worker}}
+\myownfigure{Worker}{Worker.png}{\code{worker} -- robotnik działający w~obrębie jednego wątku}{.7}
 \indent
   Robotnik udostępnia każdemu powierzonemu włóknu:
   \begin{itemize}
@@ -1181,41 +1101,119 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 		\item Czas wykonania \emph{pustych} wątków (ang. \emph{null fork}). Test ten da odpowiedź na pytanie o~wydajność biblioteki w~zakresie
       wytwarzania i~uruchamiania włókien. Liczba \emph{obiektów} (wątków/włókien) jest podstawowym parametrem tego testu: wraz ze wzrostem liczby obiektów do
       uruchomienia, będzie można zmierzyć również wzrost czasu ich obsługi.
-    \item Czas wykonania przeplatających się wątków. Zarówno włókna, jak i~wątki mogą oddać sterowanie do zarządcy za pomocą wywołania funkcji 
+    \item Czas wykonania przeplatających się wątków (\emph{yields}). Zarówno włókna, jak i~wątki mogą oddać sterowanie do zarządcy za pomocą wywołania funkcji 
       \function{yield}. Test ten można sparametryzować przez liczbę obiektów do wykonania oraz liczbę operacji \function{yield} wykonywanych
       w~pojedynczym obiekcie.
 		\item Czas zapisu danych na standardowe wyjście. Ten test można sparametryzować przez liczbę paczek danych do wysłania (każda w~osobnym obiekcie)
       oraz wielkość każdej pojedynczej paczki.
 	\end{enumerate}
 \par
+\indent
+  Konfiguracja maszyny, na której wykonano testy:
+  \begin{itemize}
+    \item procesor: 
+      \begin{itemize}
+        \item model: Pentium(R) Dual\dywiz Core  CPU      E5200  @ 2.50GHz;
+        \item taktowanie procesora: 1200 MHZ;
+        \item cache: 64 KiB pierwszego poziomu, 2 MiB drugiego poziomu;
+      \end{itemize}
+    \item pamięć RAM: 1 GiB, taktowana zegarem 800 MHz;
+    \item system operacyjny Debian GNU/Linux:
+      \begin{itemize}
+        \item wersja jądra: 3.0.0-2-686-pae;
+        \item wersja biblioteki \code{libstdc++}: 6.0.16.
+      \end{itemize}
+  \end{itemize}
+\par
+\indent
+  Dla każdego parametru (pary parametrów) test został wykonany dziesięciokrotnie, zaś za czas wykonania testu przyjąłem uśredniony 
+  czas z~wszystkich 10 prób.
+\par
+\indent
+  Należy wziąć pod uwagę fakt, iż testy były przeprowadzane w~otoczeniu ,,normalnych'' aplikacji, tj. współdzieliło czas wykonania z~charakterystycznymi składnikami
+  systemu w~wersji \emph{desktop}, m. in.:
+  \begin{itemize}
+    \item X Window Environment;
+    \item XFCE;
+    \item odtwarzacz mutlimediów  (MPlayer);
+    \item przeglądarka internetowa (Iceweasel -- ,,wolna'' (ang. \emph{free}) wersja przeglądarki Firefox).
+  \end{itemize}
+\par
+\newpage
 \subsubsection{Wyniki dla testu \code{nullfork}}
 \indent
-\myownfigure{nullfork}{nullfork.png}{Wykres porównawczy dla testu \code{nullfork}}{.65} 
+  \code{Nullfork} jest testem, który pokazuje sprawność systemu w~zakresie wytworzenia oraz zakończenia działania wykonywalnego bytu.
+  Wykonanie tego testu da odpowiedź na pytania odnośnie systemu operacyjnego, jak też sprawność biblioteki \code{libmixed}:
+  \begin{itemize}
+    \item Czy ze wzrostem liczby bytów czas ich wykonania rośnie liniowo, czy w~inny sposób?
+    \item Czy wytworzenie włókna daje zysk w~porównaniu do do wytworzenia wątku?
+  \end{itemize}
 \par
+\indent
+\myownfigure{nullfork}{nullfork.png}{Wykres porównawczy dla testu \code{nullfork} w~zależności od liczby pustych włókien lub wątków}{.65} 
+\par
+\begin{comment}
 \indent
 \myownfigure{nullforkLog}{nullforkLog.png}{Wykres porównawczy dla testu \code{nullfork} -- czas wykonania w~skali logarytmicznej}{.65} 
 \par
+\end{comment}
+\indent
+  Wynik tego testu jest jednoznaczny: 
+  \begin{itemize}
+    \item zarówno dla wątków i~włókien, czas ich wytworzenia oraz uruchomienia rośnie liniowo;
+    \item czas obsługi wątków jest kilkakrotnie dłuższy od czasu obsługi włókien.
+  \end{itemize}
+\par
 %
+\newpage
 \subsubsection{Wyniki dla testu \code{yield}}
 \indent
-\myownfigure{yield}{yield1n.png}{Wykres porównawczy dla testu \code{yield}}{.65} 
+  Test \code{yield} posiada dwa parametry: \code{s}~--~liczbę bytów do uruchomienia oraz \code{y}~--~liczbę wykonanych operacji 
+  \function{yield}.
+  W~celu uzyskania wyników będących podstawą do analizy biblioteki, wybrałem trzy serie testów dla następujących wartości
+  \code{s}~i~\code{y}:
+  \begin{itemize}
+    \item \code{s}=1, \code{y}~$\in \mathbb{A}$,
+    \item \code{s}~$\in \mathbb{A}$, \code{y}=10,
+    \item \code{s}~$\in \mathbb{A}$, \code{y}=100,
+  \end{itemize}
+  gdzie $\mathbb{A}$=\{1, 101, 201, \ldots , 9901\}.
 \par
 \indent
-\myownfigure{yieldLog}{yield1nLog.png}{Wykres porównawczy dla testu \code{yield} -- czas wykonania w~skali logarytmicznej}{.65} 
+\myownfigure{yield}{yield1n.png}{Wykres porównawczy testu \code{yield} dla \code{s}=1 i~\code{y}~$\in \mathbb{A}$}{.65} 
+  Pierwsza seria testów daje następujące informacje:
+  \begin{itemize}
+    \item operacja \function{yield} dla wątków jest zaimplementowana kilkakrotnie wydajniej niż funkcja \function{swapcontext}, wywoływana 
+      przez implementację \function{yield} dla włókien;
+    \item czas wykonania \function{yield} da wątków jest ograniczony od dołu jak i~od góry, w~odróżnieniu od ograniczenia czasu wykonania
+      \function{swapcontext}.
+  \end{itemize}
 \par
+\begin{comment}
+\indent
+\myownfigure{yieldLog}{yield1nLog.png}{Wykres porównawczy testu \code{yield} -- czas wykonania w~skali logarytmicznej}{.65} 
+\par
+\end{comment}
 %
 \indent
-\myownfigure{yieldn10}{yieldn10.png}{Wykres porównawczy dla testu \code{yield}}{.65} 
+\myownfigure{yieldn10}{yieldn10.png}{Wykres porównawczy dla testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=10}{.65} 
+  Druga seria testów pokazuje taki scenariusz użycia włókien, który pozwala na wykonanie zadań w~wielu oddzielnych włóknach lub wątkach,
+  przy rzadkim wywoływaniu operacji \function{yield}. Okazuje się, że w~takim scenariuszu wydajność biblioteki \code{libmixed}
+  jest wyższa od wydajności Pthreads.
 \par
+\begin{comment}
 \indent
-\myownfigure{yieldn10Log}{yieldn10Log.png}{Wykres porównawczy dla testu \code{yield} -- czas wykonania w~skali logarytmicznej}{.65} 
+\myownfigure{yieldn10Log}{yieldn10Log.png}{Wykres porównawczy testu \code{yield} -- czas wykonania w~skali logarytmicznej}{.65} 
 \par
+\end{comment}
 %
 \indent
-\myownfigure{yieldn100}{yieldn100.png}{Wykres porównawczy dla testu \code{yield}}{.65} 
+\myownfigure{yieldn100}{yieldn100.png}{Wykres porównawczy testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=100}{.65} 
 \par
 \indent
-\myownfigure{yieldn100Log}{yieldn100Log.png}{Wykres porównawczy dla testu \code{yield} -- czas wykonania w~skali logarytmicznej}{.65} 
+\myownfigure{yieldn100Log}{yieldn100Log.png}{Wykres porównawczy testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=100 -- czas wykonania w~skali logarytmicznej}{.65} 
+  Ostatnia seria pokazuje, że w~ogólnym przypadku, tj. dla dużej liczby wywołań \function{yield} oraz dużej liczby wątków lub włókien,
+  mechanizmy zaimplementowane w~Pthreads pozwalają kilkakrotnie szybciej wykonać zadane obliczenia, niż ma to miejsce w~wypadku \code{libmixed}.
 \par
 %
 \newpage
