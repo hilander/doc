@@ -30,7 +30,7 @@
 \newcounter{figmain}
 \setcounter{figmain}{1}
 \newcommand{\myfigcounter}[1]{ \begin{center}Rysunek \arabic{figmain}. #1.\end{center} \addtocounter{figmain}{1} }
-\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ \nopagebreak[4] Rysunek \arabic{#1}. #3. \end{center}}
+\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ \nopagebreak[5] Rysunek \arabic{#1}. #3. \end{center}}
 
 \usepackage{xtab}
 \tabletail{\hline}
@@ -1135,7 +1135,7 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
   \begin{itemize}
     \item X Window Environment;
     \item XFCE;
-    \item odtwarzacz mutlimediów  (MPlayer);
+    \item odtwarzacz multimediów  (MPlayer);
     \item przeglądarka internetowa (Iceweasel -- ,,wolna'' (ang. \emph{free}) wersja przeglądarki Firefox).
   \end{itemize}
 \par
@@ -1221,13 +1221,30 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \indent
   Test zapisu posiada dwa parametry: \code{n} -- liczba powtórzonych operacji zapisu oraz
   \code{s} -- długość napisów złożonych ze znaku \code{'.'}.
-\myownfigure{writen1000min}{writen1000min.png}{Wykres porównawczy dla \code{n}=[1..1000] i~\code{s}=1000 -- porównanie minimalnych czasów wykonania}{.65} 
-\myownfigure{writen1000max}{writen1000max.png}{Wykres porównawczy dla \code{n}=[1..1000] i~\code{s}=1000 -- porównanie maksymalnych czasów wykonania}{.65} 
-\myownfigure{writen1000avg}{writen1000avg.png}{Wykres porównawczy dla \code{n}=[1..1000] i~\code{s}=1000 -- porównanie uśrednionych czasów wykonania}{.65} 
+\par
+\indent
+  Poniżej przedstawiam wyniki testów dla następujących wartości \code{n} oraz \code{s}:
+  \begin{itemize}
+    \item \code{n} $\in \mathbb{B}$, \code{s}=1000;
+    \item \code{n}=1, \code{s}$\in \mathbb{C}$;
+    \item \code{n}=100, \code{s}$\in \mathbb{C}$;
+  \end{itemize}
+  gdzie $\mathbb{B} = \{1,11,21,\ldots ,991\}$, 
+  $\mathbb{C} = \{1,1001,2001,3001,\ldots ,99001\}$.
+  Czas wykonania testu na poniższych wykresach jest podany w~mikrosekundach.
+\par
+\indent
+  \myownfigure{writen1000min}{writen1000min.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie minimalnych czasów wykonania}{.65} 
+\myownfigure{writen1000max}{writen1000max.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie maksymalnych czasów wykonania}{.65} 
+\myownfigure{writen1000avg}{writen1000avg.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie uśrednionych czasów wykonania}{.65} 
 
-\myownfigure{write100nmin}{write100nmin.png}{Wykres porównawczy dla \code{n}=[1..1000] i~\code{s}=1000 -- porównanie minimalnych czasów wykonania}{.65} 
-\myownfigure{write100nmax}{write100nmax.png}{Wykres porównawczy dla \code{n}=[1..1000] i~\code{s}=1000 -- porównanie maksymalnych czasów wykonania}{.65} 
-\myownfigure{write100navg}{write100navg.png}{Wykres porównawczy dla \code{n}=[1..1000] i~\code{s}=1000 -- porównanie uśrednionych czasów wykonania}{.65} 
+\myownfigure{write1nmin}{write1nmin.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{.65} 
+\myownfigure{write1nmax}{write1nmax.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{.65} 
+\myownfigure{write1navg}{write1navg.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{.65} 
+
+\myownfigure{write100nmin}{write100nmin.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{.65} 
+\myownfigure{write100nmax}{write100nmax.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{.65} 
+\myownfigure{write100navg}{write100navg.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{.65} 
 \par
 \section{Podsumowanie}
 \label{sec:summary}
