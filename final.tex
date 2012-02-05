@@ -25,12 +25,12 @@
 
 \newcounter{tabmain}
 \setcounter{tabmain}{1}
-\newcommand{\mytabcaption}[1]{ \begin{center}\normalsize{Tabela \arabic{tabmain}. #1.}\end{center} \addtocounter{tabmain}{1} }
+\newcommand{\mytabcaption}[1]{ \begin{center}\parbox[t]{11.5cm}{\normalsize{Tabela \arabic{tabmain}. #1.}}\end{center} \addtocounter{tabmain}{1} }
 
 \newcounter{figmain}
 \setcounter{figmain}{1}
-\newcommand{\myfigcounter}[1]{ \begin{center}Rysunek \arabic{figmain}. #1.\end{center} \addtocounter{figmain}{1} }
-\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ \nopagebreak[5] Rysunek \arabic{#1}. #3. \end{center}}
+\newcommand{\myfigcounter}[1]{ \begin{center}\parbox[t]{11.5cm}{Rysunek \arabic{figmain}. #1.}\end{center} \addtocounter{figmain}{1} }
+\newcommand{\myownfigure}[4]{ \newcounter{#1} \setcounter{#1}{\value{figmain}} \addtocounter{figmain}{1} \begin{center} \label{fig:#1} \centering \includegraphics[scale=#4, angle=0]{#2}\\ \nopagebreak[5] \parbox[t]{11.5cm}{Rysunek \arabic{#1}. #3.} \end{center}}
 
 \usepackage{xtab}
 \tabletail{\hline}
@@ -176,7 +176,7 @@
 			ang. \emph{Reduced Set Instruction Computers}) do kilkuset (architektura CISC, ang.
 			\emph{Complex Instruction Set Computers}). Często pojedynczy rozkaz posiada wiele trybów adresowania: jako argument
 			może użyć własnego rejestru (tryb implikowany), komórki pamięci (tryb bezpośredni), komórki pamięci, której adres został wyliczony
-			(tryby: pośredni, pośredni preindeksowany, pośredni postindeksowany). Połączenie instrukcji wraz z~ich trybami adresowania daje 
+			(tryby: pośredni, pośredni pre-indeksowany, pośredni post-indeksowany). Połączenie instrukcji wraz z~ich trybami adresowania daje 
 			stosunkową liczbę rozkazów.
 		\item wewnętrzne komórki pamięci, zwane \emph{rejestrami}.
 		\item Licznik rozkazów (ang. \emph{program counter}): wyróżniony rejestr, który wskazuje adres następnej instrukcji. 
@@ -257,7 +257,7 @@
   \newcounter{pipeline} \setcounter{pipeline}{\value{tabmain}}
 	\mytabcaption{Potokowe wykonanie rozkazów. W~kolumnach umieszczone są komponenty wykonujące dany krok rozkazu.
 	W~wyróżnionej kolumnie można odczytać, że w~czwartym cyklu zegarowym pierwszy rozkaz jest w~trakcie wykonywania kroku MEM, 
-	dla drugiego wykonywany jest krok EX, itd.}
+	dla drugiego wykonywany jest krok EX, itd}
 	\end{center}
 	Metoda ta pozwala na ,,równoległe'' wykonanie kilku rozkazów na jednym procesorze, w~przykładzie opisanym w~tabeli \arabic{pipeline}, po upływie 7 cykli
 	zostaną wykonane trzy rozkazy. Gdyby rozkazy te były wykonane na jednostce sekwencyjnej, czas ich wykonania byłby ponad dwa razy dłuższy.
@@ -474,7 +474,7 @@
 	Także sama pamięć RAM może być taktowana niższą od wymienionych wcześniej częstotliwością.
 	Taka dysproporcja w~taktowaniu części systemu komputerowego może prowadzić do przestojów w~pracy procesora: nie może wykonać żadnego działania,
 	ponieważ nie ma kolejnych instrukcji programu. Rosnąca dysproporcja w~taktowaniu procesorów i~pamięci jest zwana \emph{murem pamięciowym}
-	(ang. \emph{memory wall}).
+	(ang. \emph{memory wall}, \cite{wulf}).
 \par
 %
 \indent
@@ -519,6 +519,7 @@
 \section{System operacyjny}
 %
 \label{sec:system}
+\subsection{Wstęp}
 \indent
 	System operacyjny (ang. \emph{operating system, OS}, zwany dalej \emph{systemem}) jest programem, 
 	który kontroluje wykonanie aplikacji użytkownika (programów),
@@ -536,9 +537,30 @@
 \par
 %
 \indent
-	Ze względu na dostęp do zasobów komputera, procesy są uruchamiane przez system operacyjny 
-	w~dwóch warstwach (przestrzeniach), które z~punktu widzenia procesów są traktowane jak środowisko, w~którym działają: 
-	\emph{przestrzeń jądra} (ang. \emph{kernel space}) oraz \emph{przestrzeń użytkownika} (ang. \emph{user space}).
+  Każdy proces uruchamiany przez użytkownika posiada własną przestrzeń adresową, jest mu przydzielany czas procesora oraz dostęp do
+  wybranych przez OS zasobów.
+\par
+%
+\indent
+  System operacyjny może uruchamiać procesy sekwencyjnie lub równolegle.
+  Co więcej, istnieje możliwość wykonania wielu procesów ,,jednocześnie'' na jednym rdzeniu przy zastosowaniu mechanizmu \emph{wywłaszczania}
+  (ang. \emph{preemption}): dzięki zastosowaniu tego mechanizmu, każdy proces jest dzielony na ,,plasterki'' (ang. \emph{time slices}),
+  które można wykonywać naprzemiennie.
+\par
+%
+\indent
+  W~systemach komputerowych nie posiadających zaimplementowanego mechanizmu wywłaszczania, 
+  zaś wyposażonych w~więcej niż jeden rdzeń, może działać co najwyżej tyle procesów, ile jest dostępnych rdzeni.
+  Każdy dodatkowy proces, który nie został uruchomiony, musi oczekiwać w~kolejce procesów oczekujących na czas procesora.
+  Taki sposób zarządzania procesami może powodować wystąpienie różnych problemów, np. jeśli proces A~oczekuje na wynik wykonania procesu B,
+  zaś A~zostanie uruchomione przed B na maszynie posiadającej jeden procesor, może to spowodować zatrzymanie działania systemu operacyjnego,
+  lub mogą zaistnieć inne zdarzenia (np. wystąpienie przerwania), które muszą być uwzględnione oraz obsłużone
+  przez użytkownika. Jak łatwo zauważyć, w~systemie operacyjnym bez wywłaszczania
+  za część zadań związanych z~zarządzaniem procesem odpowiedzialny jest również jego użytkownik.
+\par
+%
+\indent
+  
 \par
 %
 \indent
@@ -548,24 +570,6 @@
 	jądra muszą być zaprojektowane zgodnie ze wszystkimi wymaganiami stawianymi danemu systemowi operacyjnemu, wraz z~podstawowym wymaganiem:
 	muszą one być \emph{niezawodne}, gdyż w~razie wystąpienia poważnego błędu w~trakcie wykonywania programu uruchomionego w~przestrzeni jądra,
 	działanie wszystkich aplikacji w~systemie zostanie zaburzone, a~w~konsekwencji może doprowadzić to do unicestwienia całego systemu operacyjnego.
-	Ze względu na budowę, można wyróżnić dwa rodzaje jądra systemu:
-	\begin{itemize}
-		\item jądro monolityczne (ang. \emph{monolithic kernel}), które zawiera w~sobie większą część usług systemu. Wszystkie usługi jądra
-			wykonywane są w~ramach jednego procesu, co daje w~efekcie prowadzi do wysokiej wydajności działania takiego jądra. Wadą takiego jądra
-			jest fakt, że w~momencie błędu w~działaniu jednego z~jego składników, może dojść do załamania pracy całego procesu, a~w~konsekwencji,
-			do załamania pracy całego systemu.
-			Jądro systemu Linux posiada wiele cech jądra monolitycznego, dodatkowo udostępnia możliwość wprowadzania (oraz usuwania) rozszerzeń 
-      (obsługa nowych urządzeń, itp.) w~trakcie działania,
-      dlatego można mówić o~nim, że jest jądrem \emph{modularnym}.
-		\item Mikrojądro (ang. \emph{microkernel}), które w~odróżnieniu od monolitycznego, w~przestrzeni jądra posiada proces zawierający
-			obsługę minimalnych składników systemu operacyjnego. Obsługa reszty składników systemu dokonywana jest w~innych procesach
-			(zwanych również \emph{serwerami}). Podstawową zaletą takiej organizacji jądra systemu jest bardzo wysoka stabilność, gdyż w~momencie
-			wystąpienia krytycznego błędu w~którymś z~serwerów, przerwane zostanie jego działanie, a~jego proces zostanie unicestwiony.
-			Działanie systemu operacyjnego nie zostanie w~takiej sytuacji
-			zaburzone w~poważny sposób. Zasadniczą wadą takiego jądra jest spory koszt związany z~przełączaniem pomiędzy poszczególnymi jego procesami;
-			ponieważ poszczególne usługi znajdują się w~osobnych procesach, komunikacja pomiędzy nimi jest obsługiwana przez system, co
-			w~wypadku intensywnej wymiany danych może przyczynić się do kosztownej obsługi takiej komunikacji.
-	\end{itemize}
 \par
 %
 \subsection{Procesy}
@@ -574,10 +578,9 @@
 	\begin{itemize}
 		\item procesy posiadają limitowany i~niebezpośredni dostęp do pamięci. Co więcej, rzeczywiste położenie używanych komórek pamięci operacyjnej
 			jest nieznane	aplikacji, gdyż to jądro dokonuje translacji adresów fizycznych na adresy używane przez nie (również translacja w~drugą stronę
-			przeprowadzana jest przez jądro).
-			Niektóre rejestry procesora są także niedostępne dla takich procesów.
+			przeprowadzana jest przez jądro). Niektóre rejestry procesora są także niedostępne dla takich procesów.
 		\item Czas wykonania, jak również moment, w~którym proces jest uruchomiony na procesorze, w~pełni zależy od systemu operacyjnego, a~dokładnie
-			od zarządcy (ang. \emph{scheduler}) i~stosowanej przez niego wobec konkretnego procesu polityki.
+			od zarządcy (ang. \emph{scheduler}) i~stosowanej przez niego polityki szeregowania procesów.
 		\item Dostęp do urządzeń zewnętrznych jest zarządzany przez jądro, a~więc i~w~tym przypadku proces uruchomiony w~przestrzeni użytkownika
 			korzysta z~nich przy użyciu usług udostępnianych przez jądro.
 	\end{itemize}
@@ -647,6 +650,21 @@
 \end{comment}
 %
 \newpage
+\subsection{Procesy i~wątki w~systemie Linux}
+\indent
+  Każdy proces w~systemie Linux jest reprezentowany przez \emph{blok kontrolny procesu} (ang. \emph{Process Control Block}, PCB).
+  Zawiera on wszystkie informacje o~odpowiadającym mu procesie, m. in.:
+  \begin{itemize}
+    \item unikalny identyfikator procesu;
+    \item kontekst wykonania procesu, tj. stan rejestrów procesora, licznik rozkazów, wskaźnik stosu;
+    \item informacje o~pamięci przydzielonej dla procesu (jego przestrzeni adresowej);
+    \item statystyki procesu: ilość zużytego czasu procesora, ilość wykonanych operacji wywłaszczenia, \ldots
+    \item priorytet procesu;
+    \item wskaźnik na następny PCB.
+  \end{itemize}
+\par
+%
+/bin/bash: :x: nie znaleziono polecenia
 \section{Opis rozwiązania}
 \label{sec:solution}
 \subsection{Wstęp}
@@ -985,6 +1003,7 @@ Dostęp do I/O (w~obecnej implementacji: zasobów, obsługiwanych przez mechaniz
 \section{Analiza rozwiązania}
 \label{sec:analysis}
 \subsection{Kryteria oceny}
+\label{sec:criterions}
 \indent
 	Użyteczność implementacji opisanej w~poprzednim rozdziale można określić na podstawie:
 	\begin{enumerate}
@@ -1234,28 +1253,64 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
   Czas wykonania testu na poniższych wykresach jest podany w~mikrosekundach.
 \par
 \indent
-  \myownfigure{writen1000min}{writen1000min.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie minimalnych czasów wykonania}{.65} 
+  Pierwsza seria testów dała odpowiedź na pytanie o~wydajność operacji \function{do\_write} w~porównaniu z~blokującą operacją \function{write}.
+\myownfigure{writen1000min}{writen1000min.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie minimalnych czasów wykonania}{.65} 
 \myownfigure{writen1000max}{writen1000max.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie maksymalnych czasów wykonania}{.65} 
 \myownfigure{writen1000avg}{writen1000avg.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie uśrednionych czasów wykonania}{.65} 
-
+  Jak łatwo zauważyć, liczba wywołań \function{yield} nie wpływa na wydajność zapisu. Tak więc, wielokrotny zapis do urządzeń wejścia/wyjścia jest w~przypadku
+  \code{libmixed} równie wydajny, co odpowiadający mu ciąg blokujących operacji zapisu przy użyciu Pthreads.
+\par
+\indent 
+  Kolejna seria testów miała na celu sprawdzenie zapisu dla zbiorów danych o~różnej wielkości.
 \myownfigure{write1nmin}{write1nmin.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{.65} 
 \myownfigure{write1nmax}{write1nmax.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{.65} 
 \myownfigure{write1navg}{write1navg.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{.65} 
-
+  Okazuje się, że implementacja zapisu do I/O w~\code{libmixed} jest równie efektywna jak blokujący zapis w~Pthreads. Co więcej, następna seria testów pokazuje, że
+  w~przypadku większej ilości operacji zapisu potwierdza to spostrzeżenie.
+\par
+\indent
 \myownfigure{write100nmin}{write100nmin.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{.65} 
 \myownfigure{write100nmax}{write100nmax.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{.65} 
 \myownfigure{write100navg}{write100navg.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{.65} 
 \par
+\subsubsection{Podsumowanie testów wydajnościowych}
+\indent
+  Na podstawie wyników opisanych wyżej testów, można wysunąć następujące wnioski:
+  \begin{enumerate}
+    \item Wytworzenie włókna, a~więc wykonanie operacji \function{getcontext}, jest operacją szybszą niż wytworzenie wątku za pomocą \function{pthread\_create}.
+      Dla jądra Linux, utworzenie nowego wątku oznacza wytworzenie nowego bloku kontrolnego procesu (ang. \emph{Process Control Block}, PCB), zaś
+      wytworzenie włókna to wytworzenie niewielkiej (w~testowanym systemie jest to dokładnie 348 bajtów) struktury, zawierającej niezbędne minimum danych
+      do prawidłowego wykonywania operacji \function{swapcontext}.
+    \item Przełączanie kontekstu pomiędzy wątkami zaimplementowane w~jądrze systemu Linux jest kilkakrotnie szybsze od przełączania pomiędzy kontekstami użytkownika,
+      zaimplementowanymi w~operacjach \function{swapcontext}.
+    \item Operacja \function{pthread\_yield} działa w~czasie kilkakrotnie szybciej niż operacja \function{swapcontext}.
+    \item Zaimplementowana w~\code{libmixed} obsługa I/O nie ustępuje efektywnością blokującemu dostępowi do tych urządzeń z~poziomu wątków.
+  \end{enumerate}
+\par
 \section{Podsumowanie}
 \label{sec:summary}
+\indent
+  Zgodnie z~kryteriami oceny, wymienionymi w~rozdziale \ref{sec:criterions}, można orzec, co następuje:
+  \begin{enumerate}
+    \item Wygoda użycia \code{libmixed} jest porównywalna z~użyciem \code{Pthreads}.
+    \item Stosowanie biblioteki \code{libmixed} nie powoduje dużego narzutu czasowego dla działania aplikacji, a~wyniki testów porównawczych
+      pozwalają wysnuć dwa zasadnicze wnioski:
+      \begin{enumerate}
+        \item Zadania, do których wykonania potrzeba jedynie procesora i~pamięci RAM, mogą być wykonane jako pojedyncze włókna.
+          Biblioteka nie stosuje mechanizmu wywłaszczania, a~więc to użytkownik musi decydować o~tym, kiedy sterowanie ma powrócić do 
+          zarządcy włókna (wywołać \function{yield}). Problem ten jest pomijalny w~sytuacji, gdy aplikacja użytkownika składa się
+          jedynie z~zadań nieinteraktywnych, jednak dla aplikacji, w~której istnieją obok włókien wymagających interakcji z~zasobami systemu
+          istnieją także włókna wykonujące długie obliczenia, nieprzerwana praca włókien drugiego rodzaju może prowadzić do takich problemów,
+          jak na przykład brak reakcji na zachowanie użytkownika aplikacji, lub problemy z~I/O (przepełnienie bufora).\label{sec:firstone}
+        \item Zadania związane z~obsługą I/O można uruchamiać jako pojedyncze włókna, a~ich interakcja z~systemem operacyjnym będzie równie
+          efektywna jak poprawne użycie mechanizmu \code{epoll}.
+      \end{enumerate}
+  \end{enumerate}
+\par
 %\subsection{Możliwe kierunki rozwoju}
 %
 \newpage
 \rhead{\empty}
 %\pagestyle{plain}
 \bibliography{bibliography}
-\begin{comment}
-\section*{Indeks}
-\printindex
-\end{comment}
 \end{document}
