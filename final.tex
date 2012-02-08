@@ -1273,39 +1273,30 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \myownfigure{write100nmax}{write100nmax.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{.65} 
 \myownfigure{write100navg}{write100navg.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{.65} 
 \par
-\subsubsection{Podsumowanie testów wydajnościowych}
+\subsection{Podsumowanie}
 \indent
   Na podstawie wyników opisanych wyżej testów, można wysunąć następujące wnioski:
   \begin{enumerate}
-    \item Wytworzenie włókna, a~więc wykonanie operacji \function{getcontext}, jest operacją szybszą niż wytworzenie wątku za pomocą \function{pthread\_create}.
-      Dla jądra Linux, utworzenie nowego wątku oznacza wytworzenie nowego bloku kontrolnego procesu (ang. \emph{Process Control Block}, PCB), zaś
-      wytworzenie włókna to wytworzenie niewielkiej (w~testowanym systemie jest to dokładnie 348 bajtów) struktury, zawierającej niezbędne minimum danych
-      do prawidłowego wykonywania operacji \function{swapcontext}.
-    \item Przełączanie kontekstu pomiędzy wątkami zaimplementowane w~jądrze systemu Linux jest kilkakrotnie szybsze od przełączania pomiędzy kontekstami użytkownika,
-      zaimplementowanymi w~operacjach \function{swapcontext}.
-    \item Operacja \function{pthread\_yield} działa w~czasie kilkakrotnie szybciej niż operacja \function{swapcontext}.
-    \item Zaimplementowana w~\code{libmixed} obsługa I/O nie ustępuje efektywnością blokującemu dostępowi do tych urządzeń z~poziomu wątków.
+    \item Wygoda użycia \code{libmixed} jest porównywalna z~użyciem \code{Pthreads}.
+    \item Działanie \code{libmixed} jest poprawne w~przestrzeni ograniczonej przez testy jednostkowe.
+    \item Dzięki przeprowadzeniu testów wydajnościowych oraz porównaniu ich z~analogicznymi testami \code{Pthreads}, można stwierdzić
+      następujące fakty:
+      \begin{itemize}
+        \item Wytworzenie włókna, a~więc wykonanie operacji \function{getcontext}, jest operacją szybszą niż wytworzenie wątku za pomocą \function{pthread\_create}.
+          Dla jądra Linux, utworzenie nowego wątku oznacza wytworzenie nowego bloku kontrolnego procesu (ang. \emph{Process Control Block}, PCB), zaś
+          wytworzenie włókna to wytworzenie niewielkiej (w~testowanym systemie jest to dokładnie 348 bajtów) struktury, zawierającej niezbędne minimum danych
+          do prawidłowego wykonywania operacji \function{swapcontext}.
+        \item Przełączanie kontekstu pomiędzy wątkami zaimplementowane \linebreak w~jądrze systemu Linux jest kilkakrotnie szybsze od przełączania pomiędzy kontekstami użytkownika,
+          zaimplementowanymi w~operacjach \function{swapcontext}.
+        \item Operacja \function{pthread\_yield} działa w~czasie kilkakrotnie krótszym niż \linebreak peracja \function{swapcontext}.
+        \item Zaimplementowana w~\code{libmixed} obsługa I/O nie ustępuje efektywnością blokującemu dostępowi do tych urządzeń z~poziomu wątków.
+      \end{itemize}
   \end{enumerate}
 \par
 \section{Podsumowanie}
 \label{sec:summary}
 \indent
-  Zgodnie z~kryteriami oceny, wymienionymi w~rozdziale \ref{sec:criterions}, można orzec, co następuje:
-  \begin{enumerate}
-    \item Wygoda użycia \code{libmixed} jest porównywalna z~użyciem \code{Pthreads}.
-    \item Stosowanie biblioteki \code{libmixed} nie powoduje dużego narzutu czasowego dla działania aplikacji, a~wyniki testów porównawczych
-      pozwalają wysnuć dwa zasadnicze wnioski:
-      \begin{enumerate}
-        \item Zadania, do których wykonania potrzeba jedynie procesora i~pamięci RAM, mogą być wykonane jako pojedyncze włókna.
-          Biblioteka nie stosuje mechanizmu wywłaszczania, a~więc to użytkownik musi decydować o~tym, kiedy sterowanie ma powrócić do 
-          zarządcy włókna (wywołać \function{yield}). Problem ten jest pomijalny w~sytuacji, gdy aplikacja użytkownika składa się
-          jedynie z~zadań nieinteraktywnych, jednak dla aplikacji, w~której istnieją obok włókien wymagających interakcji z~zasobami systemu
-          istnieją także włókna wykonujące długie obliczenia, nieprzerwana praca włókien drugiego rodzaju może prowadzić do takich problemów,
-          jak na przykład brak reakcji na zachowanie użytkownika aplikacji, lub problemy z~I/O (przepełnienie bufora).\label{sec:firstone}
-        \item Zadania związane z~obsługą I/O można uruchamiać jako pojedyncze włókna, a~ich interakcja z~systemem operacyjnym będzie równie
-          efektywna jak poprawne użycie mechanizmu \code{epoll}.
-      \end{enumerate}
-  \end{enumerate}
+  Biblioteka \code{libmixed} może być używana 
 \par
 %\subsection{Możliwe kierunki rozwoju}
 %
