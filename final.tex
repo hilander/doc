@@ -524,21 +524,36 @@
 	System operacyjny (ang. \emph{operating system, OS}, zwany dalej \emph{systemem}) jest programem, 
 	który kontroluje wykonanie aplikacji użytkownika (programów),
 	może być postrzegany jako pośrednik (interfejs) pomiędzy aplikacją a~sprzętem (systemem komputerowym), na którym jest wykonywany.
-	Najważniejszą zyskiem z~używania systemu jest możliwość uruchomienia aplikacji na różnych systemach komputerowych, na których
-	jest on dostępny, a~więc aplikacja jest \emph{przenośna}.
+	Najważniejszą zyskiem z~używania systemu jest możliwość uruchomienia programu napisanego dla jednego OS, który będzie działać na różnych systemach komputerowych.
 \par
 %
 \indent
-	Aplikacje użytkownika wykonywane pod kontrolą systemu operacyjnego mogą być bardzo proste (np. program do zliczania słów w~pliku tekstowym),
-	jak również bardzo złożone (program do obsługi transakcji bankowych, który z~powodu spełniania ogromnej liczby wymagań, może być potraktowany jako
-	system). OS musi zatem udostępniać pewną abstrakcję systemu operacyjnego, która udostępni aplikacji wszystkie usługi oraz zapewni swego
-	rodzaju iluzję wyłączności dostępu do zasobów systemu (umożliwiając jednocześnie komunikację z~innymi aplikacjami).
-	Tą abstrakcją jest \emph{proces} (ang. \emph{process}).
+	Programy użytkownika wykonywane pod kontrolą systemu operacyjnego mogą być proste (np. program do zliczania słów w~pliku tekstowym)
+	lub złożone (program do obsługi transakcji bankowych). OS musi zatem udostępniać pewną abstrakcję systemu komputerowego dostarczaną dla użytkownika,
+  dzięki której możliwe będzie korzystanie z~zasobów komputera. Abstrakcja ta jest zrealizowana jako zbiór \emph{usług} (ang. \emph{services}) OS.
+  O~ile wskazane jest, aby użytkownik nie miał dostępu do wszystkich zasobów systemu operacyjnego, o~tyle usługi OS muszą mieć taki dostęp.
+  Zbiór usług systemu jest zwany \emph{jądrem} (ang. \emph{kernel}), zaś tryb pracy systemu z~dostępem do wszystkich zasobów OS zwany jest
+  \emph{przestrzenią jądra} (ang. \emph{kernel space}).
 \par
 %
 \indent
-  Każdy proces uruchamiany przez użytkownika posiada własną przestrzeń adresową, jest mu przydzielany czas procesora oraz dostęp do
-  wybranych przez OS zasobów.
+  Zdecydowana większość obecnych systemów operacyjnych to systemy wielozadaniowe z~\emph{wywłaszczaniem} (ang. \emph{pre\dywiz emptive multitasking operating system}).
+\par
+%
+\indent
+  Jedną z~ważnych usług systemu operacyjnego jest wytworzenie i~zarządzanie \emph{zadaniem} (ang. \emph{task}), zwanym również \emph{procesem}
+  (ang. \emph{process}). Każdy proces jest reprezentowany w~systemie przez \emph{blok kontrolny procesu} (ang. \emph{Process Control Block}, PCB).
+  Zawiera on wszystkie informacje o~odpowiadającym mu procesie, m. in.:
+  \begin{itemize}
+    \item unikalny identyfikator procesu;
+    \item kontekst wykonania procesu, tj. stan rejestrów procesora, licznik rozkazów, wskaźnik stosu;
+    \item informacje o~pamięci przydzielonej dla procesu (jego przestrzeni adresowej);
+    \item statystyki procesu: ilość zużytego czasu procesora, ilość wykonanych operacji wywłaszczenia, \ldots
+    \item priorytet procesu;
+    \item wskaźnik na następny PCB.
+  \end{itemize}
+  Jest to struktura zawierająca komplet informacji o~odpowiadającym jej zadaniu, dostępna jedynie z~poziomu przestrzeni jądra.
+  Procesy, jakie może uruchomić użytkownik, mają dostęp do podzbioru przestrzeni jądra -- \emph{przestrzeni użytkownika} (ang. \emph{user space}).
 \par
 %
 \indent
@@ -560,7 +575,6 @@
 \par
 %
 \indent
-  
 \par
 %
 \indent
@@ -652,19 +666,9 @@
 \newpage
 \subsection{Procesy i~wątki w~systemie Linux}
 \indent
-  Każdy proces w~systemie Linux jest reprezentowany przez \emph{blok kontrolny procesu} (ang. \emph{Process Control Block}, PCB).
-  Zawiera on wszystkie informacje o~odpowiadającym mu procesie, m. in.:
-  \begin{itemize}
-    \item unikalny identyfikator procesu;
-    \item kontekst wykonania procesu, tj. stan rejestrów procesora, licznik rozkazów, wskaźnik stosu;
-    \item informacje o~pamięci przydzielonej dla procesu (jego przestrzeni adresowej);
-    \item statystyki procesu: ilość zużytego czasu procesora, ilość wykonanych operacji wywłaszczenia, \ldots
-    \item priorytet procesu;
-    \item wskaźnik na następny PCB.
-  \end{itemize}
 \par
 %
-/bin/bash: :x: nie znaleziono polecenia
+\newpage
 \section{Opis rozwiązania}
 \label{sec:solution}
 \subsection{Wstęp}
