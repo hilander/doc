@@ -610,8 +610,14 @@
 %
 \indent
   Zarządzanie czasem procesora jest przede wszystkim powinnością planisty krótkoterminowego (ang. \emph{short--term scheduler}),
-  zaś planista długoterminowy odpowiada za wybór procesów, które będą wczytane z~pamięci zewnętrznej do RAM.
-  Jądro posiada także 
+  zaś planista długoterminowy odpowiada za wybór procesów, które będą wczytane z~pamięci zewnętrznej do RAM. Planista długoterminowy
+  jest uruchamiany rzadko w~porównaniu do uruchamiania planisty krótkoterminowego. Stąd, planista krótkoterminowy musi być wydajny.
+  Jądro posiada także \emph{dyspozytora}, który odpowiada za wywłaszczanie procesów oraz przekazywanie do nich sterowania.
+\par
+%
+\indent
+  Zarządzanie pamięcią procesu jest zadaniem pracochłonnym: podczas przełączania pomiędzy dwoma procesami następuje zmiana przestrzeni adresowej pierwszego procesu
+  na przestrzeń adresową drugiego. Ze względu na 
 \par
 %
 \subsection{Wątki}
