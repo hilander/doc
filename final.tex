@@ -592,13 +592,26 @@
   \begin{enumerate}
     \item Czas procesora: czas ten jest porcjowany dla każdego procesu; system daje do dyspozycji zadania \emph{plasterek czasu} (ang. \emph{time slice}),
       po upływie którego (o~ile proces wcześniej nie oddał sterowania systemowi) proces będzie wywłaszczony. Do ustalenia, który proces ma otrzymać następny plasterek,
-      stosuje się polityki długo\dywiz , średnio\dywiz  ~oraz krótkoterminowe, realizowane przez odpowiadających im \emph{planistów} (ang. \emph{schedulers}).
+      stosuje się polityki długo\dywiz ~oraz krótkoterminowe, realizowane przez odpowiadających im \emph{planistów} (ang. \emph{schedulers}).
     \item Pamięć RAM: każdy proces działa w~swojej przestrzeni adresowej. Proces używa jej jak liniowej pamięci, począwszy od adresu o~adresie 0.
       System przelicza każde odwołanie do odpowiedniej komórki na odwołanie do rzeczywistej komórki pamięci, a~następnie sprawdza, czy komórka taka znajduje się
       w~przestrzeni adresowej tego procesu i~w~zależności od wyniku tego sprawdzenia podejmuje akcje zgodne ze swoją polityką. Ponieważ takie sprawdzanie powoduje spory narzut
       czasowy na działanie procesu i~systemu, w~celu jego usprawnienia powstały mechanizmy mające usprawnić zarządzanie pamięcią -- zarówno od strony sprzętowej
       (mechanizmy ochrony pamięci), jak i~programowej (udogodnienia na poziomie kompilacji).
   \end{enumerate}
+  Oprócz tych dwóch zasobów, system z~reguły daje do dyspozycji procesu trzy urządzenia: standardowe wejście, wyjście oraz wyjście błędów.
+\par
+%
+\indent
+  Programy, a~więc i~odpowiadające im procesy, można podzielić na dwie zasadnicze grupy: interaktywne i~nieinteraktywne.
+  Procesy z~pierwszej grupy najczęściej oczekują na reakcję użytkownika lub wystąpienie określonego zdarzenia w~urządzeniu systemowym,
+  zaś procesy z~drugiej grupy nie potrzebują do swojego działania żadnej interakcji ze światem zewnętrznym.
+\par
+%
+\indent
+  Zarządzanie czasem procesora jest przede wszystkim powinnością planisty krótkoterminowego (ang. \emph{short--term scheduler}),
+  zaś planista długoterminowy odpowiada za wybór procesów, które będą wczytane z~pamięci zewnętrznej do RAM.
+  Jądro posiada także 
 \par
 %
 \subsection{Wątki}
@@ -613,34 +626,6 @@
 	dlatego też, podczas projektowania aplikacji należy dokonać takiego podziału zadań na procesy i~wątki, aby zachować zakładaną ochronę danych.
 \par
 %
-\begin{comment}
-\indent
-	\begin{center}
-	\centering
-	\begin{tabular}{|l|c|c|} \hline
-		\multirow{2}{*}{Komponent} & \multirow{2}{*}{czas rzeczywisty}	& czas proporcjonalny \\ 
-					  &                   & (2 miliardy razy wolniej) \\ \hline
-		cykl procesora	& 0,5 ns & 1 sekunda \\\hline
-		dostęp do cache & 1 ns & 2 sekundy \\\hline
-		dostęp do RAM	  & 15 ns & 30 sekund \\\hline
-		przełączenie kontekstu & 5000 ns (5 $\mu$s) & 167 minut \\\hline
-		dostęp do HD		& 7000 $\mu$s (7 ms) & 162 dni \\\hline
-		kwant czasu 		& 100 ms	& 6,3 roku \\\hline
-	\end{tabular}
-		\mytabcaption{Czas działania komponentów systemu komputerowego oraz proporcjonalny do niego czas reakcji człowieka}
-	\label{tab:timecomp}
-	\end{center}
-	Warto w~tym miejscu uzmysłowić sobie różnicę w~czasie taktowania obecnych jednostek centralnych w~porównaniu do czasu dostępu do pewnych
-	elementów systemu komputerowego, przekładając te czasy na zbliżone do ludzkich miar. Jak można zauważyć w~tabeli \ref{tab:timecomp},
-	przełączanie kontekstu procesu jest operacją czasochłonną, gdyż w~,,normalnym'' świecie zajęła by człowiekowi ponad 2 godziny pracy.
-	Co więcej, uzyskanie dostępu do dysku twardego zajmuje czas porównywalny do prawie pół roku, co doskonale ilustruje celowość asynchronicznej
-	(nieblokującej, ang. \emph{asynchronous, non\dywiz{}blocking}) komunikacji pomiędzy procesorem a~urządzeniami zewnętrznymi.
-	Tabela \ref{tab:timecomp}~pokazuje również celowość projektowania aplikacji tak, aby jak najczęściej używana była pamięć cache w~celu uniknięcia
-	kosztownych odwołań do pamięci RAM: takie użycie pamięci może przynieść w~efekcie spore przyspieszenie działania aplikacji.
-\par
-\end{comment}
-%
-\newpage
 \subsection{Procesy i~wątki w~systemie Linux}
 \indent
 \par
