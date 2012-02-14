@@ -523,21 +523,32 @@
 \indent
 	System operacyjny (ang. \emph{operating system, OS}, zwany dalej \emph{systemem}) jest programem, 
 	który kontroluje wykonanie aplikacji użytkownika (programów),
-	może być postrzegany jako pośrednik (interfejs) pomiędzy aplikacją a~sprzętem (systemem komputerowym), na którym jest wykonywany.
+	może być postrzegany jako pośrednik (interfejs) pomiędzy programem a~sprzętem (systemem komputerowym), na którym jest wykonywany.
 	Najważniejszą zyskiem z~używania systemu jest możliwość uruchomienia programu napisanego dla jednego OS, który będzie działać na różnych systemach komputerowych.
 \par
 %
 \indent
 	Programy użytkownika wykonywane pod kontrolą systemu operacyjnego mogą być proste (np. program do zliczania słów w~pliku tekstowym)
 	lub złożone (program do obsługi transakcji bankowych). OS musi zatem udostępniać pewną abstrakcję systemu komputerowego dostarczaną dla użytkownika,
-  dzięki której możliwe będzie korzystanie z~zasobów komputera. Abstrakcja ta jest zrealizowana jako zbiór \emph{usług} (ang. \emph{services}) OS.
+  dzięki której możliwe będzie korzystanie z~zasobów komputera. Abstrakcja ta jest zrealizowana jako zbiór \emph{usług} (ang. \emph{services}) systemu operacyjnego.
   O~ile wskazane jest, aby użytkownik nie miał dostępu do wszystkich zasobów systemu operacyjnego, o~tyle usługi OS muszą mieć taki dostęp.
   Zbiór usług systemu jest zwany \emph{jądrem} (ang. \emph{kernel}), zaś tryb pracy systemu z~dostępem do wszystkich zasobów OS zwany jest
   \emph{przestrzenią jądra} (ang. \emph{kernel space}).
 \par
 %
 \indent
-  Zdecydowana większość obecnych systemów operacyjnych to systemy wielozadaniowe z~\emph{wywłaszczaniem} (ang. \emph{pre\dywiz emptive multitasking operating system}).
+  Zdecydowana większość obecnych systemów operacyjnych to systemy wielozadaniowe z~\emph{wywłaszczaniem} (ang. \emph{pre\dywiz emptive multitasking operating system})
+  oraz \emph{zarządzaniem pamięcią} (ang. \emph{memory management}). Dlatego też w~dalszej części tego rozdziału opisane będą fragmenty takich właśnie systemów.
+\par
+%
+\indent
+  Mechanizm wywłaszczania można określić jako zatrzymanie bieżącego programu oraz zapis jego stanu.
+\par
+%
+\indent
+  Zarządzanie pamięcią osobno dla każdego programu pozwala na bezpieczne zarządzanie programami: jeśli jeden z~nich będzie próbował wykonać dowolną operację
+  poza swoją \emph{przestrzenią adresową} (ang. \emph{address space}), system będzie mógł zareagować na taką próbę oraz poinformować odpowiedzialny za nią program
+  o~jego nieprawidłowym działaniu.
 \par
 %
 \indent
@@ -553,28 +564,12 @@
     \item wskaźnik na następny PCB.
   \end{itemize}
   Jest to struktura zawierająca komplet informacji o~odpowiadającym jej zadaniu, dostępna jedynie z~poziomu przestrzeni jądra.
-  Procesy, jakie może uruchomić użytkownik, mają dostęp do podzbioru przestrzeni jądra -- \emph{przestrzeni użytkownika} (ang. \emph{user space}).
+  Dla przykładu, jądro systemu Linux w~wersji 3.1 wytwarza PCB o~wielkości ok. 1,7 KiB.
 \par
 %
 \indent
-  System operacyjny może uruchamiać procesy sekwencyjnie lub równolegle.
-  Co więcej, istnieje możliwość wykonania wielu procesów ,,jednocześnie'' na jednym rdzeniu przy zastosowaniu mechanizmu \emph{wywłaszczania}
-  (ang. \emph{preemption}): dzięki zastosowaniu tego mechanizmu, każdy proces jest dzielony na ,,plasterki'' (ang. \emph{time slices}),
-  które można wykonywać naprzemiennie.
-\par
-%
-\indent
-  W~systemach komputerowych nie posiadających zaimplementowanego mechanizmu wywłaszczania, 
-  zaś wyposażonych w~więcej niż jeden rdzeń, może działać co najwyżej tyle procesów, ile jest dostępnych rdzeni.
-  Każdy dodatkowy proces, który nie został uruchomiony, musi oczekiwać w~kolejce procesów oczekujących na czas procesora.
-  Taki sposób zarządzania procesami może powodować wystąpienie różnych problemów, np. jeśli proces A~oczekuje na wynik wykonania procesu B,
-  zaś A~zostanie uruchomione przed B na maszynie posiadającej jeden procesor, może to spowodować zatrzymanie działania systemu operacyjnego,
-  lub mogą zaistnieć inne zdarzenia (np. wystąpienie przerwania), które muszą być uwzględnione oraz obsłużone
-  przez użytkownika. Jak łatwo zauważyć, w~systemie operacyjnym bez wywłaszczania
-  za część zadań związanych z~zarządzaniem procesem odpowiedzialny jest również jego użytkownik.
-\par
-%
-\indent
+  Procesy, jakie może uruchomić użytkownik, działać będą w~\emph{przestrzeni użytkownika} (ang. \emph{user space}).
+  Każdy program działający w~systemie operacyjnym składa się z~co najmniej jednego procesu.
 \par
 %
 \indent
@@ -588,40 +583,22 @@
 %
 \subsection{Procesy}
 \indent
-	Programy (procesy uruchomione w~ramach takich programów) uruchamiane w~przestrzeni użytkownika posiadają limitowany dostęp do zasobów komputera:
-	\begin{itemize}
-		\item procesy posiadają limitowany i~niebezpośredni dostęp do pamięci. Co więcej, rzeczywiste położenie używanych komórek pamięci operacyjnej
-			jest nieznane	aplikacji, gdyż to jądro dokonuje translacji adresów fizycznych na adresy używane przez nie (również translacja w~drugą stronę
-			przeprowadzana jest przez jądro). Niektóre rejestry procesora są także niedostępne dla takich procesów.
-		\item Czas wykonania, jak również moment, w~którym proces jest uruchomiony na procesorze, w~pełni zależy od systemu operacyjnego, a~dokładnie
-			od zarządcy (ang. \emph{scheduler}) i~stosowanej przez niego polityki szeregowania procesów.
-		\item Dostęp do urządzeń zewnętrznych jest zarządzany przez jądro, a~więc i~w~tym przypadku proces uruchomiony w~przestrzeni użytkownika
-			korzysta z~nich przy użyciu usług udostępnianych przez jądro.
-	\end{itemize}
+  Jak wspomniano wyżej, każdy proces to dla systemu operacyjnego odpowiadający mu PCB, który jest analizowany przez system, a~następnie
+  zostają mu udostępnione odpowiednie zasoby komputera. W~przypadku zakończenia działania procesu, system podejmuje akcje związane z~usunięciem zadania.
 \par
 %
 \indent
-	Proces musi umożliwiać dostęp do systemu i~jego zasobów: każda aplikacja potrzebuje pewnego czasu do wykonania swoich zadań, w~trakcie wykonywania
-	korzysta z~pamięci operacyjnej, a~także może wymagać innych zasobów systemu operacyjnego, m. in.:
-	\begin{itemize}
-		\item zasobów systemu plików;
-		\item umożliwienia komunikacji z~innymi aplikacjami;
-		\item izolacji od innych programów;
-		\item pobierać dane od użytkownika lub informować go o~wynikach pracy.
-	\end{itemize}
-	Dodatkowo, sama aplikacja może składać się z~autonomicznych komponentów, które nie mogą być przez nie współdzielone, 
-	np. ze względu na bezpieczeństwo przetwarzanych danych. Tak więc sama aplikacja może składać się nie z~jednego, ale z~pewnej liczby
-	procesów, które komunikują się w~sposób kontrolowany przez system i~użytkownika.
-\par
-%
-\indent
-	Procesy, mimo faktu posiadania doskonałej (lub \emph{prawie} doskonałej) izolacji, posiadają jedną, zasadniczą wadę: przełączanie pomiędzy nimi
-	zajmuje dużo czasu. Aplikacja, która posiada dużą liczbę procesów, mimo iż w~teorii powinna działać bardzo sprawnie,
-	może nie spełniać tych oczekiwań, gdyż systemowi dużo czasu może zająć przełączanie pomiędzy przestrzeniami adresowymi procesów:
-	jeśli przestrzeń adresowa procesu, do którego przechodzi sterowanie, znajduje się w~pamięci podręcznej procesora, to czas potrzebny do 
-	przełączenia sterowania pomiędzy tymi procesami będzie stosunkowo krótki. Jeśli zaś informacje o~przestrzeni adresowej tego procesu znajdują się
-	w~pamięci operacyjnej (lub w~pamięci zewnętrznej), to czas potrzebny na przełączenie pomiędzy tymi procesami może się znacząco wydłużyć,
-	a~procesor będzie zmuszony do przestoju w~obliczeniach.
+  Każdy proces potrzebuje do działania co najmniej dwóch zasobów systemu operacyjnego, a~są nimi:
+  \begin{enumerate}
+    \item Czas procesora: czas ten jest porcjowany dla każdego procesu; system daje do dyspozycji zadania \emph{plasterek czasu} (ang. \emph{time slice}),
+      po upływie którego (o~ile proces wcześniej nie oddał sterowania systemowi) proces będzie wywłaszczony. Do ustalenia, który proces ma otrzymać następny plasterek,
+      stosuje się polityki długo\dywiz , średnio\dywiz  ~oraz krótkoterminowe, realizowane przez odpowiadających im \emph{planistów} (ang. \emph{schedulers}).
+    \item Pamięć RAM: każdy proces działa w~swojej przestrzeni adresowej. Proces używa jej jak liniowej pamięci, począwszy od adresu o~adresie 0.
+      System przelicza każde odwołanie do odpowiedniej komórki na odwołanie do rzeczywistej komórki pamięci, a~następnie sprawdza, czy komórka taka znajduje się
+      w~przestrzeni adresowej tego procesu i~w~zależności od wyniku tego sprawdzenia podejmuje akcje zgodne ze swoją polityką. Ponieważ takie sprawdzanie powoduje spory narzut
+      czasowy na działanie procesu i~systemu, w~celu jego usprawnienia powstały mechanizmy mające usprawnić zarządzanie pamięcią -- zarówno od strony sprzętowej
+      (mechanizmy ochrony pamięci), jak i~programowej (udogodnienia na poziomie kompilacji).
+  \end{enumerate}
 \par
 %
 \subsection{Wątki}
