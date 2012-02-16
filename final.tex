@@ -553,8 +553,8 @@
 %
 \indent
   Jedną z~ważnych usług systemu operacyjnego jest wytworzenie i~zarządzanie \emph{zadaniem} (ang. \emph{task}), zwanym również \emph{procesem}
-  (ang. \emph{process}). Każdy proces jest reprezentowany w~systemie przez \emph{blok kontrolny procesu} (ang. \emph{Process Control Block}, PCB).
-  Zawiera on wszystkie informacje o~odpowiadającym mu procesie, m. in.:
+  (ang. \emph{process}). Stan każdego procesu jest reprezentowany w~systemie przez \emph{blok kontrolny procesu} (ang. \emph{Process Control Block}, PCB).
+  Zawiera on wszystkie informacje o~stanie odpowiadającego mu procesu, m. in.:
   \begin{itemize}
     \item unikalny identyfikator procesu;
     \item kontekst wykonania procesu, tj. stan rejestrów procesora, licznik rozkazów, wskaźnik stosu;
@@ -564,17 +564,20 @@
     \item wskaźnik na następny PCB.
   \end{itemize}
   Jest to struktura zawierająca komplet informacji o~odpowiadającym jej zadaniu, dostępna jedynie z~poziomu przestrzeni jądra.
-  Dla przykładu, jądro systemu Linux w~wersji 3.1 wytwarza PCB o~wielkości ok. 1,7 KiB.
+  Jądro systemu Linux w~wersji 3.1 wytwarza PCB o~rozmiarze ok. 1,7 KiB.
 \par
 %
 \indent
-  Procesy, jakie może uruchomić użytkownik, działać będą w~\emph{przestrzeni użytkownika} (ang. \emph{user space}).
+  Procesy, jakie może uruchomić użytkownik, działać będą w~\emph{przestrzeni użytkownika} (ang. \emph{user space}), zaś
+  system działa w~\emph{trybie użytkownika} (ang. \emph{user mode}). W~dokumencie, jeżeli nie jest zaznaczone inaczej,
+  jeśli wystąpi pojęcie przestrzeni użytkownika, będzie ona utożsamiana z~procesorem pracującym w~trybie użytkownika.
   Każdy program działający w~systemie operacyjnym składa się z~co najmniej jednego procesu.
 \par
 %
 \indent
 	Jądro systemu to jego podstawa, która jest odpowiedzialna za zarządzanie jego usługami, jak również zasobami, m. in. pamięcią, I/O,
-	przydzielaniem czasu procesora poszczególnym procesom. Instrukcje procesu jądra wykonywane są w~przestrzeni jądra. Dzięki temu,
+	przydzielaniem czasu procesora poszczególnym procesom. Instrukcje procesu jądra wykonywane są w~\emph{przestrzeni jądra}
+  (ang. \emph{kernel space}). Podobnie jak dla przestrzeni użytkownika, Dzięki temu,
 	mają one dostęp do wszystkich zasobów systemu komputera i~mogą je dowolnie zmieniać. Dlatego też procesy uruchamiane w~przestrzeni
 	jądra muszą być zaprojektowane zgodnie ze wszystkimi wymaganiami stawianymi danemu systemowi operacyjnemu, wraz z~podstawowym wymaganiem:
 	muszą one być \emph{niezawodne}, gdyż w~razie wystąpienia poważnego błędu w~trakcie wykonywania programu uruchomionego w~przestrzeni jądra,
@@ -616,8 +619,8 @@
 \par
 %
 \indent
-  Zarządzanie pamięcią procesu jest zadaniem pracochłonnym: podczas przełączania pomiędzy dwoma procesami następuje zmiana przestrzeni adresowej pierwszego procesu
-  na przestrzeń adresową drugiego. Ze względu na 
+  Zarządzanie pamięcią procesu jest zadaniem pracochłonnym: podczas przełączania pomiędzy dwoma procesami następuje zmiana 
+  przestrzeni adresowej pierwszego procesu na przestrzeń adresową drugiego. Ze względu na 
 \par
 %
 \subsection{Wątki}
