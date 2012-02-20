@@ -596,10 +596,12 @@
     \item Czas procesora: czas ten jest porcjowany dla każdego procesu; system daje do dyspozycji zadania \emph{plasterek czasu} (ang. \emph{time slice}),
       po upływie którego (o~ile proces wcześniej nie oddał sterowania systemowi) proces będzie wywłaszczony. Do ustalenia, który proces ma otrzymać następny plasterek,
       stosuje się polityki długo\dywiz ~oraz krótkoterminowe, realizowane przez odpowiadających im \emph{planistów} (ang. \emph{schedulers}).
-    \item Pamięć RAM: każdy proces działa w~swojej przestrzeni adresowej. Proces używa jej jak liniowej pamięci, począwszy od adresu o~adresie 0.
-      System przelicza każde odwołanie do odpowiedniej komórki na odwołanie do rzeczywistej komórki pamięci, a~następnie sprawdza, czy komórka taka znajduje się
-      w~przestrzeni adresowej tego procesu i~w~zależności od wyniku tego sprawdzenia podejmuje akcje zgodne ze swoją polityką. Ponieważ takie sprawdzanie powoduje spory narzut
-      czasowy na działanie procesu i~systemu, w~celu jego usprawnienia powstały mechanizmy mające usprawnić zarządzanie pamięcią -- zarówno od strony sprzętowej
+    \item Pamięć RAM: każdy proces działa w~\emph{wirtualnej przestrzeni adresowej} (ang. \emph{Virtual Address Space}). 
+      Z~punktu widzenia systemu jest to funkcja, która przyporządkowuje \emph{wirtualnemu} adresowi komórki jej rzeczywisty adres w~RAM.
+      Dzięki takiemu rozwiązaniu, możliwa jest izolacja procesów: każdy z~nich operuje w~rozłącznym podzbiorze pamięci RAM, bez możliwości
+      odczytu/zapisu z/do podzbioru RAM przeznaczonego dla innego zadania.
+      Stosowanie wirtualnej przestrzeni adresowej powoduje spory narzut czasowy na działanie procesu i~systemu. W~celu jego usprawnienia powstały mechanizmy 
+      mające usprawnić zarządzanie pamięcią -- zarówno od strony sprzętowej
       (mechanizmy ochrony pamięci), jak i~programowej (udogodnienia na poziomie kompilacji).
   \end{enumerate}
   Oprócz tych dwóch zasobów, system z~reguły daje do dyspozycji procesu trzy urządzenia: standardowe wejście, wyjście oraz wyjście błędów.
@@ -620,22 +622,29 @@
 %
 \indent
   Zarządzanie pamięcią procesu jest zadaniem pracochłonnym: podczas przełączania pomiędzy dwoma procesami następuje zmiana 
-  przestrzeni adresowej pierwszego procesu na przestrzeń adresową drugiego. 
+  przestrzeni adresowej pierwszego procesu na przestrzeń adresową drugiego. Wiąże się to z~przełączeniem wirtualnej przestrzeni adresowej 
+  wywłaszczonego procesu na przestrzeń następnego. Często wiąże się to z~wczytaniem sporej ilości danych z~RAM do pamięci podręcznej procesora.
+\par
+%
+\indent
+  Ponieważ każdy proces posiada dostęp do innych zasobów komputera, system musi sprawdzić ich stan oraz udostępnić informacje o~stanie procesowi
+  (uaktualnić odpowiednie wartości PCB). Wykonanie tych czynności jest również znaczącym narzutem czasowym dla operacji przełączania procesów.
 \par
 %
 \subsection{Wątki}
 \indent
-	Rozwiązaniem kosztownego problemu przełączania pomiędzy przestrzeniami adresowymi procesów jest zastosowanie \emph{wątków} (ang. \emph{threads}).
-	Wątki w~ramach jednego procesu posiadają wspólną przestrzeń adresową, sumaryczny czas ich wykonania jest równy czasowi przydzielonemu dla 
-	procesu, w~ramach którego są wykonywane. Przełączanie pomiędzy nimi również pociąga za sobą poniesienie kosztów czasowych, są one jednak
-	o~wiele niższe niż te, które należało by ponieść w~wypadku przełączania sterowania pomiędzy procesami. Z~powodu mniejszego narzutu czasowego,
-	związanego z~przełączaniem pomiędzy wątkami, nazywane są one również \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}).
-	Wraz z~niewątpliwą oszczędnością czasu podczas przełączania pomiędzy wątkami, z~powodu używania przez wątki tej samej przestrzeni adresowej,
-	następuje utrata izolacji przestrzeni adresowej pomiędzy nimi. Może się to wiązać z~utratą bezpieczeństwa danych używanych przez dany wątek,
-	dlatego też, podczas projektowania aplikacji należy dokonać takiego podziału zadań na procesy i~wątki, aby zachować zakładaną ochronę danych.
+  Wątki bywają również nazywane \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}, LWP), ponieważ umożliwiają szybsze przełączanie
+  pomiędzy nimi. Główną przyczyną tego przyspieszenia jest brak przełączania pomiędzy 
+  przestrzeniami adresowymi wątków pracujących w~ramach tego samego procesu -- wszystkie wątki korzystają z~tej samej wirtualnej przestrzeni adresowej.
+  Wątki pracujące w~tym samym procesie posiadają również dostęp do wszystkich urządzeń systemowych dostępnych dla odpowiadającego im procesu.
+  Dzięki tym oraz wielu pomniejszym cechom, wątki są
 \par
 %
 \subsection{Procesy i~wątki w~systemie Linux}
+\indent
+\par
+%
+\subsection{Zakleszczenie i~głodzenie}
 \indent
 \par
 %
