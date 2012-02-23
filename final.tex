@@ -568,7 +568,7 @@
 \par
 %
 \indent
-  Procesy, jakie może uruchomić użytkownik, działać będą w~\emph{przestrzeni użytkownika} (ang. \emph{user space}), zaś
+  Procesy, jakie może uruchomić użytkownik, działać będą w~przestrzeni adresowej, która nazywana jest \emph{przestrzenią użytkownika} (ang. \emph{user space}), zaś
   system działa w~\emph{trybie użytkownika} (ang. \emph{user mode}). W~dokumencie, jeżeli nie jest zaznaczone inaczej,
   jeśli wystąpi pojęcie przestrzeni użytkownika, będzie ona utożsamiana z~procesorem pracującym w~trybie użytkownika.
   Każdy program działający w~systemie operacyjnym składa się z~co najmniej jednego procesu.
@@ -637,15 +637,34 @@
   pomiędzy nimi. Główną przyczyną tego przyspieszenia jest brak przełączania pomiędzy 
   przestrzeniami adresowymi wątków pracujących w~ramach tego samego procesu -- wszystkie wątki korzystają z~tej samej wirtualnej przestrzeni adresowej.
   Wątki pracujące w~tym samym procesie posiadają również dostęp do wszystkich urządzeń systemowych dostępnych dla odpowiadającego im procesu.
-  Dzięki tym oraz wielu pomniejszym cechom, wątki są
+  Dzięki tym oraz wielu pomniejszym cechom, program podzielony na wątki może działać o~wiele szybciej, niż ten sam program podzielony na procesy.
 \par
 %
-\subsection{Procesy i~wątki w~systemie Linux}
 \indent
+  Wiele systemów operacyjnych traktuje wątki w~specjalny sposób, przykładem może być obsługa wątków w~systemach z~rodziny Windows:
+  wytworzenie i~uruchomienie nowego procesu zajmuje o~wiele więcej czasu niż wytworzenie nowego wątku. Wiele systemów
+  udostępnia funkcje do wyłącznej obsługi wątków.
+\par
+%
+\subsection{Procesy i~wątki a~Linux}
+\indent
+  Linux traktuje procesy i~wątki w~jednakowy sposób, innymi słowy -- w~tym systemie nie istnieje pojęcie wątku, jedynie istnieją procesy, które
+  współdzielą przestrzeń adresową oraz dostęp do urządzeń systemowych.
+  Takie podejście do wątków i~procesów jest możliwe dzięki dwóm mechanizmom:
+  \begin{enumerate}
+    \item Rozdzielenie wytworzenia procesu potomnego (operacja \function{fork}) od wczytania programu do pamięci i~jego uruchomienia (operacja \function{exec}).
+    Dzięki takiemu podziałowi, do wytworzenia wątku wystarczy użyć operacji \function{fork}.
+    \item \emph{Kopiowanie podczas zapisu} (ang. \emph{Copy On Write}, COW): po wywołaniu funkcji \function{fork}, obydwa procesy używają
+    tej samej pamięci podczas odczytu. Jeśli proces potomny wykonuje operację zapisu do tej pamięci, wytwarzana jest dla niego nowa przestrzeń adresowa
+    i~to w~niej jest zapisywana zmodyfikowana wartość poprzednio współdzielonego fragmentu pamięci. Od tej pory proces potomny używa już tego fragmentu pamięci 
+    z~nowej przestrzeni adresowej. W~wypadku wątków, stosowany jest jeszcze prostszy mechanizm od COW, gdyż każdy wątek będący procesem potomnym używa tej samej
+    przestrzeni adresowej, co proces macierzysty.
+  \end{enumerate}
 \par
 %
 \subsection{Zakleszczenie i~głodzenie}
 \indent
+  
 \par
 %
 \newpage
