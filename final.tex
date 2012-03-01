@@ -660,12 +660,42 @@
     z~nowej przestrzeni adresowej. W~wypadku wątków, stosowany jest jeszcze prostszy mechanizm od COW, gdyż każdy wątek będący procesem potomnym używa tej samej
     przestrzeni adresowej, co proces macierzysty.
   \end{enumerate}
+  Począwszy od tego rozdziału, wątki i~procesy będą traktowane podobnie, jak ma to miejsce w~systemach opartych na Linuksie: każda własność zadania powinna być
+  rozumiana jako własność procesu lub wątku.
 \par
 %
-\subsection{Zakleszczenie i~głodzenie}
+\subsection{Synchronizacja zadań}
 \indent
-  Patrz \cite{silberschatz}.
-  Patrz \cite{schmidt}.
+\newcounter{notact} \setcounter{notact}{\value{tabmain}}
+  System operacyjny udostępnia zadaniom ich własną przestrzeń adresową, na której mogą wykonywać operacje odczytu i~zapisu. Jeśli tej przestrzeni używa dokładnie jedno zadanie,
+  to wynik operacji odczytu dowolnej komórki pamięci będzie aktualny do momentu wykonania zapisu innej wartości do tej komórki.
+  Jeśli do jednej przestrzeni adresowej przypisane są co najmniej dwa procesy, wówczas wynik operacji odczytu może się zdezaktualizować. Najprostszy scenariusz, w~którym następuje
+  dezaktualizacja wyniku operacji odczytu, przedstawia tabela \arabic{notact}.
+  \begin{center}
+    \begin{tabular}{|c|l|l|l|}\hline
+      \multicolumn{1}{|l|}{\parbox[t]{2cm}{Numer\\instrukcji}} & Zadanie 1 & Zadanie 2 & uwagi \\ \hline
+      1 & {\tt i~:= X } & & \\ \hline
+      3 &  & {\tt j~:= X } & \parbox[t]{4cm}{Następuje przeplot: Zadanie 1 jest zatrzymane, następuje rozpoczęcie wykonania Zadania 2.}\\ \hline
+      4 & & {\tt X~:= j + 1 } & \\ \hline
+      5 & {\tt k~:= i } & & \\ \hline
+    \end{tabular}
+    \mytabcaption{Przykład zdezaktualizowanej operacji odczytu: począwszy od instrukcji 5 wartość {\tt i}~nie odpowiada faktycznej wartości komórki {\tt X}}
+  \end{center}
+  %Patrz \cite{silberschatz}.
+  %Patrz \cite{schmidt}.
+  Problem ten może prowadzić do przekłamań, zaś w~większości wypadków jego wystąpienie może powodować niepoprawne działanie programu użytkownika.
+  Podobne problemy występują w~sytuacji, gdy dostęp do danego zasobu posiada więcej niż jedno zadanie, np. gdy do jednego pliku może zapisywać kilka procesów.
+\par
+%
+\indent
+  W~celu uniknięcia niepożądanych sytuacji stosowane są różne techniki, m. in.:
+  \begin{itemize}
+    \item wzajemne wykluczanie: zastosowanie tej techniki gwarantuje, że ciąg instrukcji (zwany \emph{sekcją krytyczną}, ang. \emph{critical section})
+      będzie wykonany przez dokładnie jeden proces, zaś inne procesy będą oczekiwać na jego zakończenie;
+    \item transakcje: proces może wykonać określony ciąg instrukcji dopiero po spełnieniu odpowiednich warunków. Wynik zostanie zapisany, a~dopiero wtedy inny proces będzie mógł operować na
+      zasobach, które są związane z~daną transakcją. Jeśli jakikolwiek warunek transakcji nie zostanie spełniony, wówczas transakcja jest anulowana, a~jej wynik nie będzie zapisany;
+    \item protokoły: określony zasób .
+  \end{itemize}
 \par
 %
 \newpage
