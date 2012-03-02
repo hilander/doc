@@ -689,13 +689,30 @@
 %
 \indent
   W~celu uniknięcia niepożądanych sytuacji stosowane są różne techniki, m. in.:
-  \begin{itemize}
-    \item wzajemne wykluczanie: zastosowanie tej techniki gwarantuje, że ciąg instrukcji (zwany \emph{sekcją krytyczną}, ang. \emph{critical section})
+  \begin{enumerate}
+    \item Wzajemne wykluczanie: zastosowanie tej techniki gwarantuje, że ciąg instrukcji (zwany \emph{sekcją krytyczną}, ang. \emph{critical section})
       będzie wykonany przez dokładnie jeden proces, zaś inne procesy będą oczekiwać na jego zakończenie;
-    \item transakcje: proces może wykonać określony ciąg instrukcji dopiero po spełnieniu odpowiednich warunków. Wynik zostanie zapisany, a~dopiero wtedy inny proces będzie mógł operować na
+    \item Transakcje: proces może wykonać określony ciąg instrukcji dopiero po spełnieniu odpowiednich warunków. Wynik zostanie zapisany, a~dopiero wtedy inny proces będzie mógł operować na
       zasobach, które są związane z~daną transakcją. Jeśli jakikolwiek warunek transakcji nie zostanie spełniony, wówczas transakcja jest anulowana, a~jej wynik nie będzie zapisany;
-    \item protokoły: określony zasób .
+    \item Protokoły: operacje zapisu do określonego zasobu może wykonywać dokładnie jeden proces (\emph{właściciel zasobu}). 
+      Każde zadanie w~wyniku wymiany określonej sekwencji komunikatów z~właścicielem odpowiedniego zasobu może pośrednio dokonać zapisu do tego zasobu.
+  \end{enumerate}
+  Każda z~tych technik posiada swoje zalety, żadna nie jest pozbawiona wad. Mogą one doprowadzić do:
+  \begin{itemize}
+    \item \emph{zakleszczenia} (ang. \emph{deadlock}) procesów: proces $A$~posiada dostęp do zasobu $Z_a$, próbuje uzyskać dostęp do zasobu $Z_b$, który jest zajęty przez proces $B$,
+      $B$~próbuje uzyskać dostęp do zasobu $Z_c$, zajętego przez proces $C$, \ldots, proces $X$~posiada dostęp do zasobu $Z_x$ i~próbuje uzyskać dostęp do zasobu $Z_a$;
+    \item \emph{zagłodzenia} (ang. \emph{starvation}) procesu przez inny proces: proces $A$~posiada dostęp do zasobu $Z_a$. Proces $B$~próbuje uzyskać dostęp do tego zasobu, ale jest on
+      ciągle niedostępny dla $B$, w~efekcie $B$~zostaje zablokowany i~nie może być wykonany.
+    \item spadku wydajności programu: jeśli liczba anulowanych transakcji jest znacząco większa od liczby transakcji zakończonych sukcesem (zapisem), to może dojść do sytuacji, w~której
+      program nie będzie mógł wykonać założonego zadania w~czasie możliwym do przyjęcia przez użytkownika. Z~drugiej strony, zbyt skomplikowany protokół może powodować spore opóźnienie
+      zapisu/odczytu do/z~zasobu.
   \end{itemize}
+\par
+%
+\indent
+  System operacyjny może udostępnić mechanizm wstrzymania procesu w~trakcie uzyskiwania przez tegoż dostępu do określonego zasobu lub nieblokującego dostępu do tego zasobu.
+  Proces może jednak oczekiwać na dostęp, wykorzystując w~dalszym ciągu moc obliczeniową procesora. Taki sposób jest określany jako \emph{aktywne czekanie} (ang. \emph{busy waiting})
+  i~w~większości sytuacji powoduje znaczący spadek wydajności systemu, jak i~pozostałych procesów.
 \par
 %
 \newpage
