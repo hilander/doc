@@ -631,6 +631,10 @@
   (uaktualnić odpowiednie wartości PCB). Wykonanie tych czynności jest również znaczącym narzutem czasowym dla operacji przełączania procesów.
 \par
 %
+\indent
+  Dokładny opis procesów można znaleźć w~\cite{silberschatz} (rozdział 4).
+\par
+%
 \subsection{Wątki}
 \indent
   Wątki bywają również nazywane \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}, LWP), ponieważ umożliwiają szybsze przełączanie
@@ -644,6 +648,30 @@
   Wiele systemów operacyjnych traktuje wątki w~specjalny sposób, przykładem może być obsługa wątków w~systemach z~rodziny Windows:
   wytworzenie i~uruchomienie nowego procesu zajmuje o~wiele więcej czasu niż wytworzenie nowego wątku. Wiele systemów
   udostępnia funkcje do wyłącznej obsługi wątków.
+\par
+%
+\indent
+  Oprócz LWP istnieją również implementacje wątków przestrzeni użytkownika. Można je scharakteryzować w~następujący sposób:
+  \begin{itemize}
+    \item posiadają własny stos wywołań;
+    \item współdzielą czas wykonania LWP, w~którym są wykonywane;
+    \item są wykonywane w~dokładnie jednym wątku w~danym procesie.
+  \end{itemize}
+  Pouczającym przykładem implementacji takich wątków jest biblioteka GNU Pth. Jej rozwój zatrzymał się w~roku 2006.
+\par
+%
+\indent
+  Do niedawna niektóre systemy (Solaris do wersji 9, wczesne wersje NetBSD) udostępniały użytkownikowi włókna: kilka wątków przestrzeni użytkownika
+  działało w~ramach jednego LWP, bez ograniczenia działających wątków przestrzeni użytkownika do jednego LWP.
+  W~związku ze znacznym spadkiem wydajności tych systemów, zrezygnowano z~udostępniania włókien w~tych systemach.
+  Co ciekawe, pomysł na udostępnienie włókien dla użytkownika został zrealizowany w~systemie Windows 7 (\emph{User Mode Scheduling}, UMS). Był on dostępny
+  jedynie w~32-bitowym wydaniu tego systemu. Obecnie producent odradza jego użycie, zaś prace rozwojowe nad UMS zostały wstrzymane.
+  Istnieją jednak systemy, w~których włókna są wspierane, a~nawet rekomendowane jako domyślne rozwiązanie dla użytkownika. Przykładem takiego systemu jest
+  AIX, produkt firmy IBM.
+\par
+%
+\indent
+ Szczegółowy opis wyżej wymienionych rodzajów wątków można znaleźć w~\cite{silberschatz} (rozdział 5).
 \par
 %
 \subsection{Procesy i~wątki a~Linux}
@@ -694,7 +722,7 @@
       będzie wykonany przez dokładnie jeden proces, zaś inne procesy będą oczekiwać na jego zakończenie;
     \item Transakcje: proces może wykonać określony ciąg instrukcji dopiero po spełnieniu odpowiednich warunków. Wynik zostanie zapisany, a~dopiero wtedy inny proces będzie mógł operować na
       zasobach, które są związane z~daną transakcją. Jeśli jakikolwiek warunek transakcji nie zostanie spełniony, wówczas transakcja jest anulowana, a~jej wynik nie będzie zapisany;
-    \item Protokoły: operacje zapisu do określonego zasobu może wykonywać dokładnie jeden proces (\emph{właściciel zasobu}). 
+    \item Protokoły: operacje zapisu do określonego zasobu (grupy zasobów) może wykonywać dokładnie jeden proces (\emph{właściciel zasobu}). 
       Każde zadanie w~wyniku wymiany określonej sekwencji komunikatów z~właścicielem odpowiedniego zasobu może pośrednio dokonać zapisu do tego zasobu.
   \end{enumerate}
   Każda z~tych technik posiada swoje zalety, żadna nie jest pozbawiona wad. Mogą one doprowadzić do:
@@ -713,6 +741,10 @@
   System operacyjny może udostępnić mechanizm wstrzymania procesu w~trakcie uzyskiwania przez tegoż dostępu do określonego zasobu lub nieblokującego dostępu do tego zasobu.
   Proces może jednak oczekiwać na dostęp, wykorzystując w~dalszym ciągu moc obliczeniową procesora. Taki sposób jest określany jako \emph{aktywne czekanie} (ang. \emph{busy waiting})
   i~w~większości sytuacji powoduje znaczący spadek wydajności systemu, jak i~pozostałych procesów.
+\par
+%
+\indent
+  W~\cite{silberschatz} można znaleźć wyczerpujący opis sposobów synchronizacji procesów, jak również opis metod pozwalających zapobiec zakleszczeniom.
 \par
 %
 \newpage
@@ -748,7 +780,7 @@
   zwartego interfejsu.
 \par
 \indent
-  Rysunek przedstawia zależności pomiędzy klasami biblioteki. Z~punktu widzenia użytkownika, najważniejsze dwie klasy \arabic{libmixedoverview} to:
+  Rysunek \arabic{libmixedoverview} przedstawia zależności pomiędzy klasami biblioteki. Z~punktu widzenia użytkownika, najważniejsze dwie klasy to:
   \begin{enumerate}
     \item \code{fiber}: baza każdego włókna, użytkownik definiuje (nadpisując funkcję \function{fiber\dcolon go}) jej działanie.
     \item \code{master}: każdy obiekt tej klasy jest tożsamy z~całym podsystemem zarządzającym włóknami. W~ramach jednego procesu możliwe jest działanie wielu
@@ -843,6 +875,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
 \indent
   \myownfigure{LibcoroStates}{LibcoroStates.png}{Stany włókna oraz dozwolone przejścia pomiędzy nimi}{.55}
 \par
+\newpage
 \subsection{Moduł \code{message\_queues}}
 \label{sec:messagequeues}
     \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
@@ -945,6 +978,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   udostępnione przez bibliotekę standardową mogą być używane przez co najwyżej jeden wątek w~danej chwili.
 \par
 %
+\newpage
 \subsection{Klasa \code{scheduler}}
 \myownfigure{Scheduler}{Scheduler.png}{\code{scheduler} -- planista włókien}{.7}
 \indent
@@ -957,6 +991,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   \end{itemize}
 \par
 %
+\newpage
 \subsection{Klasa \code{epoller}}
 \myownfigure{Epoller}{Epoller.png}{\code{epoller} -- nakładka na mechanizm systemowy \code{epoll}}{.7}
 \indent
@@ -977,6 +1012,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   \end{itemize}
 \par
 %
+\newpage
 \subsection{Klasa \code{worker}}
 \myownfigure{Worker}{Worker.png}{\code{worker} -- robotnik działający w~obrębie jednego wątku}{.7}
 \indent
@@ -1017,6 +1053,7 @@ Dostęp do I/O (w~obecnej implementacji: zasobów, obsługiwanych przez mechaniz
   \end{itemize}
 \par
 %
+\newpage
 \subsection{Klasa \code{master}}
     \myownfigure{Master}{Master.png}{Klasa \code{master} -- zarządca robotników}{.7}
 %
@@ -1347,7 +1384,8 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \section{Podsumowanie}
 \label{sec:summary}
 \indent
-  Biblioteka \code{libmixed} może być używana 
+  Użycie biblioteki \code{libmixed} nie powoduje spadku wydajności systemu operacyjnego. Co więcej, jak podkreślono kilkakrotnie w~poprzednim rozdziale, jej użycie nie powoduje
+  znaczącego spadku wydajności programu, który z~niej korzysta.
 \par
 %\subsection{Możliwe kierunki rozwoju}
 %
