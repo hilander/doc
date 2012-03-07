@@ -205,6 +205,7 @@
 	w~ciągu sekundy zostanie wykonanych milion cykli zegarowych.
 \par
 %
+\begin{comment}
 \indent
 	Wynik wykonania konkretnego rozkazu może powodować zmiany w~rejestrze jednostki centralnej, w~pamięci lub
 	też w~urządzeniu zewnętrznym. Co więcej, każdy procesor wykonuje rozkazy w~pewien określony sposób, w~specyficznej dla siebie liczbie kroków.
@@ -440,6 +441,7 @@
 	Jednakże, aby wykorzystać potencjał architektur równoległych,
 	zarówno ILP jak i~MIMD wymagają odpowiednio zaprojektowanych i~zaprogramowanych aplikacji.
 \par
+\end{comment}
 %
 \subsection{Pamięć}
 \indent
@@ -1134,7 +1136,7 @@ Dostęp do I/O (w~obecnej implementacji: zasobów, obsługiwanych przez mechaniz
     7  & \parbox[t]{6cm}{\code{f\dcolon start()\{\\try\{ go\procbr; \}\\catch( exception e ) \{ {\ldots}  \}\\\}}} & \parbox[t]{6cm}{\code{void go\procbr \{ {\ldots} \}\\void f\procbr\{\\try\{ go\procbr; \}\\catch( exception e ) \{ {\ldots}  \}\\\}}} \\ \hline
   \end{tabular}
 }
-  	\mytabcaption{Kod źródłowy potrzebny do realizacji scenariuszy 1\ppauza 5 i~7}
+  	\mytabcaption{Kod źródłowy potrzebny do realizacji scenariuszy 1~--~5 i~7}
   \end{center}
 \par
 \indent
@@ -1361,7 +1363,7 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \myownfigure{write100nmax}{write100nmax.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{.65} 
 \myownfigure{write100navg}{write100navg.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{.65} 
 \par
-\subsection{Podsumowanie}
+\subsection{Podsumowanie testów}
 \indent
   Na podstawie wyników opisanych wyżej testów, można wysunąć następujące wnioski:
   \begin{enumerate}
@@ -1370,10 +1372,8 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
     \item Dzięki przeprowadzeniu testów wydajnościowych oraz porównaniu ich z~analogicznymi testami \code{Pthreads}, można stwierdzić
       następujące fakty:
       \begin{itemize}
-        \item Wytworzenie włókna, a~więc wykonanie operacji \function{getcontext}, jest operacją szybszą niż wytworzenie wątku za pomocą \function{pthread\_create}.
-          Dla jądra Linux, utworzenie nowego wątku oznacza wytworzenie nowego bloku kontrolnego procesu (ang. \emph{Process Control Block}, PCB), zaś
-          wytworzenie włókna to wytworzenie niewielkiej (w~testowanym systemie jest to dokładnie 348 bajtów) struktury, zawierającej niezbędne minimum danych
-          do prawidłowego wykonywania operacji \function{swapcontext}.
+        \item Wytworzenie włókna, a~więc wykonanie operacji \function{getcontext}, tj. wytworzenie niewielkiej (w~testowanym systemie jest to dokładnie 348 bajtów) struktury, 
+          jest operacją szybszą niż wytworzenie nowego PCB za pomocą \function{pthread\_create}.
         \item Przełączanie kontekstu pomiędzy wątkami zaimplementowane \linebreak w~jądrze systemu Linux jest kilkakrotnie szybsze od przełączania pomiędzy kontekstami użytkownika,
           zaimplementowanymi w~operacjach \function{swapcontext}.
         \item Operacja \function{pthread\_yield} działa w~czasie kilkakrotnie krótszym niż \linebreak peracja \function{swapcontext}.
@@ -1381,12 +1381,27 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
       \end{itemize}
   \end{enumerate}
 \par
+\newpage
 \section{Podsumowanie}
 \label{sec:summary}
 \indent
   Użycie biblioteki \code{libmixed} nie powoduje spadku wydajności systemu operacyjnego. Co więcej, jak podkreślono kilkakrotnie w~poprzednim rozdziale, jej użycie nie powoduje
-  znaczącego spadku wydajności programu, który z~niej korzysta.
+  znaczącego spadku wydajności programu, który z~niej korzysta. Zatem brak ingerencji w~działanie jądra nie przekreśla szans na wytworzenie wydajnej biblioteki włókien.
 \par
+%
+\indent
+  Opisana w~rozdziale \ref{sec:solution} implementacja jest wynikiem wielu prób stworzenia wydajnej biblioteki włókien. W~jednej z~nich (której zakończenie zostało zarzucone
+  po wytworzeniu ok. 80\% kodu źródłowego oraz testów jednostkowych i~wydajnościowych) wykorzystałem inne niż round--robin metody szeregowania włókien.
+  Okazało się, że metody szeregowania używające priorytetów zwiększały narzut czasowy na wykonanie programu. Round--robin, dzięki swej prostocie, jest szybkim i~pewnym algorytmem
+  szeregowania włókien.
+\par
+%
+\indent
+  Z~punktu widzenia użytkownika \code{libmixed}, obsługa zasobów systemu operacyjnego jest synchroniczna (włókno jest blokowane do momentu zakończenia operacji odczytu/zapisu),
+  jednak faktycznie nie jest blokowany wątek, w~którym wykonywane dane włókno. Dzięki tej właściwości, użytkownik może wytworzyć wiele włókien, które będą wydajnie zarządzane przez
+  bibliotekę. 
+\par
+%
 %\subsection{Możliwe kierunki rozwoju}
 %
 \newpage
