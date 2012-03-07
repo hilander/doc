@@ -156,7 +156,7 @@
 \indent 
 	W~systemie komputerowym (lub w~skrócie: komputerze) można wyróżnić trzy podstawowe składowe:
 	\begin{itemize}
-		\item procesor (jednostka centralna, CPU): kontroluje działanie komputera, wykonuje operacje na danych;
+		\item procesor (jednostka centralna, CPU): wykonuje rozkazy (instrukcje procesora);
 		\item pamięć główna: przechowuje dane oraz programy. Pamięć w~tym kontekście jest z~natury ulotna (po wyłączeniu komputera,
 			jej zawartości nie można odzyskać); jeśli w~treści dokumentu pojawi się słowo \emph{pamięć}, odwoływać się będzie ono do
 			pamięci głównej;
@@ -167,20 +167,17 @@
 	systemów komputerowych można znaleźć w~\cite{hennessy}.
 \par
 %
-\subsection{Procesor}
+%\subsection{Procesor}
 %
 \indent
 	Procesor jest urządzeniem, które posiada:
 	\begin{itemize}
-		\item własny zestaw instrukcji (zwanych również rozkazami): ich liczba może wynosić od kilkunastu (architektura RISC, 
+		\item własny zestaw rozkazów: ich liczba może wynosić od kilkunastu (architektura RISC, 
 			ang. \emph{Reduced Set Instruction Computers}) do kilkuset (architektura CISC, ang.
-			\emph{Complex Instruction Set Computers}). Często pojedynczy rozkaz posiada wiele trybów adresowania: jako argument
-			może użyć własnego rejestru (tryb implikowany), komórki pamięci (tryb bezpośredni), komórki pamięci, której adres został wyliczony
-			(tryby: pośredni, pośredni pre-indeksowany, pośredni post-indeksowany). Połączenie instrukcji wraz z~ich trybami adresowania daje 
-			stosunkową liczbę rozkazów.
-		\item wewnętrzne komórki pamięci, zwane \emph{rejestrami}.
-		\item Licznik rozkazów (ang. \emph{program counter}): wyróżniony rejestr, który wskazuje adres następnej instrukcji. 
-			Jeśli w~wyniku ostatniej instrukcji następuje skok (warunkowy lub bezwarunkowy), zmieniana jest wartość tego rejestru.
+			\emph{Complex Instruction Set Computers});
+		\item wewnętrzne komórki pamięci, zwane \emph{rejestrami};
+		\item licznik rozkazów (ang. \emph{program counter}): wyróżniony rejestr, który wskazuje adres następnej instrukcji. 
+			Jeśli w~wyniku ostatniej instrukcji następuje skok (warunkowy lub bezwarunkowy), zmieniana jest wartość tego rejestru;
 		\item mechanizm \emph{przerwań}: szyna systemowa może w~pewnych sytuacjach poinformować o~wystąpieniu określonego zdarzenia.
 			Przerwania można podzielić na maskowalne (procesor zignoruje informację o~wystąpieniu danego zdarzenia) oraz niemaskowalne.
 			Przerwania mogą posiadać priorytety (przerwanie o~niższym priorytecie zostanie zignorowane podczas obsługiwania przerwania
@@ -188,8 +185,9 @@
 	\end{itemize}
 \par
 %
+\begin{comment}
 \indent
-	Procesor przetwarza rozkazy. Można podzielić je na pięć grup:
+	Procesor wykonuje rozkazy. Można podzielić je na pięć grup:
 	\begin{itemize}
 		\item odczyt / zapis: wczytanie zawartości komórki pamięci do rejestru, zapis zawartości rejestru do komórki;
 		\item skoki: bezwarunkowe, warunkowe, pośrednie;
@@ -205,7 +203,6 @@
 	w~ciągu sekundy zostanie wykonanych milion cykli zegarowych.
 \par
 %
-\begin{comment}
 \indent
 	Wynik wykonania konkretnego rozkazu może powodować zmiany w~rejestrze jednostki centralnej, w~pamięci lub
 	też w~urządzeniu zewnętrznym. Co więcej, każdy procesor wykonuje rozkazy w~pewien określony sposób, w~specyficznej dla siebie liczbie kroków.
@@ -443,7 +440,7 @@
 \par
 \end{comment}
 %
-\subsection{Pamięć}
+%\subsection{Pamięć}
 \indent
 	Pamięć w~systemie komputerowym możemy podzielić na dwa rodzaje: ulotną i~trwałą. Informacje znajdujące się w~pamięci ulotnej
 	nie będą odzyskane po wyłączeniu i~ponownym włączeniu komputera. Można wyróżnić dwa rodzaje pamięci ulotnej:
@@ -501,7 +498,7 @@
 	Dokładny i~wyczerpujący opis pamięci stosowanych we współczesnych komputerach można znaleźć w~\cite{jacob}.
 \par
 %
-\subsection{Urządzenia zewnętrzne}
+%\subsection{Urządzenia zewnętrzne}
 \indent
 	Urządzenia zewnętrzne, znane również jako \emph{peryferia}, \emph{urządzenia wejścia\dywiz wyjścia}, \emph{I/O} (\emph{ang. Input/Output}),
 	to, oprócz pamięci trwałych, także urządzenia do komunikacji komputera ze światem zewnętrznym. 
@@ -633,10 +630,6 @@
   (uaktualnić odpowiednie wartości PCB). Wykonanie tych czynności jest również znaczącym narzutem czasowym dla operacji przełączania procesów.
 \par
 %
-\indent
-  Dokładny opis procesów można znaleźć w~\cite{silberschatz} (rozdział 4).
-\par
-%
 \subsection{Wątki}
 \indent
   Wątki bywają również nazywane \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}, LWP), ponieważ umożliwiają szybsze przełączanie
@@ -670,10 +663,6 @@
   jedynie w~32-bitowym wydaniu tego systemu. Obecnie producent odradza jego użycie, zaś prace rozwojowe nad UMS zostały wstrzymane.
   Istnieją jednak systemy, w~których włókna są wspierane, a~nawet rekomendowane jako domyślne rozwiązanie dla użytkownika. Przykładem takiego systemu jest
   AIX, produkt firmy IBM.
-\par
-%
-\indent
- Szczegółowy opis wyżej wymienionych rodzajów wątków można znaleźć w~\cite{silberschatz} (rozdział 5).
 \par
 %
 \subsection{Procesy i~wątki a~Linux}
@@ -711,7 +700,6 @@
     \end{tabular}
     \mytabcaption{Przykład zdezaktualizowanej operacji odczytu: począwszy od instrukcji 5 wartość {\tt i}~nie odpowiada faktycznej wartości komórki {\tt X}}
   \end{center}
-  %Patrz \cite{silberschatz}.
   %Patrz \cite{schmidt}.
   Problem ten może prowadzić do przekłamań, zaś w~większości wypadków jego wystąpienie może powodować niepoprawne działanie programu użytkownika.
   Podobne problemy występują w~sytuacji, gdy dostęp do danego zasobu posiada więcej niż jedno zadanie, np. gdy do jednego pliku może zapisywać kilka procesów.
@@ -746,7 +734,7 @@
 \par
 %
 \indent
-  W~\cite{silberschatz} można znaleźć wyczerpujący opis sposobów synchronizacji procesów, jak również opis metod pozwalających zapobiec zakleszczeniom.
+  Dokładny opis wymienionych wyżej składników systemu operacyjnego można znaleźć w~\cite{silberschatz}.
 \par
 %
 \newpage
@@ -1399,7 +1387,7 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \indent
   Z~punktu widzenia użytkownika \code{libmixed}, obsługa zasobów systemu operacyjnego jest synchroniczna (włókno jest blokowane do momentu zakończenia operacji odczytu/zapisu),
   jednak faktycznie nie jest blokowany wątek, w~którym wykonywane dane włókno. Dzięki tej właściwości, użytkownik może wytworzyć wiele włókien, które będą wydajnie zarządzane przez
-  bibliotekę. 
+  bibliotekę.
 \par
 %
 %\subsection{Możliwe kierunki rozwoju}
