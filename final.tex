@@ -1247,7 +1247,7 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
   \end{itemize}
 \par
 \indent
-\myownfigure{nullfork}{fibernullfork.pdf}{Wykres porównawczy dla testu \code{nullfork} w~zależności od liczby pustych włókien lub wątków}{1.16} 
+\myownfigure{nullfork}{nullfork.pdf}{Wykres porównawczy dla testu \code{nullfork} w~zależności od liczby pustych włókien lub wątków}{1.16} 
 \par
 \begin{comment}
 \indent
@@ -1277,7 +1277,7 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
   gdzie $\mathbb{A}$=\{1, 101, 201, \ldots , 9901\}.
 \par
 \indent
-\myownfigure{yield}{yield1n.png}{Wykres porównawczy testu \code{yield} dla \code{s}=1 i~\code{y}~$\in \mathbb{A}$}{.65} 
+\myownfigure{yield}{yield1n.pdf}{Wykres porównawczy testu \code{yield} dla \code{s}=1 i~\code{y}~$\in \mathbb{A}$}{1.16} 
   Pierwsza seria testów daje następujące informacje:
   \begin{itemize}
     \item operacja \function{yield} dla wątków jest zaimplementowana kilkakrotnie wydajniej niż funkcja \function{swapcontext}, wywoływana 
@@ -1288,27 +1288,27 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \par
 \begin{comment}
 \indent
-\myownfigure{yieldLog}{yield1nLog.png}{Wykres porównawczy testu \code{yield} -- czas wykonania w~skali logarytmicznej}{.65} 
+\myownfigure{yieldLog}{yield1nLog.png}{Wykres porównawczy testu \code{yield} -- czas wykonania w~skali logarytmicznej}{1.16} 
 \par
 \end{comment}
 %
 \indent
-\myownfigure{yieldn10}{yieldn10.png}{Wykres porównawczy dla testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=10}{.65} 
+\myownfigure{yieldn10}{yieldn10.pdf}{Wykres porównawczy dla testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=10}{1.16} 
   Druga seria testów pokazuje taki scenariusz użycia włókien, który pozwala na wykonanie zadań w~wielu oddzielnych włóknach lub wątkach,
   przy rzadkim wywoływaniu operacji \function{yield}. Okazuje się, że w~takim scenariuszu wydajność biblioteki \code{libmixed}
   jest wyższa od wydajności Pthreads.
 \par
 \begin{comment}
 \indent
-\myownfigure{yieldn10Log}{yieldn10Log.png}{Wykres porównawczy testu \code{yield} -- czas wykonania w~skali logarytmicznej}{.65} 
+\myownfigure{yieldn10Log}{yieldn10Log.png}{Wykres porównawczy testu \code{yield} -- czas wykonania w~skali logarytmicznej}{1.16} 
 \par
 \end{comment}
 %
 \indent
-\myownfigure{yieldn100}{yieldn100.png}{Wykres porównawczy testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=100}{.65} 
+\myownfigure{yieldn100}{yieldn100.pdf}{Wykres porównawczy testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=100}{1.16} 
 \par
 \indent
-\myownfigure{yieldn100Log}{yieldn100Log.png}{Wykres porównawczy testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=100 -- czas wykonania w~skali logarytmicznej}{.65} 
+\myownfigure{yieldn100Log}{yieldn100Log.pdf}{Wykres porównawczy testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=100 -- czas wykonania w~skali logarytmicznej}{1.16} 
   Ostatnia seria pokazuje, że w~ogólnym przypadku, tj. dla dużej liczby wywołań \function{yield} oraz dużej liczby wątków lub włókien,
   mechanizmy zaimplementowane w~Pthreads pozwalają kilkakrotnie szybciej wykonać zadane obliczenia, niż ma to miejsce w~wypadku \code{libmixed}.
 \par
@@ -1332,24 +1332,24 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \par
 \indent
   Pierwsza seria testów dała odpowiedź na pytanie o~wydajność operacji \function{do\_write} w~porównaniu z~blokującą operacją \function{write}.
-\myownfigure{writen1000min}{writen1000min.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie minimalnych czasów wykonania}{.65} 
-\myownfigure{writen1000max}{writen1000max.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie maksymalnych czasów wykonania}{.65} 
-\myownfigure{writen1000avg}{writen1000avg.png}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie uśrednionych czasów wykonania}{.65} 
+\myownfigure{writen1000min}{writen1000min.pdf}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie minimalnych czasów wykonania}{1.16} 
+\myownfigure{writen1000max}{writen1000max.pdf}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie maksymalnych czasów wykonania}{1.16} 
+\myownfigure{writen1000avg}{writen1000avg.pdf}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie uśrednionych czasów wykonania}{1.16} 
   Jak łatwo zauważyć, liczba wywołań \function{yield} nie wpływa na wydajność zapisu. Tak więc, wielokrotny zapis do urządzeń wejścia/wyjścia jest w~przypadku
   \code{libmixed} równie wydajny, co odpowiadający mu ciąg blokujących operacji zapisu przy użyciu Pthreads.
 \par
 \indent 
   Kolejna seria testów miała na celu sprawdzenie zapisu dla zbiorów danych o~różnej wielkości.
-\myownfigure{write1nmin}{write1nmin.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{.65} 
-\myownfigure{write1nmax}{write1nmax.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{.65} 
-\myownfigure{write1navg}{write1navg.png}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{.65} 
+\myownfigure{write1nmin}{write1nmin.pdf}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{1.16} 
+\myownfigure{write1nmax}{write1nmax.pdf}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{1.16} 
+\myownfigure{write1navg}{write1navg.pdf}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{1.16} 
   Okazuje się, że implementacja zapisu do I/O w~\code{libmixed} jest równie efektywna jak blokujący zapis w~Pthreads. Co więcej, następna seria testów pokazuje, że
   w~przypadku większej ilości operacji zapisu potwierdza to spostrzeżenie.
 \par
 \indent
-\myownfigure{write100nmin}{write100nmin.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{.65} 
-\myownfigure{write100nmax}{write100nmax.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{.65} 
-\myownfigure{write100navg}{write100navg.png}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{.65} 
+\myownfigure{write100nmin}{write100nmin.pdf}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{1.16} 
+\myownfigure{write100nmax}{write100nmax.pdf}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{1.16} 
+\myownfigure{write100navg}{write100navg.pdf}{Wykres porównawczy dla \code{n}=100 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{1.16} 
 \par
 \subsection{Podsumowanie testów}
 \indent

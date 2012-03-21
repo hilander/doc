@@ -1,0 +1,105 @@
+set terminal pdf enhanced mono dashed font "Helvetica,4" dashlength 0.4 size 5,3.5
+set grid
+#unset border
+# nullfork
+set output "nullfork.pdf"
+set encoding utf8
+#set xlabel "Liczba jednostek wykonalnych"
+set ylabel "Czas [µs]"
+set xr [0:10100]
+set xtics 0,1000,10000
+plot "./fiber_nullfork.pairs" using 1:2 title "fiber-nullfork" with lines\
+,   "./pthread_nullfork.pairs" using 1:2 title "pthread-nullfork" with lines
+# yield1n
+set output "yield1n.pdf"
+#set encoding utf8
+#set xlabel "Liczba jednostek wykonalnych"
+set ylabel "Czas [µs]"
+set xr [0:10100]
+plot "./fiber_yield_1_n.pairs" using 1:2 title "fiber-yield" with lines\
+,   "./pthread_yield_1_n.pairs" using 1:2 title "pthread-yield" with lines
+# yieldn10
+set output "yieldn10.pdf"
+#set encoding utf8
+#set xlabel "Liczba jednostek wykonalnych"
+set ylabel "Czas [µs]"
+set xr [0:10100]
+plot "./fiber_yield_n_10.pairs" using 1:2 title "fiber-yield" with lines\
+,   "./pthread_yield_n_10.pairs" using 1:2 title "pthread-yield" with lines
+# yieldn100
+set output "yieldn100.pdf"
+#set encoding utf8
+#set xlabel "Liczba jednostek wykonalnych"
+set ylabel "Czas [µs]"
+set xr [0:10100]
+plot "./fiber_yield_n_100.pairs" using 1:2 title "fiber-yield" with lines\
+,   "./pthread_yield_n_100.pairs" using 1:2 title "pthread-yield" with lines
+# yieldn100logscale
+set output "yieldn100Log.pdf"
+#set encoding utf8
+#set xlabel "Liczba jednostek wykonalnych"
+set ylabel "Czas [µs]"
+set xr [0:10100]
+set logscale y
+plot "./fiber_yield_n_100.pairs" using 1:2 title "fiber-yield" with lines\
+,   "./pthread_yield_n_100.pairs" using 1:2 title "pthread-yield" with lines
+unset logscale
+# writen1000min
+set output "writen1000min.pdf"
+set ylabel "Czas [µs]"
+set xtics 0,100,10000
+set xr [0:1010]
+plot "./write_test/fiber-write_1000_1000_min.pairs" using 1:2 title "fiber-write" with lines\
+,   "./write_test/pthread-write_1000_1000_min.pairs" using 1:2 title "pthread-write" with lines
+# writen1000avg
+set output "writen1000avg.pdf"
+set ylabel "Czas [µs]"
+set xtics 0,100,10000
+set xr [0:1010]
+plot "./write_test/fiber-write_1000_1000.pairs" using 1:2 title "fiber-write" with lines\
+,   "./write_test/pthread-write_1000_1000.pairs" using 1:2 title "pthread-write" with lines
+# writen1000max
+set output "writen1000max.pdf"
+set ylabel "Czas [µs]"
+set xtics 0,100,10000
+set xr [0:1010]
+plot "./write_test/fiber-write_1000_1000_max.pairs" using 1:2 title "fiber-write" with lines\
+,   "./write_test/pthread-write_1000_1000_max.pairs" using 1:2 title "pthread-write" with lines
+# write1nmin
+set output "write1nmin.pdf"
+set ylabel "Czas [µs]"
+set xtics 0,10000,1000000
+set xr [0:101000]
+plot "./write_test/fiber-write_1_100000_min.pairs" using 1:2 title "fiber-write" with lines\
+,   "./write_test/pthread-write_1_100000_min.pairs" using 1:2 title "pthread-write" with lines
+# write1navg
+set output "write1navg.pdf"
+set ylabel "Czas [µs]"
+set xtics 0,10000,1000000
+set xr [0:101000]
+plot "./write_test/fiber-write_1_100000.pairs" using 1:2 title "fiber-write" with lines\
+,   "./write_test/pthread-write_1_100000.pairs" using 1:2 title "pthread-write" with lines
+# write1nmax
+set output "write1nmax.pdf"
+set ylabel "Czas [µs]"
+set xtics 0,10000,1000000
+set xr [0:101000]
+plot "./write_test/fiber-write_1_100000_max.pairs" using 1:2 title "fiber-write" with lines\
+,   "./write_test/pthread-write_1_100000_max.pairs" using 1:2 title "pthread-write" with lines
+# write100nmin
+set output "write100nmin.pdf"
+set ylabel "Czas [ms]"
+set xtics 0,20000,1000000
+set ytics 0,1000,9000
+set yr [0:9010]
+set xr [0:201000]
+plot "<awk '{print $1, $2 / 1000}' ./write_test/fiber-write_100_1000000_min.pairs" using 1:2 title "fiber-write" with lines\
+,   "<awk '{print $1, $2 / 1000}' ./write_test/pthread-write_100_1000000_min.pairs" using 1:2 title "pthread-write" with lines
+# write100navg
+set output "write100navg.pdf"
+plot "<awk '{print $1, $2 / 1000}' ./write_test/fiber-write_100_1000000.pairs" using 1:2 title "fiber-write" with lines\
+,   "<awk '{print $1, $2 / 1000}' ./write_test/pthread-write_100_1000000.pairs" using 1:2 title "pthread-write" with lines
+# write100nmax
+set output "write100nmax.pdf"
+plot "<awk '{print $1, $2 / 1000}' ./write_test/fiber-write_100_1000000_max.pairs" using 1:2 title "fiber-write" with lines\
+,   "<awk '{print $1, $2 / 1000}' ./write_test/pthread-write_100_1000000_max.pairs" using 1:2 title "pthread-write" with lines
