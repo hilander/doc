@@ -30,19 +30,19 @@ plot "./fiber_yield_n_10.pairs" using 1:2 title "fiber-yield" with lines\
 set output "yieldn100.pdf"
 #set encoding utf8
 #set xlabel "Liczba jednostek wykonalnych"
-set ylabel "Czas [µs]"
+set ylabel "Czas [ms]"
 set xr [0:10100]
-plot "./fiber_yield_n_100.pairs" using 1:2 title "fiber-yield" with lines\
-,   "./pthread_yield_n_100.pairs" using 1:2 title "pthread-yield" with lines
+plot "<awk '{print $1, $2 / 1000}' ./fiber_yield_n_100.pairs" using 1:2 title "fiber-yield" with lines\
+,   "<awk '{print $1, $2 / 1000}' ./pthread_yield_n_100.pairs" using 1:2 title "pthread-yield" with lines
 # yieldn100logscale
 set output "yieldn100Log.pdf"
 #set encoding utf8
 #set xlabel "Liczba jednostek wykonalnych"
-set ylabel "Czas [µs]"
+set ylabel "Czas [ms]"
 set xr [0:10100]
 set logscale y
-plot "./fiber_yield_n_100.pairs" using 1:2 title "fiber-yield" with lines\
-,   "./pthread_yield_n_100.pairs" using 1:2 title "pthread-yield" with lines
+plot "<awk '{print $1, $2 / 1000}' ./fiber_yield_n_100.pairs" using 1:2 title "fiber-yield" with lines\
+,   "<awk '{print $1, $2 / 1000}' ./pthread_yield_n_100.pairs" using 1:2 title "pthread-yield" with lines
 unset logscale
 # writen1000min
 set output "writen1000min.pdf"
