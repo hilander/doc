@@ -99,18 +99,25 @@
 \par
 %
 \indent
+  Rozdział \ref{sec:fibers} opisuje procesy, wątki oraz włókna.
+\par
+%
+\begin{comment}
+\indent
   Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu.
   Przykładem takiej implementacji jest \emph{scheduler activations} (SE), opisana w~\cite{anderson}.
   Mechanizm ten został zaimplementowany w~NetBSD, jednakże działanie systemu operacyjnego z~tą implementacją wpływała negatywnie na jego działanie, 
   dlatego obecne wydania NetBSD dają możliwość wyboru systemu z~jądrem zmodyfikowanym przez SE, ale jedynie na wyraźne żądanie użytkownika systemu.
   Implementacja włókien oparta na podobnym do SE pomyśle jest oferowana także w~systemie Windows 7.
 \par
+\end{comment}
 %
 \indent
-  \myownfigure{mixedintro}{mixedscheme.png}{Włókna w~implementacji nie wymagającej zmian w~systemie~operacyjnym -- cel niniejszej pracy}{.21}
+  \myownfigure{mixedintro}{mixedscheme.png}{Włókna w~implementacji nie wymagającej zmian w~systemie~operacyjnym -- cel niniejszej pracy}{.23}
 \par
 \indent
-  Włókna mogą być zaimplementowane również bez dokonywania zmian w~jądrze systemu operacyjnego.
+  Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu,
+  można jednak zaimplementować je przy użyciu mechanizmów ofreowanych przez system operacyjny.
   Taka implementacja może być biblioteką dołączaną przez użytkownika, zaś jej użycie nie będzie mieć wpływu na działanie i~wydajność innych programów.
 \par
 %
@@ -133,15 +140,18 @@
     \item Zarządzanie kolejnością i~czasem wykonania włókien (ang. \emph{scheduling}). \label{enm:timesch}
 	\end{enumerate}
 \par
+\indent
+  Każdy z~trzech popularnych systemów operacyjnych (Windows, MacOS, systemy oparte na jądrze Linux), obsługuje procesy i~wątki, każdy na swój sposób. Systemy linuksowe,
+  w~odróżnieniu od pozostałych dwóch, działają zarówno w~superkomputerach jak i~w~stacjach roboczych. Dlatego też zadecydowałem o~zaimplementowaniu biblioteki korzystającej
+  z~systemu linuksowego.
+\par
 %
 \subsection{Streszczenie pracy}
 \indent
 	\begin{itemize}
-	\item[Rozdział \ref{sec:architecture}] opisuje architekturę współczesnego komputera klasy PC. Opis ten koncentruje się na 
-		mechanizmach umożliwiających równoległe wykonanie części lub całych rozkazów procesora oraz na zwiększeniu liczby procesorów
-		w~komputerze w~celu podniesienia wydajności obliczeń. Poruszone problemy związane z~pamięcią operacyjną jak również opis połączenia
-		poszczególnych elementów komputera między sobą, uzasadniają potrzebę projektowania oprogramowania, które będzie wykonywane równolegle.
-	\item[Rozdział \ref{sec:system}] opisuje zgrubnie współczesne systemy operacyjne, jak również zarządzanie procesami.
+	\item[Rozdział \ref{sec:system}] opisuje obecne systemy komputerowe oraz współczesne systemy operacyjne. Rozdział ten opisuje także
+    procesy, wątki, włókna. Dodatkowo, opisane są mechanizmy używane do zarządzania oraz komunikacji pomiędzy nimi, jak również problemy
+    związane z~ich zastosowaniem.
 	\item[Rozdział \ref{sec:solution}] opisuje implementację włókien opartą na pomyśle opisanym we wstępie.
 	\item[Rozdział \ref{sec:analysis}] określa wartość tej implementacji: jej użyteczność oraz wydajność.
 	\item[Rozdział \ref{sec:summary}] podsumowuje wykonanie założeń opisanych we wstępie, jak również wyznacza możliwe drogi rozwoju
@@ -150,9 +160,10 @@
 \par
 %
 \newpage
-\section{Architektura systemów komputerowych}
+\section{System operacyjny}
 %
-\label{sec:architecture}
+\label{sec:system}
+\subsection{Wstęp}
 \indent 
 	W~systemie komputerowym (lub w~skrócie: komputerze) można wyróżnić trzy podstawowe składowe:
 	\begin{itemize}
@@ -163,362 +174,9 @@
 		\item urządzenia zewnętrzne (peryferia, I/O): służą do wymiany danych pomiędzy komputerem i~światem zewnętrznym.
 	\end{itemize}
 	Komunikacja pomiędzy nimi odbywa się za pośrednictwem szyny systemowej (ang. \emph{system bus}).
-	Poniższe podrozdziały informują o~podstawowych składnikach systemu komputerowego. Dokładny opis architektury współczesnych
+	Dokładny opis architektury współczesnych
 	systemów komputerowych można znaleźć w~\cite{hennessy}.
 \par
-%
-%\subsection{Procesor}
-%
-\indent
-	Procesor jest urządzeniem, które posiada:
-	\begin{itemize}
-		\item własny zestaw rozkazów: ich liczba może wynosić od kilkunastu (architektura RISC, 
-			ang. \emph{Reduced Set Instruction Computers}) do kilkuset (architektura CISC, ang.
-			\emph{Complex Instruction Set Computers});
-		\item wewnętrzne komórki pamięci, zwane \emph{rejestrami};
-		\item licznik rozkazów (ang. \emph{program counter}): wyróżniony rejestr, który wskazuje adres następnej instrukcji. 
-			Jeśli w~wyniku ostatniej instrukcji następuje skok (warunkowy lub bezwarunkowy), zmieniana jest wartość tego rejestru;
-		\item mechanizm \emph{przerwań}: szyna systemowa może w~pewnych sytuacjach poinformować o~wystąpieniu określonego zdarzenia.
-			Przerwania można podzielić na maskowalne (procesor zignoruje informację o~wystąpieniu danego zdarzenia) oraz niemaskowalne.
-			Przerwania mogą posiadać priorytety (przerwanie o~niższym priorytecie zostanie zignorowane podczas obsługiwania przerwania
-			o~wyższym priorytecie lub jego obsługa rozpocznie się po zakończeniu obecnie obsługiwanego przerwania).
-	\end{itemize}
-\par
-%
-\begin{comment}
-\indent
-	Procesor wykonuje rozkazy. Można podzielić je na pięć grup:
-	\begin{itemize}
-		\item odczyt / zapis: wczytanie zawartości komórki pamięci do rejestru, zapis zawartości rejestru do komórki;
-		\item skoki: bezwarunkowe, warunkowe, pośrednie;
-		\item operacje logiczne: NOT, AND, OR, XOR;
-		\item arytmetyka: suma, różnica, iloczyn, iloraz;
-		\item zmiana stanu procesora: maskowanie przerwań, ustawienie / wyczyszczenie flagi przeniesienia.
-	\end{itemize}
-	Każdy rozkaz jest wykonywany w~określonym czasie, w~zależności od rozkazu wykorzystywane są specyficzne dla danej instrukcji
-	jednostki funkcjonale CPU (np. jednostka arytmetyczno\dywiz logiczna dla rozkazów arytmetycznych, lub licznik rozkazów
-	dla skoków warunkowych). Czas wykonania jest mierzony w~\emph{cyklach maszynowych}. Należy mieć na uwadze, 
-	iż na jeden cykl maszynowy może składać się więcej niż jeden cykl zegarowy, zaś
-	producent, informując o~taktowaniu procesora zegarem o~częstotliwości 1 MHz, ma na myśli, że
-	w~ciągu sekundy zostanie wykonanych milion cykli zegarowych.
-\par
-%
-\indent
-	Wynik wykonania konkretnego rozkazu może powodować zmiany w~rejestrze jednostki centralnej, w~pamięci lub
-	też w~urządzeniu zewnętrznym. Co więcej, każdy procesor wykonuje rozkazy w~pewien określony sposób, w~specyficznej dla siebie liczbie kroków.
-	Jednakże, dla wszystkich procesorów, możemy wyróżnić podstawowe kroki wykonania rozkazu:
-	\begin{enumerate}
-	\item Pobranie (ang. \emph{Instruction Fetch, IF}): wymaga komunikacji z~pamięcią.
-		Pobrany rozkaz po pobraniu jest gotowy do dalszego przetwarzania.
-	\item Dekodowanie (ang. \emph{Instruction Decode, ID}):  liczba bajtów, które należy pobrać, może być zmienna:
-		nawet gdy długość rozkazu jest niezmienna (np. 2 bajty), jego argumenty (\emph{opkody}, ang. \emph{opcode}) mogą być zmiennej długości.
-	\item Wykonanie (ang. \emph{Execute, EX}): poszczególne części procesora wykonują działanie w~kolejności określonej przez aktualnie
-		wykonywany rozkaz.
-	\item Dostęp do pamięci (ang. \emph{Memory Access, MEM}): rozkazy mogą korzystać z~danych zawartych w~komórkach pamięci. Jeśli bieżący rozkaz
-		zapisuje do lub odczytuje zawartość pamięci, w~tym kroku jest dokonywana ta operacja.
-	\item Zapis (ang. \emph{Write Back, WB}): stan procesora jest aktualizowany o~wynik działania rozkazu.
-	\end{enumerate}
-\par
-%
-\indent
-	Klasyczne procesory wykonują rozkazy sekwencyjnie. Kolejny rozkaz zostanie wczytany do pamięci dopiero, gdy
-	CPU zapisze wynik bieżącego. Do sekwencyjnego wykonywania rozkazów nie potrzeba żadnych dodatkowych mechanizmów,
-	jednak w~trakcie wykonania aktywna jest dokładnie jedna składowa procesora, podczas gdy pozostałe są ,,uśpione''
-	w~oczekiwaniu na uruchomienie.
-	\begin{center}
-	\centering
-	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} \hline
-	& \multicolumn{5}{c|}{Rozkaz 1} & \multicolumn{5}{c|}{Rozkaz 2}  \\
-	\hhline{|~|*{10}-}& IF & ID & {\cellcolor{yellow}{EX}} & MEM & WB & IF & ID & EX & MEM & WB\\ \hline \hline
-	Cykl zegara & 1 & 2 & {\cellcolor{yellow}{3}} & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \hline
-	\end{tabular}\par
-	\mytabcaption{Sekwencyjne wykonanie dwóch rozkazów. Wyróżniona kolumna odpowiada bieżącemu krokowi wykonania
-	rozkazu}
-	\end{center}\par
-\par
-%
-\indent 
-	Pomysł na lepsze wykorzystanie zasobów jednostki centralnej, to użycie \emph{potokowości} (ang. \emph{pipelining}):
-	Jeśli wykonanie bieżącego rozkazu zakończyło się dla komponentu, może on wykonać następny rozkaz.
-	\begin{center}
-	\centering
-	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
-	Numer 		 & \multicolumn{7}{c|}{\multirow{2}{*}{Stan potoku}} \\
-	rozkazu & \multicolumn{7}{c|}{} \\ \hline
-	1 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
-	2 & & IF & ID & \cellcolor{yellow} EX & MEM & WB & \\ \hline
-	3 & & & IF & \cellcolor{yellow} ID & EX & MEM & WB \\ \hline
-	4 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
-	5 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
-	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
-	\end{tabular}
-  \newcounter{pipeline} \setcounter{pipeline}{\value{tabmain}}
-	\mytabcaption{Potokowe wykonanie rozkazów. W~kolumnach umieszczone są komponenty wykonujące dany krok rozkazu.
-	W~wyróżnionej kolumnie można odczytać, że w~czwartym cyklu zegarowym pierwszy rozkaz jest w~trakcie wykonywania kroku MEM, 
-	dla drugiego wykonywany jest krok EX, itd}
-	\end{center}
-	Metoda ta pozwala na ,,równoległe'' wykonanie kilku rozkazów na jednym procesorze, w~przykładzie opisanym w~tabeli \arabic{pipeline}, po upływie 7 cykli
-	zostaną wykonane trzy rozkazy. Gdyby rozkazy te były wykonane na jednostce sekwencyjnej, czas ich wykonania byłby ponad dwa razy dłuższy.
-\par
-%
-\indent
-	Architektura procesora, która jest uogólnieniem potokowości to \emph{Superskalarność} (ang. \emph{Superscalar}): 
-	każdemu krokowi odpowiada co najmniej jeden potok, jednakże występuje redundancja części funkcjonalnych procesora.
-	\begin{center}
-	\centering
-	\begin{tabular}{|c|c|c|c|c|c|c|c|} \hline
-	Numer 		 & \multicolumn{7}{c|}{\multirow{2}{*}{Stan potoku}} \\
-	rozkazu & \multicolumn{7}{c|}{} \\ \hline
-	1 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
-	2 & IF & ID & EX & \cellcolor{yellow} MEM & WB & & \\ \hline
-	3 & & IF & ID & \cellcolor{yellow} EX & MEM & WB & \\ \hline
-	4 & & IF & ID & \cellcolor{yellow} EX & MEM & WB & \\ \hline
-	5 & & & IF & \cellcolor{yellow} ID & EX & MEM & WB \\ \hline
-	6 & & & IF & \cellcolor{yellow} ID & EX & MEM & WB \\ \hline
-	7 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
-	8 & & & & \cellcolor{yellow} IF & ID & EX & MEM \\ \hline
-	9 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline
-	10 & & & & \cellcolor{yellow} & IF & ID & EX \\ \hline \hline
-	Cykl zegara & 1 & 2 & 3 & \cellcolor{yellow} 4 & 5 & 6 & 7 \\ \hline
-	\end{tabular}
-	\mytabcaption{Potokowe wykonanie 10 rozkazów na jednostce superskalarnej o~dwóch potokach rozkazów: rozkazy o~numerach nieparzystych są wykonywane na 
-					pierwszej jednostce, zaś rozkazy o~numerach parzystych na drugiej. Analogicznie jak w~tabeli \arabic{pipeline}, wyróżniona
-					kolumna odpowiada wykonaniu programu w~czwartym cyklu zegarowym}
-	\end{center}
-	Jak łatwo zauważyć, superskalarny CPU jest w~stanie przetworzyć nawet wektor instrukcji. Warunkiem koniecznym do osiągnięcia takiego
-	wyniku jest brak zależności pomiędzy wynikiem wcześniejszej a~następnej instrukcji.
-\par
-%
-\indent
-	Opisane wyżej techniki napotykają jednak na podstawowy problem: w~momencie, gdy bieżącym rozkazem jest skok warunkowy, kolejna wczytana 
-	instrukcja nie musi być koniecznie kolejną instrukcją programu. Tak więc, częściowo wykonana instrukcja (lub, w~przypadku jednostek
-	superskalarnych, nawet w~pełni wykonane rozkazy) nie powinna wywrzeć wpływu na żaden z~zasobów komputera, 
-	a~dodatkowo jest ona niepotrzebnie przetwarzana.
-\par
-%
-\indent
-	W~celu zniwelowania niedogodności związanych z~,,nietrafionymi'' skokami warunkowymi, zaczęto stosować technikę 
-	\emph{przewidywania skoku} (ang. \emph{branch prediction}): stosowane są heurystyki, które określają prawdopodobny
-	wynik instrukcji skoku. Dzięki ich stosowaniu, udaje się w~dużej liczbie przypadków uniknąć niepotrzebnych obliczeń,
-	a~wykonywane są te rozkazy, które rzeczywiście są potrzebne do wykonania programu.
-	Przewidywanie skoku jest jedną z~technik stosowanych w~mechanizmie zwanym \emph{Wykonaniem spekulatywnym} (ang. \emph{Speculative execution}):
-	wykonanie spekulatywne dopuszcza również wykonanie (przy spełnieniu określonych założeń) części programu znajdującego się za skokiem warunkowym,
-	ale jeszcze \emph{przed} wykonaniem tego skoku.
-\par
-%
-\newcounter{oooex} \setcounter{oooex}{\value{figmain}}
-\indent
-	Technika wykonania określonego fragmentu kodu źródłowego jest stosowana również w~mechanizmie \emph{Wykonania poza kolejnością}
-	(ang. \emph{Out of Order execution, OoO}): jeśli pewien rozkaz używa wartości rejestru, która została już obliczona, to można go wykonać
-	poza kolejnością podaną przez autora programu. Dla sekwencji rozkazów z~rys.~\arabic{oooex}
-	można zauważyć, że rozkaz (3) korzysta z~wartości rejestru A3, który jest wyliczony w~(1), jego wykonanie nie ma wpływu na rejestry, z~których 
-	korzysta (2), a~więc sekwencja $\langle 1, 3, 2 \rangle $ da po wykonaniu wynik taki sam, jak sekwencja $\langle 1, 2, 3 \rangle $.
-	\begin{center}
-	\begin{tabular}{l}\\
-		(1) {\tt add A1,A2,A3 /* dodaj A1 do A2, wynik zapisz do A3 */ } \\
-		(2) {\tt add A1,A4,A5 } \\
-		(3) {\tt add A2,A3,A7 } \\
-		\\
-	\end{tabular}
-  \myfigcounter{Wykonanie poza kolejnością}
-	\end{center}
-\par
-%
-\indent
-	Podczas wykonania programu pewne rejestry procesora są wykorzystywane częściej, zaś inne rzadziej. Aby zwiększyć użycie rzadziej
-	używanych rejestrów i~wykonać kolejne rozkazy poza kolejnością, można tymczasowo potraktować nieużywany rejestr jak ten, który miał
-	być pierwotnie użyty do wykonania rozkazu (zapisać jego dotychczasową wartość, skopiować wartość z~odpowiedniego rejestru, wykonać instrukcję,
-	przywrócić poprzednią wartość tak wykorzystanego rejestru). Taka technika jest zwana 
-	\emph{Przemianowaniem rejestrów} (ang. \emph{Register Renaming}).
-\par
-%
-\indent
-	Dzięki opisanym wyżej technikom możliwe jest zrównoleglenie wykonania programu (w~stosunku do procesora wykonującego rozkazy sekwencyjnie)
-	już na poziomie pojedynczych instrukcji procesora. Stąd też techniki te są określane mianem \emph{instruction level parallelism} (ILP).
-	Podstawową zaletą tych technik jest znaczące przyspieszenie działania procesora, jednakże implementacja tych technik w~procesorze pociąga za
-	sobą zwiększenie liczby tranzystorów, a~co za tym idzie, zwiększenie temperatury wydzielanej przez CPU.
-\par
-%
-\newcounter{datadep} \setcounter{datadep}{\value{figmain}}
-\indent
-	Problemem, który jest naturalnie związany z~ILP to zależność od danych (ang. \emph{data dependency}).
-	Dotyczy on zachowania oryginalnej chronologii wykonywania rozkazów (zapisu wyników
-	ich działania w~procesorze, pamięci i~urządzeniach zewnętrznych). W sekwencji przedstawionej na rys.\arabic{datadep}
-	instrukcje (1) i~(2) mogą wyć wykonane w~kolejności $\langle 1,2 \rangle$ jak i~$\langle 2,1 \rangle$, zaś wynik działania instrukcji
-	(3) zależy bezpośrednio od wyników działania (1) i~(2). Co więcej, instrukcja (4) nie może być wykonana wcześniej 
-	niż po zakończeniu wykonania instrukcji (1), (2) i~(3). Tak więc chronologia wykonania instrukcji (3) i~(4) nie może być zmieniona.
-	\begin{center}
-	\begin{tabular}{l l}\\
-		(1) & {\tt add Y,Z,X} \\
-		(2) & {\tt add U,V,T} \\
-		(3) & {\tt mult X,T,L /* zapisz iloczyn X}$\times${\tt T do L */} \\
-		(4) & {\tt add L,T,L} \\
-	\end{tabular}
-	\myfigcounter{Ilustracja problemu zależności od danych}
-	\end{center}
-\par
-%
-\indent
-	W~celu rzeczywistego zrównoleglenia działania programu, w~komputerach pojawiło się więcej procesorów,
-	które działały niezależnie od siebie. Procesory były pojedynczymi układami, bądź kilka procesorów umieszczano w~jednym układzie. 
-	Pojedynczy procesor w~kości zawierającej kilka jednostek centralnych zwany jest \emph{rdzeniem} (ang. \emph{core}).
-	Odpowiednio zaprojektowany program,	który korzysta z~kilku procesorów może przyspieszyć swoje działanie nawet proporcjonalnie do ich liczby,
-	na których jest wykonywany.	Takie przyspieszenie działania programu, choć możliwe, jest rzadko spotykane.
-	Dobrą ilustracją problemu przyspieszania działania procesora jest prawo Amdahla, opisane w~dalszej części tego dokumentu.
-\par
-%
-\newcounter{flynn} \setcounter{flynn}{\value{tabmain}}
-\indent
-	Michael J.~Flynn stworzył klasyfikację systemów komputerowych oraz programów (\emph{taksonomia Flynna}), w~której ze względu na liczbę
-	strumieni rozkazów oraz danych, wyróżniamy cztery klasy, wymienione w~tabeli \arabic{flynn}.
-	Klasy te możemy scharakteryzować w~następujący sposób:
-	\begin{itemize}
-		\item SISD jest klasą programów wykonywanych sekwencyjnie na maszynie sekwencyjnej;
-		\item SIMD odpowiada programom wykonywanym na maszynie superskalarnej lub na procesorach przetwarzających sygnały (DSP);
-		\item MISD jest klasą maszyn i~programów, która ma zastosowanie tam, gdzie liczy się minimalizacja błędów;
-		\item MIMD odpowiada programom wykonywanym na wielu procesorach.
-	\end{itemize}
-	\begin{center}
-	\centering
-	\begin{tabular}{|c|c|c|} \hline
-													 & Jeden strumień instrukcji	 & Wiele strumieni instrukcji \\
-													 & (\emph{Single Instruction}) & (\emph{Multiple Instruction}) \\\hline
-			Jeden                &     												 &      \\
-			strumień danych      &  SISD										   & MISD 			\\
-			(\emph{Single Data}) &                             & \\\hline
-			Wiele                &     												 &      \\
-			strumieni danych     & SIMD                        & MIMD \\
-			(\emph{Multiple Data}) & 										 & 			\\\hline
-	\end{tabular} \nopagebreak
-	\mytabcaption{Taksonomia Flynna}
-	\end{center}
-\par
-\indent
-	Komputery sklasyfikowane jako MIMD, ze względu na rodzaj komunikacji pomiędzy procesorami, można podzielić na dwie podklasy:
-	\begin{itemize}
-		\item o~rozproszonej pamięci: każdy procesor posiada przyporządkowaną
-			dla niego pamięć. W~takim układzie procesory wraz z~pamięcią im dedykowaną mogą być traktowane jako oddzielne komputery, 
-			zaś komunikacja między nimi przebiega po pewnej ustalonej ścieżce (np. za pomocą połączenia sieciowego).
-			Taka architektura systemu komputerowego nazywana jest \emph{wieloprocesorowością asymetryczną} (ang. \emph{asymmetric multiprocessing, AMP}),
-			zaś najczęściej jest spotykana w~systemach rozproszonych czy klastrach.
-		\item o~dzielonej pamięci: wszystkie procesory korzystają z~tej samej pamięci.
-	\end{itemize}
-	W~systemach, w~których wszystkie procesory korzystają z~jednej, dzielonej pamięci, komunikacja pomiędzy procesorami odbywa się za jej pomocą.
-	Można wyróżnić dwie najczęściej stosowane architektury:
-	\begin{itemize}
-		\item nadrzędna jednostka/jednostka podrzędna (ang. \emph{master/slave}): jeden z~procesorów posiada uprzywilejowany dostęp do pamięci (master).
-			Na tym procesorze są wykonywane najważniejsze dla programu zadania (np. \emph{jądro systemu operacyjnego}, ang. \emph{kernel}),
-			zaś pozostałe jednostki centralne posiadają ograniczony dostęp do pamięci (slave), jak również do innych zasobów komputera 
-			(np. aplikacje użytkownika systemu operacyjnego).
-			Jeśli jednostka podrzędna potrzebuje wykonania pewnego działania, które może być wykonane jedynie przez jednostkę nadrzędną, musi w~tym celu
-			przesłać żądanie do jednostki typu master. Taka architektura posiada dwie zasadnicze wady:
-			\begin{itemize}
-				\item błąd (usterka) jednostki uprzywilejowanej powoduje zerwanie działania programu (systemu operacyjnego);
-				\item jednostka typu master może stać się \emph{wąskim gardłem} (ang. \emph{bottleneck}) programu (systemu operacyjnego),
-					gdy ilość żądań wykonania specyficznych dla niej operacji przekroczy pewien zależny od niej samej próg, lub też gdy pewne
-					operacje będą wykonywane w~sposób nieefektywny.
-			\end{itemize}
-		\item \emph{SMP} (ang. \emph{symmetric multiprocessing}): wszystkie procesory w~systemie komputerowym posiadają identyczne przywileje
-			dostępu do pamięci oraz innych jego zasobów. Dzięki temu, możliwe jest wykonywanie jednej aplikacji na wielu procesorach jednocześnie,
-			możliwa jest również ,,wędrówka'' wydzielonych części aplikacji po wszystkich dostępnych w~komputerze procesorach.
-	\end{itemize}
-\par
-%
-\indent
-	Opisane powyżej techniki stosowane w~architekturach procesorów, jak również same architektury systemów operacyjnych, kładą nacisk na
-	zrównoleglenie wykonywania programów. Głównym wyzwaniem, jakie stoi przed programistą, jest takie zaprojektowanie aplikacji,
-	aby można było ją wykonać równolegle na jak największej liczbie procesorów, co przełoży się na krótszy czas wykonania.
-	Aplikacja będzie komunikować się ze światem zewnętrznym, a~w~szczególności z~użytkownikiem o~wiele sprawniej, niż ta sama aplikacja,
-	ale zaprojektowana w~sposób sekwencyjny.
-\par
-%
-\indent
-	Można zauważyć, że wzrost mocy obliczeniowej maszyn wieloprocesorowych (wielordzeniowych) w~stosunku do maszyn klasy SISD (SIMD) jest
-	analogiczny do wzrostu mocy obliczeniowej procesora posiadającego architekturę ILP do procesora posiadającego architekturę sekwencyjną.
-	Jednakże, aby wykorzystać potencjał architektur równoległych,
-	zarówno ILP jak i~MIMD wymagają odpowiednio zaprojektowanych i~zaprogramowanych aplikacji.
-\par
-\end{comment}
-%
-%\subsection{Pamięć}
-\indent
-	Pamięć w~systemie komputerowym możemy podzielić na dwa rodzaje: ulotną i~trwałą. Informacje znajdujące się w~pamięci ulotnej
-	nie będą odzyskane po wyłączeniu i~ponownym włączeniu komputera. Można wyróżnić dwa rodzaje pamięci ulotnej:
-	\begin{itemize}
-		\item wewnętrzna: procesor komunikuje się z~nią bez pośrednictwa szyny systemowej. Jest taktowana tą samą częstotliwością, co CPU
-			(lub bardzo do niej zbliżoną). Pamięciami tego rodzaju są:
-			\begin{itemize}
-				\item rejestry procesora;
-				\item pamięć podręczna (ang \emph{cache}), często wielopoziomowa.
-			\end{itemize}
-		\item Systemowa (operacyjna): szyna systemowa pośredniczy podczas operacji odczytu/zapisu do pamięci tego rodzaju. Ta pamięć jest zwana
-			pamięcią główną komputera (ang. \emph{main memory, primary memory}), a~ponieważ dostęp do każdej komórki tej pamięci
-			w~każdym momencie działania systemu komputerowego jest możliwy, zwana jest również pamięcią o~dostępie swobodnym
-			(ang. \emph{random access memory, RAM}).
-	\end{itemize}
-	Z~punktu widzenia procesora, pamięć trwała jest pamięcią ,,za'' szyną systemową, za wyjątkiem pamięci stałej (ang. \emph{read only memory, ROM}),
-	nie znajduje się ona nawet na płycie głównej, na której znajduje się jednostka centralna, dlatego pamięci tego rodzaju zwane są 
-	zewnętrznymi. O~ile pamięć główna jest uprzywilejowanym urządzeniem o~najszybszym dostępie, o~tyle dostęp do pamięci
-	zewnętrznych jest o~wiele wolniejszy. Do trwałych pamięci zewnętrznych zaliczyć można następujące urządzenia:
-	\begin{itemize}
-		\item dyski magnetyczne (dyskietki, dyski twarde, SSD, pamięci typu Flash);
-		\item płyty CD, DVD, BD;
-		\item taśmy magnetyczne.
-	\end{itemize}
-\par
-%
-\indent
-	%Można zauważyć, że ,,murem'' oddzielającym procesor od pamięci (za wyjątkiem pamięci wewnętrznej) jest szyna systemowa.
-	W~obecnych komputerach szyny systemowe są taktowane niższymi częstotliwościami (nawet kilkakrotnie), niż sam procesor.
-	Także sama pamięć RAM może być taktowana niższą od wymienionych wcześniej częstotliwością.
-	Taka dysproporcja w~taktowaniu części systemu komputerowego może prowadzić do przestojów w~pracy procesora: nie może wykonać żadnego działania,
-	ponieważ nie ma kolejnych instrukcji programu. Rosnąca dysproporcja w~taktowaniu procesorów i~pamięci jest zwana \emph{murem pamięciowym}
-	(ang. \emph{memory wall}, \cite{wulf}).
-\par
-%
-\indent
-	Pamięć podręczna jest bardzo ważną częścią pamięci ulotnej: to z~tej pamięci (a~dokładniej: z~pamięci pierwszego poziomu) procesor
-	może pobierać pojedyncze bajty i~tylko na tej pamięci może on wykonywać operacje odczytu/zapisu. 
-	Z~pamięci RAM dane pobierane są do pamięci cache (do najwyższego poziomu cache\dywiz u) w~paczkach o~określonej wielkości (np. 32 bajty),
-	dzięki czemu zmniejsza się liczba żądań dostępu pamięci podręcznej (widzianej przez szynę danych jako procesor) do pamięci operacyjnej.
-	Takie rozwiązanie pociąga za sobą problem zgodności danych: jeśli procesor zmieni zawartość pewnej komórki pamięci,
-	to zawartość odpowiadającej jej komórki w~pamięci operacyjnej powinna być taka sama w~momencie odczytu dokonywanego przez inny procesor
-	znajdujący się w~systemie. Problem ten można rozwiązać na dwa sposoby:
-	\begin{itemize}
-		\item jeśli zgłaszane jest żądanie dostępu do komórki przez rdzeń znajdujący się w~tym samym układzie, wystarczy wymienić wartość komórki
-			tylko we współdzielonej pamięci podręcznej, a~następnie przesłać ją do cache\dywiz u~pierwszego poziomu, do którego dostęp posiada
-			rdzeń, który zgłosił żądanie. Zawartość pamięci operacyjnej zostanie uaktualniona \emph{później}.
-		\item Jeśli dostępu do komórki zażądał inny procesor, wówczas należy przesłać zawartość komórki do pamięci RAM.
-	\end{itemize}
-	Oczywiście, jeśli następuje zmiana zawartości pamięci podręcznej, zawartość zmienionej komórki musi zostać przesłana do pamięci operacyjnej
-	(jest to sytuacja, która została określona jako ,,później'').
-\par
-%
-\indent
-	Dokładny i~wyczerpujący opis pamięci stosowanych we współczesnych komputerach można znaleźć w~\cite{jacob}.
-\par
-%
-%\subsection{Urządzenia zewnętrzne}
-\indent
-	Urządzenia zewnętrzne, znane również jako \emph{peryferia}, \emph{urządzenia wejścia\dywiz wyjścia}, \emph{I/O} (\emph{ang. Input/Output}),
-	to, oprócz pamięci trwałych, także urządzenia do komunikacji komputera ze światem zewnętrznym. 
-	Można podzielić je według właściwości odczytu/zapisu na trzy grupy:
-	\begin{itemize}
-		\item{tylko odczyt danych, np.} klawiatura, mysz, 
-		\item{tylko zapis, np.} wyświetlacz,
-		\item{odczyt i~zapis, np.} karta sieciowa, graficzna, dźwiękowa, \ldots
-	\end{itemize}
-\par
-%
-\indent
-	Komunikacja procesora z~peryferiami odbywa się poprzez szynę systemową.
-\par
-%
-\newpage
-\section{System operacyjny}
-%
-\label{sec:system}
-\subsection{Wstęp}
 \indent
 	System operacyjny (ang. \emph{operating system, OS}, zwany dalej \emph{systemem}) jest programem, 
 	który kontroluje wykonanie aplikacji użytkownika (programów),
@@ -654,6 +312,8 @@
   \end{itemize}
   Pouczającym przykładem implementacji takich wątków jest biblioteka GNU Pth. Jej rozwój zatrzymał się w~roku 2006.
 \par
+\subsection{Włókna}
+\label{sec:fibers}
 %
 \indent
   Do niedawna niektóre systemy (Solaris do wersji 9, wczesne wersje NetBSD) udostępniały użytkownikowi włókna: kilka wątków przestrzeni użytkownika
