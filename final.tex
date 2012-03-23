@@ -94,23 +94,15 @@
 %
 \indent
 	Obydwa rodzaje wątków posiadają zarówno swoje zalety, jak i~wady. Istnieje rozwiązanie pośrednie: wątki mieszane, zwane również
-	\emph{hybrydowymi}. W~niniejszej pracy użycie słowa ,,wątek'' oznacza odwołanie do wątku przestrzeni jądra, zaś użycie słowa ,,włókno'' oznacza odwołanie
+	\emph{hybrydowymi}. Użytkownik jest odpowiedzialny za zarządzanie włóknami, zaś system operacyjny może udostępniać mu pewne mechanizmy
+  pomocne w~zarządzaniu wątkami hybrydowymi (np. opisany w~rozdziale \ref{sec:system} mechanizm wywłaszczania włókien lub dedykowana dla włókien obsługa
+  urządzeń wejścia-wyjścia).
+\par
+%
+\indent
+  W~niniejszej pracy użycie słowa ,,wątek'' oznacza odwołanie do wątku przestrzeni jądra, zaś użycie słowa ,,włókno'' oznacza odwołanie
   do wątku mieszanego.
 \par
-%
-\indent
-  Rozdział \ref{sec:fibers} opisuje procesy, wątki oraz włókna.
-\par
-%
-\begin{comment}
-\indent
-  Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu.
-  Przykładem takiej implementacji jest \emph{scheduler activations} (SE), opisana w~\cite{anderson}.
-  Mechanizm ten został zaimplementowany w~NetBSD, jednakże działanie systemu operacyjnego z~tą implementacją wpływała negatywnie na jego działanie, 
-  dlatego obecne wydania NetBSD dają możliwość wyboru systemu z~jądrem zmodyfikowanym przez SE, ale jedynie na wyraźne żądanie użytkownika systemu.
-  Implementacja włókien oparta na podobnym do SE pomyśle jest oferowana także w~systemie Windows 7.
-\par
-\end{comment}
 %
 \indent
   \myownfigure{mixedintro}{mixedscheme.png}{Włókna w~implementacji nie wymagającej zmian w~systemie~operacyjnym -- cel niniejszej pracy}{.23}
@@ -142,15 +134,22 @@
 \par
 \indent
   Każdy z~trzech popularnych systemów operacyjnych (Windows, MacOS, systemy oparte na jądrze Linux), obsługuje procesy i~wątki, każdy na swój sposób. Systemy linuksowe,
-  w~odróżnieniu od pozostałych dwóch, działają zarówno w~superkomputerach jak i~w~stacjach roboczych. Dlatego też zadecydowałem o~zaimplementowaniu biblioteki korzystającej
-  z~systemu linuksowego.
+  w~odróżnieniu od pozostałych dwóch, działają zarówno w~superkomputerach jak i~w~stacjach roboczych. Dlatego też docelowym systemem operacyjnym dla biblioteki
+  powinien być system operacyjny oparty na jądrze Linuksa.
+\par
+\indent
+  Większość obecnych komputerów to systemy wieloprocesorowe (wielordzeniowe). Dlatego też biblioteka włókien powinna wykorzystywać dostępne rdzenie, dzięki czemu będzie
+  zasadniczo różnić się od każdej biblioteki wątków przestrzeni użytkownika (biblioteki te działają w~dokładnie jednym wątku przestrzeni jądra).
+  Co więcej, celem jest stworzenie biblioteki włókien, która będzie wykorzystywać dostępne już w~systemie operacyjnym mechanizmy, bez wprowadzania modyfikacji w~jądrze
+  systemu. Istnieje wiele implementacji (opisanych w~rozdziale \ref{sec:fibers}), które wymagają modyfikacji po stronie jądra systemu operacyjnego, zaś implementacja
+  wykorzystująca dostępne mechanizmy dla wątków przestrzeni jądra i~użytkownika jak dotychczas nie została zaimplementowana, lub nie została zaprezentowana szerokiej publiczności.
 \par
 %
 \subsection{Streszczenie pracy}
 \indent
 	\begin{itemize}
 	\item[Rozdział \ref{sec:system}] opisuje obecne systemy komputerowe oraz współczesne systemy operacyjne. Rozdział ten opisuje także
-    procesy, wątki, włókna. Dodatkowo, opisane są mechanizmy używane do zarządzania oraz komunikacji pomiędzy nimi, jak również problemy
+    procesy, wątki i~włókna. Dodatkowo, opisane są mechanizmy używane do zarządzania oraz komunikacji pomiędzy nimi, jak również problemy
     związane z~ich zastosowaniem.
 	\item[Rozdział \ref{sec:solution}] opisuje implementację włókien opartą na pomyśle opisanym we wstępie.
 	\item[Rozdział \ref{sec:analysis}] określa wartość tej implementacji: jej użyteczność oraz wydajność.
@@ -318,11 +317,18 @@
 \indent
   Do niedawna niektóre systemy (Solaris do wersji 9, wczesne wersje NetBSD) udostępniały użytkownikowi włókna: kilka wątków przestrzeni użytkownika
   działało w~ramach jednego LWP, bez ograniczenia działających wątków przestrzeni użytkownika do jednego LWP.
-  W~związku ze znacznym spadkiem wydajności tych systemów, zrezygnowano z~udostępniania włókien w~tych systemach.
+  Implementacja włókien w~tych systemach była oparta na \emph{aktywacjach planisty} (ang. \emph{scheduler activations}) opisanych
+  w~\cite{hennessy}, jednak
+  w~związku ze znacznym spadkiem wydajności tych systemów, zrezygnowano z~udostępniania w~nich włókien.
   Co ciekawe, pomysł na udostępnienie włókien dla użytkownika został zrealizowany w~systemie Windows 7 (\emph{User Mode Scheduling}, UMS). Był on dostępny
   jedynie w~32-bitowym wydaniu tego systemu. Obecnie producent odradza jego użycie, zaś prace rozwojowe nad UMS zostały wstrzymane.
   Istnieją jednak systemy, w~których włókna są wspierane, a~nawet rekomendowane jako domyślne rozwiązanie dla użytkownika. Przykładem takiego systemu jest
   AIX, produkt firmy IBM.
+\par
+%
+\indent
+  Pomysł na implementację włókien bez dokonywania zmian, a~co za tym idzie, biblioteka będąca jego implementacją nie jest oferowany w~żadnym systemie operacyjnym.
+  Rozdział \ref{sec:solution} zawiera dokładny opis pomysłu oraz implementacji takiej biblioteki.
 \par
 %
 \subsection{Procesy i~wątki a~Linux}
@@ -402,7 +408,7 @@
 \label{sec:solution}
 \subsection{Wstęp}
 \indent 
-  Biblioteka \code{libmixed} spełnia wymagania wymienione w~rozdziale \ref{sec:target}, za wyjątkiem warunku \ref{enm:timesch}:
+  Biblioteka \code{libmixed} powstała w~ramach pracy magisterskiej. Spełnia wymagania wymienione w~rozdziale \ref{sec:target}, za wyjątkiem warunku \ref{enm:timesch}:
   istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
 \par
 \indent
