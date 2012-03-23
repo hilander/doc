@@ -94,8 +94,8 @@
 %
 \indent
 	Obydwa rodzaje wątków posiadają zarówno swoje zalety, jak i~wady. Istnieje rozwiązanie pośrednie: wątki mieszane, zwane również
-	\emph{hybrydowymi}. Użytkownik jest odpowiedzialny za zarządzanie włóknami, zaś system operacyjny może udostępniać mu pewne mechanizmy
-  pomocne w~zarządzaniu wątkami hybrydowymi (np. opisany w~rozdziale \ref{sec:system} mechanizm wywłaszczania włókien lub dedykowana dla włókien obsługa
+	\emph{hybrydowymi}. Użytkownik jest odpowiedzialny za zarządzanie wątkami miesznymi, zaś system operacyjny może udostępniać mu pewne mechanizmy
+  dedykowane dla zarządcy wątków hybrydowych (np. opisany w~rozdziale \ref{sec:system} mechanizm wywłaszczania lub obsługa
   urządzeń wejścia-wyjścia).
 \par
 %
@@ -110,7 +110,7 @@
 \indent
   Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu,
   można jednak zaimplementować je przy użyciu mechanizmów ofreowanych przez system operacyjny.
-  Taka implementacja może być biblioteką dołączaną przez użytkownika, zaś jej użycie nie będzie mieć wpływu na działanie i~wydajność innych programów.
+  Taka implementacja może być biblioteką dołączaną przez użytkownika.
 \par
 %
 \subsection{Cel pracy}
