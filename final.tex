@@ -412,8 +412,8 @@
   istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
 \par
 \indent
-  Biblioteka jest napisana w~języku C++, została stworzona z~myślą o~Linuksie i~wykorzystuje mechanizm \code{epoll}.
-  \code{Epoll}, w~odróżnieniu od znanego ze specyfikacji POSIX 
+  Biblioteka jest napisana w~języku C++. Wykorzystuje mechanizm spotykany jedynie w~systemie Linux: \code{epoll}: podobny do
+  zawartego w~specyfikacji POSIX mechanizmu \code{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu.
 \par
 \indent
   Każda składowa biblioteki działa w~jednej z~dwóch warstw:
