@@ -412,8 +412,14 @@
   istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
 \par
 \indent
-  Biblioteka jest napisana w~języku C++. Wykorzystuje mechanizm spotykany jedynie w~systemie Linux: \code{epoll}: podobny do
-  zawartego w~specyfikacji POSIX mechanizmu \code{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu.
+  Biblioteka jest napisana w~języku C++. Wykorzystuje mechanizm \code{epoll} zaimplementowany jedynie w Linuksie: jest to mechanizm podobny do
+  zawartego w~specyfikacji POSIX (\cite{POSIX}) mechanizmu \code{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu w~nieblokujący sposób.
+  \code{Epoll} jest szybszy od \code{poll}: dla zbioru obserwowanych zasobów wytwarzany jest identyfikator systemowy 
+  (\emph{deskryptor}, ang. \emph{descriptor}) -- liczba całkowita, a~następnie każde zapytanie o~ten zbiór sprowadza się do zapytania
+  o~konkretny deskryptor (kopiowana jest jedna liczba). W~przypadku mechanizmu \code{poll}, każde zapytanie o~stan zasobów to przesłanie zbioru obiektów (struktur),
+  co pociąga za sobą kopiowanie tych obiektów z~przestrzeni użytkownika do przestrzeni jądra (przesłanie zapytania). Kiedy program obserwuje dużą liczbę
+  zasobów systemowych, ich kopiowanie może wiązać się ze znaczącym narzutem czasowym na operację \code{poll}. Dlatego użycie mechanizmu \code{epoll} jest
+  oczywistym wyborem dla \code{libmixed}.
 \par
 \indent
   Każda składowa biblioteki działa w~jednej z~dwóch warstw:
