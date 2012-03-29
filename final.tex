@@ -422,38 +422,46 @@
   oczywistym wyborem dla \code{libmixed}.
 \par
 \indent
-  Każda składowa biblioteki działa w~jednej z~dwóch warstw:
-  \begin{enumerate}
-    \item Nadzorczej: każdy byt tej warstwy ma za zadanie obsługę włókna (uruchomienie, komunikacja pomiędzy włóknami, udostępnienie
-      zasobów I/O).
-    \item Włókna: są to udogodnienia biblioteki dostępne bezpośrednio z~poziomu włókna, a~więc dostępne dla użytkownika \code{libmixed}.
-  \end{enumerate}
+  \code{Libmixed} można rozpatrywać jako \emph{środowisko ramowe} (ang. \emph{framework}), które odpowiada za zarządzanie jednostkami wykonywalnymi.
+  Użytkownik biblioteki wytwarza i~uruchamia obiekt klasy \code{master}, która jest \emph{punktem wejścia} (ang. \emph{entry point}) ramy.
+  Następnie wytwarza własne jednostki wykonywalne: każda z~nich to obiekt klasy dziedziczącej po klasie \code{fiber}, która jest implementacją włókna.
+  Kolejnym krokiem jest zgłoszenie żądania wykonania takiego obiektu, czym zajmuje się obiekt klasy \code{master}.
+  Użytkownik musi mieć świadomość, że kolejność wykonania włókien nie musi zależeć od kolejności zgłoszenia żądań ich wykonania, co jest zgodne z~zasadą działania
+  większości środowisk ramowych.
 \par
 \begin{center}
   \myownfigure{libmixedoverview}{libmixedOverview.png}{Zależności pomiędzy klasami biblioteki \code{libmixed}}{.7}
 \end{center}
+%
 \indent
-  Rysunek \arabic{libmixedoverview} przedstawia zależności pomiędzy klasami biblioteki \code{libmixed}.
-  Do warstwy nadzorczej należą klasy:
+  Rysunek \arabic{libmixedoverview} zawiera opisane poniżej składniki biblioteki:
   \begin{itemize}
-    \item \code{master}: zarządza \emph{robotnikami} (obiektami klasy \code{worker}), pośredniczy w~komunikacji między włóknami;
-    \item \code{worker}: zarządza obsługą przydzielonych mu włókien, odpowiada za poprawne wykonanie operacji I/O (\function{read}, \function{write}, \ldots);
-    \item \code{scheduler}: odpowiada za szeregowanie włókien;
-    \item \code{epoller}: rejestruje wystąpienie zdarzeń powiązanych z~obserwowanymi urządzeniami I/O;
-    \item \code{message\_queue}: udostępnia mechanizm służący do wymiany wiadomości pomiędzy włóknami.
+    \item \code{coroutine} jest podstawową klasą dla każdego włókna: dzięki niej włókno posiada swój własny kontekst wykonania -- dzięki temu można zapamiętać miejsce,
+      w~którym następuje przerwanie działania danego włókna, a~następnie wznowić jego działanie;
+    \item \code{fiber} zawiera udogodnienia dla użytkownika włókna (wymiana wiadomości, obsługa urządzeń systemowych, itp.);
+    \item kolejki wiadomości (moduł \code{message\_queues}) umożliwiają szybką i~nieblokującą komunikację pomiędzy włóknami;
+    \item planista (klasa \code{scheduler}) jest odpowiedzialny za szeregowanie włókien, przekazywanie sterowania oraz bezpieczny powrót z~kontekstu włókna i~przełączenie do innego włókna;
+    \item \code{epoller} odpowiada za sprawdzenie zasobów systemowych używanych przez włókna;
+    \item robotnik (klasa \code{worker}) zajmuje się wykonaniem jednego kroku framework\dywiz a, na który składają się:
+      \begin{itemize}
+        \item uruchomienie każdego włókna (do momentu, gdy włókno skończy działanie, albo zwróci sterowanie do planisty),
+        \item wykonanie nasłuchu zasobów systemowych,
+        \item sprawdzenie warunku stopu: jeśli jest spełniony, robotnik kończy pracę;
+      \end{itemize}
+    \item zarządca środowiska ramowego (klasa \code{master}) odpowiada za:
+      \begin{itemize}
+        \item uruchomienie wątków: każdy wątek to osobny robotnik; zakończenie działania robotnika jest równoznaczne zakończeniu działania odpowiadającego mu wątku,
+        \item obsługę żądania uruchomienia włókna,
+        \item komunikację z~robotnikami,
+        \item pośredniczenie w~komunikacji pomiędzy włóknami zarządzanymi przez różnych robotników,
+        \item sprawdzenia warunku stopu dla całego framework\dywiz a: jeśli warunek jest spełniony, rozsyła go do wszystkich robotników i~czeka na ich zamknięcie.
+      \end{itemize}
   \end{itemize}
-  Do warstwy włókna należy klasa \code{fiber}, która udostępnia użytkownikowi wszystkie mechanizmy oraz udogodnienia biblioteki \code{libmixed} w~postaci
-  zwartego interfejsu.
-\par
-\indent
-  Rysunek \arabic{libmixedoverview} przedstawia zależności pomiędzy klasami biblioteki. Z~punktu widzenia użytkownika, najważniejsze dwie klasy to:
-  \begin{enumerate}
-    \item \code{fiber}: baza każdego włókna, użytkownik definiuje (nadpisując funkcję \function{fiber\dcolon go}) jej działanie.
-    \item \code{master}: każdy obiekt tej klasy jest tożsamy z~całym podsystemem zarządzającym włóknami. W~ramach jednego procesu możliwe jest działanie wielu
-      obiektów tej klasy.
-  \end{enumerate}
 \par
 %
+\indent
+  Kolejne rozdziały podają bardziej szczegółowy opis każdego elementu \code{libmixed}.
+\par
 \newpage
 \subsection{Koprocedury -- klasa \code{coroutine}}
 \label{sec:coroutine}
@@ -478,7 +486,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   a~więc każde włókno jest koprocedurą.
   \myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
 	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu funkcji
-	\code{getcontext()}/\code{swapcontext()}, dostępnych w~każdym systemie zgodnym ze specyfikacją POSIX lub Single Unix Specification (SUS).
+	\code{getcontext()}/\code{swapcontext()}, dostępnych w~każdym systemie zgodnym ze specyfikacją POSIX.
 \par
 %
 \indent
