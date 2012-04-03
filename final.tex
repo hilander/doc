@@ -408,11 +408,16 @@
 \label{sec:solution}
 \subsection{Wstęp}
 \indent 
-  Biblioteka \code{libmixed} powstała w~ramach pracy magisterskiej. Spełnia wymagania wymienione w~rozdziale \ref{sec:target}, za wyjątkiem warunku \ref{enm:timesch}:
+  Biblioteka \code{libmixed} powstała w~ramach niniejszej pracy magisterskiej. Spełnia wymagania wymienione w~rozdziale \ref{sec:target}, za wyjątkiem warunku \ref{enm:timesch}:
   istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
 \par
 \indent
-  Biblioteka jest napisana w~języku C++. Wykorzystuje mechanizm \code{epoll} zaimplementowany jedynie w Linuksie: jest to mechanizm podobny do
+  Biblioteka jest napisana w~języku C++. Jej kod źródłowy jest zgodny ze standardem C++2003, zostały wykorzystane w~nim udogodnienia z~biblioteki standardowej (STL)
+  oraz ,,sprytne'' wskaźniki (dokładniej -- \code{shared\_ptr}), jak również mechanizm wiązania leniwego (\code{bind}) z~rozszerzenia TR1, które stały się częścią
+  biblioteki standardowej specyfikacji C++11.
+\par
+\indent
+  Wykorzystuje mechanizm \code{epoll} zaimplementowany jedynie w Linuksie: jest to mechanizm podobny do
   zawartego w~specyfikacji POSIX (\cite{POSIX}) mechanizmu \code{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu w~nieblokujący sposób.
   \code{Epoll} jest szybszy od \code{poll}: dla zbioru obserwowanych zasobów wytwarzany jest identyfikator systemowy 
   (\emph{deskryptor}, ang. \emph{descriptor}) -- liczba całkowita, a~następnie każde zapytanie o~ten zbiór sprowadza się do zapytania
@@ -436,7 +441,7 @@
 \indent
   Rysunek \arabic{libmixedoverview} zawiera opisane poniżej składniki biblioteki:
   \begin{itemize}
-    \item \code{coroutine} jest podstawową klasą dla każdego włókna: dzięki niej włókno posiada swój własny kontekst wykonania -- dzięki temu można zapamiętać miejsce,
+    \item \code{coroutine} jest podstawową klasą dla każdego włókna: dzięki niej włókno posiada swój własny kontekst wykonania -- a~więc można zapamiętać miejsce,
       w~którym następuje przerwanie działania danego włókna, a~następnie wznowić jego działanie;
     \item \code{fiber} zawiera udogodnienia dla użytkownika włókna (wymiana wiadomości, obsługa urządzeń systemowych, itp.);
     \item kolejki wiadomości (moduł \code{message\_queues}) umożliwiają szybką i~nieblokującą komunikację pomiędzy włóknami;
@@ -460,7 +465,7 @@
 \par
 %
 \indent
-  Kolejne rozdziały podają bardziej szczegółowy opis każdego elementu \code{libmixed}.
+  Kolejne rozdziały podają szczegółowy opis każdego elementu \code{libmixed}.
 \par
 \newpage
 \subsection{Koprocedury -- klasa \code{coroutine}}
@@ -482,16 +487,16 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
     \end{tabular}
     	\mytabcaption{Porównanie procedury i~koprocedury}
     \end{center}
-  klasa \code{coroutine} jest implementacją koprocedury. Jest ona klasą bazową dla klasy \code{fiber},
+  Klasa \code{coroutine} jest implementacją koprocedury. Jest ona klasą bazową dla klasy \code{fiber},
   a~więc każde włókno jest koprocedurą.
   \myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
 	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu funkcji
-	\code{getcontext()}/\code{swapcontext()}, dostępnych w~każdym systemie zgodnym ze specyfikacją POSIX.
+	\code{getcontext()}/\code{swapcontext()} (dostępnych w~każdym systemie zgodnym ze specyfikacją POSIX).
 \par
 %
 \indent
-  Klasa \code{coroutine} udostępnia użytkownikowi następujące funkcje:
-  \begin{itemize}
+  Klasa \code{coroutine} udostępnia użytkownikowi m. in. następujące funkcje:
+  \begin{enumerate}
     \item \function{init}: funkcja inicjalizująca koprocedurę. Każdy obiekt klasy \code{coroutine} musi być zainicjalizowany za pomocą tej funkcji,
       gdyż w~przeciwnym wypadku nie zostanie utworzony stos wywołań dla koprocedury, a~co za tym idzie -- działanie programu będzie przerwane.
     \item Funkcja \function{run} odpowiada za przełączenie bieżącego kontekstu wykonania na kontekst koprocedury. 
@@ -499,9 +504,12 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
       \emph{powinna} być wywołana z~funkcji \function{start}. Funkcja \function{start} ma służyć użytkownikowi do przygotowania przed uruchomieniem koprocedury,
       zaś funkcja~\function{go} jest jej \emph{ciałem}. Celem funkcji \function{start} jest także wykrycie zakończenia działania koprocedury.
       Dodatkowo, w~ciele tej funkcji można umieścić mechanizm detekcji oraz propagacji wyjątków.
-    \item Funkcja \function{yield} służy do przekazania częściowego wyniku działania koprocedury. Do użytkownika należy sposób, w~jaki wynik jest przekazywany,
+    \item Funkcja \function{yield} odpowiada za przekazanie sterowania z~bieżącej koprocedury do jednostki wykonalnej, która uprzednio przekazała sterowanie 
+      tej koprocedurze. W~obecnej implementacji klasy \code{coroutine}, \function{yield} przekazuje sterowanie za pomocą \function{swapcontext}: zachowuje kontekst
+      wykonania strony przekazującej sterowanie, jak również umożliwia ponowne wejście do tak ,,zamrożonej'' jednostki wykonalnej.
+      Do użytkownika należy sposób, w~jaki wynik jest przekazywany, gdyż \function{yield} jest odpowiedzialna za przekazanie sterowania.
       gdyż \function{yield} jedynie przełącza kontekst koprocedury na kontekst wywołujący koprocedurę.
-  \end{itemize}
+  \end{enumerate}
 \par
 %
 \subsection{Klasa bazowa włókna -- \code{fiber}}
@@ -509,25 +517,28 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
     \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacja włókna}{.7}
 %
 \indent
-  \code{fiber} jest klasą bazową dla włókien, które użytkownik zgłasza zarządcy (obiektowi klasy \code{master}) do uruchomienia.
+  \code{Fiber} jest klasą bazową dla włókien, które użytkownik zgłasza zarządcy (obiektowi klasy \code{master}) do uruchomienia.
   Posiada ona następujące udogodnienia:
   \begin{enumerate}
     \item Komunikacja: wymiana wiadomości z~innymi włóknami. Po wytworzeniu wiadomości, można ją przesłać do odbiorcy za pomocą nieblokującej funkcji \function{send\_message}.
     Do odbioru wiadomości służą funkcje \linebreak \function{receive\_message} (blokująca) oraz \function{receive\_message\_nonblock} (nieblokująca).
-    \item Wytworzenie włókna: funkcja \function{spawn} umożliwia uruchomienie włókna w~przestrzeni włókien bieżącego zarządcy (obiektu klasy \code{master}).
-    \item Obsługa wejścia-wyjścia: włókno udostępnia następujące udogodnienia:
+    \item Wytworzenie włókna: funkcja \function{spawn} umożliwia uruchomienie włókna przez zarządcę (obiekt klasy \code{master}). Funkcja ta może być wywołana jedynie
+      przez działające włókno.
+    \item Obsługa wejścia-wyjścia:
       \begin{enumerate}
         \item blokujące operacje odczytu (\function{do\_read}) oraz zapisu (\function{do\_write});
-        \item podstawową obsługę gniazd sieciowych: funkcja \function{do\_connect} odpowiada systemowej operacji \function{connect}, a~funkcje \function{do\_accept} 
+        \item podstawowa obsługa gniazd sieciowych: funkcja \function{do\_connect} odpowiada systemowej operacji \function{connect}, a~funkcje \function{do\_accept} 
           \linebreak i~\function{do\_close} odpowiadają operacjom \function{accept} oraz \function{close}. Wywołanie każdej funkcji blokuje wykonanie włókna do momentu wystąpienia  
           zdarzenia związanego z~podanym deskryptorem.
       \end{enumerate}
     \item Przekazanie sterowania z~włókna do zarządcy -- funkcja \function{yield}, dziedziczona z~klasy \code{coroutine}.
   \end{enumerate}
-  Należy mieć na uwadze, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika (obiektu klasy \code{worker}, właściciela włókna) nie jest wstrzymywana.
+  Należy mieć na uwadze, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika (obiektu klasy \code{worker}, 
+  który jest bezpośrednio odpowiedzialny za uruchomienie, jak również wstrzymanie działania powierzonych mu włókien) nie jest wstrzymywana.
 \par
 \indent
-  Każde włókno posiada bufor używany podczas zapisu/odczytu do i~z~I/O. W~bieżącej implementacji jest on kolekcją standardową klasy \code{vector<char>},
+  Każde włókno posiada bufor używany podczas zapisu/odczytu do i~z~zasobów systemowych. 
+  W~bieżącej implementacji jest on kolekcją standardową klasy \code{vector<char>},
   bezpośredni dostęp do bufora (dla włókna) zapewnia pole \code{rw\_buffer}, zaś funkcje \function{set\_last\_read} oraz \function{set\_last\_write} 
   informują o~ilości bajtów odczytanych/zapisanych podczas ostatnio wykonanej operacji odczytu/zapisu.
   Oprócz podanych wyżej funkcji, każde włókno posiada zestaw funkcji używanych przez zarządzające nim obiekty biblioteki:
@@ -537,14 +548,15 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
     \begin{itemize}
       \item \code{READY}: włókno gotowe do pracy;
       \item \code{FINISHED}: włókno zakończyło działanie;
-      \item \code{BLOCKED\_FOR\_READ}: włókno zablokowane podczas próby odczytu z~I/O;
-      \item \code{BLOCKED\_FOR\_WRITE}:  włókno zablokowane podczas próby zapisu \linebreak do I/O;
+      \item \code{BLOCKED\_FOR\_READ}: włókno zablokowane podczas próby odczytu z~zasobu systemowego;
+      \item \code{BLOCKED\_FOR\_WRITE}:  włókno zablokowane podczas próby zapisu do zasobu systemowego;
       \item \code{BLOCKED\_FOR\_ACCEPT}:  włókno zablokowane podczas operacji \code{accept};
       \item \code{BLOCKED\_FOR\_CONNECT}:  włókno zablokowane podczas operacji \code{connect};
       \item \code{BLOCKED\_FOR\_MESSAGE}:  włókno oczekuje na nadejście wiadomości.
     \end{itemize}
     \item Funkcja \function{set\_owner} służy do ustawienia pola \code{owner}, które jest wskaźnikiem na obiekt klasy \code{worker} -- robotnika 
-    zarządzającego włóknem. Pole to jest używane przez funkcje udostępnione dla użytkownika, a~odpowiedzialne za komunikację z~innymi włóknami oraz dostęp do I/O.
+    zarządzającego włóknem. Pole to jest używane przez funkcje udostępnione dla użytkownika, a~odpowiedzialne za komunikację z~innymi włóknami oraz dostęp 
+    do zasobów systemowych.
   \end{enumerate}
 \par
 \indent
@@ -562,20 +574,20 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
     \myownfigure{MessageQueue}{MessageQueue.png}{Klasa \code{message\_queue}}{.7}
 \indent
   Obiekt klasy \code{message\_queue} zawiera dwie nieblokujące listy komunikatów, które służą do wymiany wiadomości
-  pomiędzy dwoma wątkami. Dla łatwej identyfikacji wątków, wątek A~został nazwany \code{master}, zaś wątek B~-- \code{slave},
-  jednak są one traktowane jako dwa równorzędne byty. Lista \code{master\_queue} służy do komunikacji \code{slave}$\to$\code{master},
+  pomiędzy dwoma wątkami. Dla łatwej identyfikacji wątków, jeden z~nich został nazwany \code{master}, zaś drugi -- \code{slave},
+  jednak są one traktowane jako dwie równorzędne jednostki wykonalne. Lista \code{master\_queue} służy do komunikacji \code{slave}$\to$\code{master},
   a~lista \code{slave\_queue} do \code{master}$\to$\code{slave}.
   Tak więc \code{message\_queue} implementuje mechanizm \emph{half\dywiz duplex}, znany z~potoków,
   udostępnianych przez systemy uniksowe.
 \par
     \myownfigure{PrivateList}{PrivateList.png}{Klasa \code{private\_list} -- nieblokująca lista dwukierunkowa, używana jako jednokierunkowy kanał do przesyłania wiadomości}{.7}
 \indent
-  Obiekt klasy \code{private\_list} jest listą dwukierunkową. Dane wkładane do niej nie są buforowane,
-  jej rozmiar jest zależny jedynie od ilości dostępnej pamięci. Podczas wkładania lub wyciągania wiadomości z~listy nie są stosowane żadne mechanizmy
+  Obiekt klasy \code{private\_list} jest listą dwukierunkową. Wiadomości dodawane do niej nie są buforowane,
+  jej rozmiar jest zależny jedynie od ilości dostępnej pamięci. Podczas dołączania lub pobierania wiadomości z~listy nie są stosowane żadne mechanizmy
   synchronizacji międzywątkowej. Użytkownik tej listy ma do dyspozycji dwie funkcje:
   \begin{enumerate}
-    \item Funkcja \function{push} służy do wkładania nowego elementu do listy. Jej wywołanie zawsze jest zakończone sukcesem.
-    \item Funkcja \function{top} służy do wyjmowania elementu z~listy -- \emph{głowy} listy. Jeśli lista zawiera co najmniej jeden element, operacja się
+    \item Funkcja \function{push} służy do dołączania wiadomości na koniec listy. Jej wywołanie zawsze jest zakończone sukcesem.
+    \item Funkcja \function{top} służy do pobierania elementu \emph{głowy} listy (jej początku). Jeśli lista zawiera co najmniej jeden element, operacja się
     powiedzie (wynik wywołania -- \code{true}), w~przeciwnym wypadku wynikiem wywołania funkcji jest \code{false}.
   \end{enumerate}
   Żadna z~tych funkcji nie wykonuje jakiegokolwiek wywołania systemowego.
@@ -585,9 +597,11 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   użyty (\code{true}), czy jest gotowy do użycia (\code{false}).
   Lista posiada zawsze co najmniej jeden element, który jest jej \emph{głową} (\code{head}).
   Lista posiada również wiadomość o~ostatnim elemencie, \emph{wartowniku} (\code{guard}).
+  W~szczególnym wypadku, \code{guard} może wskazywać na głowę listy. Lista pusta jest zatem reprezentowana przez dokładnie jeden element klasy
+  \code{message}, którego pole \code{used} jest ustawione na \code{true}.
 \par
 \indent
-  Funkcja \code{push( in m )} wykonuje następujące operacje:
+  Funkcja \code{push( in m )} wykonuje następujące operacje na liście:
   \begin{enumerate}
     \item \code{m->prev} $\gets$ \code{guard};
     \item \code{guard->next} $\gets$ \code{m};
@@ -617,6 +631,10 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   \myownfigure{PrivateListPop2}{PrivateListPop2.png}{Operacja \function{pop} -- druga gałąź algorytmu}{.7}
 \indent
   Czy powyższa implementacja jest poprawna?
+\par
+\indent
+  Aby pokazać poprawność tej implementacji, rozważmy sytuacje, w~których występuje przeplot operacji listowych wykonywanych przez
+  wątki \code{master} oraz \code{slave}:
   \begin{enumerate}
     \item Gdy lista jest używana sekwencyjnie, każdy ciąg operacji \function{push} i~\function{pop} nie zaburza wzajemnego położenia głowy i~wartownika (stan \emph{stabilny} listy).
     \item Podczas operacji \function{push} może wystąpić przeplot z~wątkiem wykonującym na tej samej liście operację \function{pop}. 
@@ -626,11 +644,11 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
       \centering
       \begin{tabular}{|c|c|c|c|} \hline
         Wątek               & Operacja                         & \code{head} & \code{guard} \\ \hline
-        A (\function{push}) & \code{guard->next} $\gets$ \code{b} & \code{a} & \code{a} \\ \hline
-        B (\function{pop})  & \code{head}$\gets$\code{b}          & \code{b} & \code{a} \\
+        \code{master} (\function{push}) & \code{guard->next} $\gets$ \code{b} & \code{a} & \code{a} \\ \hline
+        \code{slave} (\function{pop})  & \code{head}$\gets$\code{b}          & \code{b} & \code{a} \\
                             & \code{b->prev->next}$\gets$\code{0} & \code{b} & \code{a} \\
                             & \code{b->prev}$\gets$\code{0}       & \code{b} & \code{a} \\ \hline
-        A                   & \code{guard}$\gets$\code{b}         & \code{b} & \code{b} \\ \hline
+        \code{master}      & \code{guard}$\gets$\code{b}         & \code{b} & \code{b} \\ \hline
       \end{tabular}
       	\mytabcaption{Przeplot zaburzający stan stabilny listy}
       \label{tab:stableestate}
@@ -649,7 +667,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
 \par
 \indent
   Czy jeszcze jedna implementacja listy dwukierunkowej jest potrzebna, skoro biblioteka standardowa
-  oferuje gotową implementację list dwukierunkowych? Odpowiedź na to pytanie jest oczywista: tak, ponieważ listy
+  oferuje gotową implementację list dwukierunkowych? Tak, ponieważ listy
   udostępnione przez bibliotekę standardową mogą być używane przez co najwyżej jeden wątek w~danej chwili.
 \par
 %
@@ -666,19 +684,27 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   \end{itemize}
 \par
 %
+\indent
+  W~bieżącej implementacji \code{libmixed}, planista szereguje wykonanie włókien przy użyciu algorytmu \emph{round--robin}.
+\par
+%
 \newpage
 \subsection{Klasa \code{epoller}}
-\myownfigure{Epoller}{Epoller.png}{\code{epoller} -- nakładka na mechanizm systemowy \code{epoll}}{.7}
+\myownfigure{Epoller}{Epoller.png}{\code{Epoller} -- nakładka na mechanizm systemowy \code{epoll}}{.7}
 \indent
   Rysunek \arabic{Epoller} przedstawia klasę opakowującą podstawowe operacje mechanizmu \code{epoll}.
-  Mechanizm ten umożliwia detekcję:
+  Jak wspomniano wyżej, mechanizm ten umożliwia detekcję:
   \begin{itemize}
-    \item zdarzeń dla urządzeń I/O;
+    \item zdarzeń dla zasobów systemowych (gotowość do wykonania operacji odczytu/zapisu, zakończenie lub wystąpienie błędu podczas operacji);
     \item nadejścia sygnału lub zdarzenia systemowego;
     \item upłynięcia zadanego czasu (ang. \emph{timer}).
   \end{itemize}
-  W~obecnej implementacji biblioteki, obiekt klasy \code{epoller} jest wykorzystywany do wykrywania zdarzeń dla urządzeń wejścia-wyjścia.
-  Do tego celu wykorzystywane są wymienione funkcje:
+  W~obecnej implementacji biblioteki, obiekt klasy \code{epoller} jest wykorzystywany do wykrywania zdarzeń dla deskryptora danego zasobu.
+  Użytkownik musi w~tym celu wykonać szereg wywołań funkcji systemowych, m. in. zgłosić systemowi operacyjnemu (za pomocą funkcji \function{fcntl}),
+  że dostęp do zasobu ma być nieblokujący.
+\par
+\indent
+  Obiekt klasy \code{epoller} udostępnia następujące funkcje:
   \begin{itemize}
     \item \code{add(int f)}: dodaje deskryptor urządzenia do obserwowanych;
     \item \code{del(int f)}: usuwa deskryptor urządzenia z obserwowanych;
@@ -689,17 +715,17 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
 %
 \newpage
 \subsection{Klasa \code{worker}}
-\myownfigure{Worker}{Worker.png}{\code{worker} -- robotnik działający w~obrębie jednego wątku}{.7}
+\myownfigure{Worker}{Worker.png}{\code{Worker} -- robotnik działający w~obrębie jednego wątku}{.7}
 \indent
-  Robotnik udostępnia każdemu powierzonemu włóknu:
+  Każde włókno zarządzane przez robotnika posiada zagwarantowane:
   \begin{itemize}
-    \item możliwość wykonania włókna -- tę funkcję spełnia obiekt klasy \code{scheduler}, będący własnością robotnika;
-    \item dostęp do zasobów I/O;
-    \item komunikację pomiędzy zarządzanym włóknem, a~dowolnym innym, który działa w~aplikacji.
+    \item wykonanie -- robotnik zleca to zadanie swojemu planiście (pole \code{sched});
+    \item dostęp do zasobów systemowych -- odpowiedzialny za tę funkcję jest posiadany przez robotnika obiekt klasy \code{epoller} (pole \code{io\_facility});
+    \item komunikację z~innymi włóknami -- realizowaną przez obiekt klasy \code{message\_queues} (pole \code{pipe}).
   \end{itemize}
 \par
 \indent
-Dostęp do I/O (w~obecnej implementacji: zasobów, obsługiwanych przez mechanizm \code{epoll}) jest realizowany w~sposób przezroczysty dla włókna. 
+  Dostęp do zasobów systemowych  jest realizowany w~sposób przezroczysty dla włókna. 
   Funkcje \function{block\_on\_io} oraz \function{do\_connect} blokują wykonanie wywołującego włókna, do momentu, w~którym 
   żądane zasoby systemowe będą dostępne. Włókno jest blokowane, a~jego stan odpowiada wykonywanej operacji:
   \begin{itemize}
@@ -733,10 +759,10 @@ Dostęp do I/O (w~obecnej implementacji: zasobów, obsługiwanych przez mechaniz
     \myownfigure{Master}{Master.png}{Klasa \code{master} -- zarządca robotników}{.7}
 %
 \indent
-  Obiekt klasy \code{master} wytwarza podległych mu \emph{robotników}:  
+  Obiekt klasy \code{master} wytwarza podległych mu robotników:  
   \begin{itemize}
     \item funkcja \code{init()} wytwarza dokładnie tylu robotników, ile rdzeni dostępnych dla aplikacji;
-    \item funkcja \code{spawn()} służy do zgłoszenia włókna (włókien), które zostanie uruchomione po wykonaniu funkcji \code{run()};
+    \item funkcja \code{spawn()} służy do zgłoszenia włókna (włókien), które zostanie uruchomione (przekazane jednemu z~robotników) po wykonaniu funkcji \code{run()};
     \item funkcja \code{run()} jest wejściem do pętli głównej zarządcy. Wyjście z~pętli głównej następuje po ustaleniu warunku stopu;
     \item funkcja \code{its\_time\_to\_end()} sprawdza, czy został osiągnięty warunek stopu:
       \begin{itemize}
@@ -746,21 +772,11 @@ Dostęp do I/O (w~obecnej implementacji: zasobów, obsługiwanych przez mechaniz
   \end{itemize}
   Po wytworzeniu robotników, \code{master} pośredniczy w~komunikacji pomiędzy nimi, jak również sprawdza warunek stopu.
   Wytworzenie zarządcy jest realizowane za pomocą funkcji \code{create()}: 
-  jest ona odpowiedzialna za inicjalizację zarządców włókien, zwanych \emph{robotnikami}.
-  Każdy robotnik odpowiada jednemu z~dostępnych rdzeni, zaś
-  \code{master} komunikuje się z~nimi za pomocą kolejek wiadomości.
-  Funkcja \code{run\procbr} jest implementacją pętli głównej obiektu \code{master}. Dopóki nie zostanie spełniony warunek stopu,
-  wykonywane są dwie czynności: odczyt wiadomości przesłanych przez robotników oraz wykonanie jednej iteracji pętli głównej
+  jest ona odpowiedzialna za inicjalizację robotników.
+  \code{Master} komunikuje się z~nimi za pomocą kolejek wiadomości.
+  Funkcja \code{run\procbr} jest implementacją pętli głównej zarządcy. Dopóki nie zostanie spełniony warunek stopu,
+  wykonywane są dwie czynności: odczyt i~reakcja na wiadomości przesłanych przez robotników oraz wykonanie jednej iteracji pętli głównej
   robotnika pracującego w~bieżącym wątku.
-\par
-\indent
-  Obiekt klasy \code{master} posiada trzy pola:
-  \begin{itemize}
-    \item[\code{own\_slave}:] własny robotnik, który jest wykonywany w~tym samym wątku, co \code{master}, 
-      w~każdym kroku wykonywana jest jedna iteracja pętli głównej tego robotnika.
-    \item[\code{slaves}:] kolekcja wskaźników do robotników, które są wykonywane w~innych wątkach.
-    \item[\code{workload}:] Liczba włókien oczekujących na przekazanie i~uruchomienie w~obiektach klasy \code{worker}.
-  \end{itemize}
 \par
 \newpage
 \section{Analiza rozwiązania}
@@ -788,7 +804,7 @@ Dostęp do I/O (w~obecnej implementacji: zasobów, obsługiwanych przez mechaniz
     \item Uruchomienie włókna.
     \item Zakończenie działania włókna (po zakończeniu jego działania).
     \item Przesłanie wiadomości do innego włókna.
-    \item Użycie I/O: gniazda sieciowe.
+    \item Użycie zasobów systemowych
     \item Obsługa wyjątków.
   \end{enumerate}
   \newcounter{mixedpthread} \setcounter{mixedpthread}{\value{tabmain}}
@@ -813,21 +829,13 @@ Dostęp do I/O (w~obecnej implementacji: zasobów, obsługiwanych przez mechaniz
   \end{center}
 \par
 \indent
-  Operacje wejścia--wyjścia można stworzyć na wiele sposobów, ale jeżeli \code{libmixed} udostępnia blokujące (z~punktu widzenia włókna) funkcje obsługujące I/O,
-  to w~przypadku wątków rozważane będą także blokujące wywołania funkcji I/O.
-  Aby wytworzyć nasłuchujące gniazdo sieciowe, należy wykonać odpowiedni ciąg wywołań systemowych, np. \function{socket}, \function{bind}, \function{listen}
-  (dokładniejszy opis można znaleźć na stronie podręcznika dla \code{socket}, rozdział 7). Następnie należy wykonać wywołanie \function{accept} 
-  (dla włókna należy użyć funkcji \function{do\_accept}), po którym
-  należy uruchomić wątek/włókno obsługujące otwarte połączenie. 
-%\par
-%\indent
-Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący sposób:
+  Scenariusz nr~6 składa się z~trzech kroków (zakładamy, że posiadamy dostęp do zasobu reprezentowanego przez \code{my\_socket}):
   \begin{itemize}
-    \item odczyt 10 bajtów z~gniazda o~deskryptorze \code{my\_socket};
-    \item zapis 10 bajtów do gniazda;
-    \item zamknięcie gniazda.
+    \item odczyt 10 bajtów z~zasobu o~deskryptorze \code{my\_socket};
+    \item zapis 10 bajtów do zasobu;
+    \item zamknięcie zasobu.
   \end{itemize}
-  Implementacja obsługi połączenia:
+  Implementacja obsługi zasobu:
   \begin{enumerate}
     \item Przy użyciu \code{Pthreads}:
 \begin{verbatim}
@@ -847,6 +855,10 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \indent
   Jak łatwo zauważyć, zarówno \code{Pthreads}, jak też \code{libmixed} nie wymagają od użytkownika wykonania skomplikowanych
   wywołań w~celu osiągnięcia pożądanych wyników. Tak więc \code{libmixed} jest \emph{równie} wygodna w~użyciu, jak \code{Pthreads}.
+\par
+\indent
+  Uwaga: \code{Pthreads} oferuje większość mechanizmów synchronizacji międzywątkowej opisanej w~rozdziale \ref{sec:system}, podczas gdy \code{libmixed}
+  oferuje użytkownikowi jedynie implementację wymiany komunikatów.
 \par
 \subsection{Testy jednostkowe}
 \indent
@@ -880,13 +892,13 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
 \indent
 	Porównanie wydajności \code{libmixed} z~\code{Pthreads} można sprawdzić za pomocą następujących testów:
 	\begin{enumerate}
-		\item Czas wykonania \emph{pustych} wątków (ang. \emph{null fork}). Test ten da odpowiedź na pytanie o~wydajność biblioteki w~zakresie
-      wytwarzania i~uruchamiania włókien. Liczba \emph{obiektów} (wątków/włókien) jest podstawowym parametrem tego testu: wraz ze wzrostem liczby obiektów do
+		\item Czas wykonania \emph{pustych} jednostek wykonalnych (ang. \emph{null fork}) -- NF. Test ten da odpowiedź na pytanie o~wydajność biblioteki w~zakresie
+      wytwarzania i~uruchamiania włókien. Liczba jednostek jest podstawowym parametrem tego testu: wraz ze wzrostem liczby obiektów do
       uruchomienia, będzie można zmierzyć również wzrost czasu ich obsługi.
-    \item Czas wykonania przeplatających się wątków (\emph{yields}). Zarówno włókna, jak i~wątki mogą oddać sterowanie do zarządcy za pomocą wywołania funkcji 
-      \function{yield}. Test ten można sparametryzować przez liczbę obiektów do wykonania oraz liczbę operacji \function{yield} wykonywanych
-      w~pojedynczym obiekcie.
-		\item Czas zapisu danych na standardowe wyjście. Ten test można sparametryzować przez liczbę paczek danych do wysłania (każda w~osobnym obiekcie)
+    \item Czas wykonania przeplatających się jednostek wykonalnych (\emph{yields}) -- YT. Zarówno włókna, jak i~wątki mogą oddać sterowanie do zarządcy za pomocą wywołania funkcji 
+      \function{yield}. Test ten można sparametryzować przez liczbę jednostek do wykonania oraz liczbę operacji \function{yield} wykonywanych
+      w~pojedynczej jednostce wykonalnej.
+		\item Czas zapisu danych na standardowe wyjście -- WT. Ten test można sparametryzować przez liczbę paczek danych do wysłania (każda w~osobnym obiekcie)
       oraz wielkość każdej pojedynczej paczki.
 	\end{enumerate}
 \par
@@ -908,7 +920,7 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
   \end{itemize}
 \par
 \indent
-  Dla każdego parametru (pary parametrów) test został wykonany dziesięciokrotnie, zaś za czas wykonania testu przyjąłem uśredniony 
+  Dla każdego parametru (pary parametrów) test został wykonany dziesięciokrotnie. Jeśli nie zaznaczyłem inaczej, za czas wykonania testu przyjąłem uśredniony 
   czas z~wszystkich 10 prób.
 \par
 \indent
@@ -922,9 +934,9 @@ Dla prostoty przyjmijmy, że połączenie musi być obsłużone w~następujący 
   \end{itemize}
 \par
 \newpage
-\subsubsection{Wyniki dla testu \code{nullfork}}
+\subsubsection{Wyniki testu NF}
 \indent
-  \code{Nullfork} jest testem, który pokazuje sprawność systemu w~zakresie wytworzenia oraz zakończenia działania wykonywalnego bytu.
+  NF pokazuje sprawność systemu w~zakresie wytworzenia oraz zakończenia działania jednostki wykonalnej.
   Wykonanie tego testu da odpowiedź na pytania odnośnie systemu operacyjnego, jak też sprawność biblioteki \code{libmixed}:
   \begin{itemize}
     \item Czy ze wzrostem liczby bytów czas ich wykonania rośnie liniowo, czy w~inny sposób?
