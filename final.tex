@@ -825,7 +825,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
     7  & \parbox[t]{6cm}{\code{f\dcolon start()\{\\try\{ go\procbr; \}\\catch( exception e ) \{ {\ldots}  \}\\\}}} & \parbox[t]{6cm}{\code{void go\procbr \{ {\ldots} \}\\void f\procbr\{\\try\{ go\procbr; \}\\catch( exception e ) \{ {\ldots}  \}\\\}}} \\ \hline
   \end{tabular}
 }
-  	\mytabcaption{Kod źródłowy potrzebny do realizacji scenariuszy 1~--~5 i~7}
+  	\mytabcaption{Kod źródłowy potrzebny do realizacji scenariuszy 1~--~5 oraz~7}
   \end{center}
 \par
 \indent
@@ -937,22 +937,18 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
 \subsubsection{Wyniki testu NF}
 \indent
   NF pokazuje sprawność systemu w~zakresie wytworzenia oraz zakończenia działania jednostki wykonalnej.
-  Wykonanie tego testu da odpowiedź na pytania odnośnie systemu operacyjnego, jak też sprawność biblioteki \code{libmixed}:
+  Wykonanie tego testu da odpowiedź na pytania odnośnie systemu operacyjnego, jak też \code{libmixed} w~zakresie
+  wytworzenia nowych jednostek wykonalnych:
   \begin{itemize}
-    \item Czy ze wzrostem liczby bytów czas ich wykonania rośnie liniowo, czy w~inny sposób?
+    \item Czy ze wzrostem liczby jednostek czas ich wykonania rośnie liniowo, czy w~inny sposób?
     \item Czy wytworzenie włókna daje zysk w~porównaniu do do wytworzenia wątku?
   \end{itemize}
 \par
 \indent
-\myownfigure{nullfork}{nullfork.pdf}{Wykres porównawczy dla testu \code{nullfork} w~zależności od liczby pustych włókien lub wątków}{1.16} 
+\myownfigure{nullfork}{nullfork.pdf}{Wykres porównawczy dla testu NF w~zależności od liczby pustych włókien lub wątków}{1.16} 
 \par
-\begin{comment}
 \indent
-\myownfigure{nullforkLog}{nullforkLog.png}{Wykres porównawczy dla testu \code{nullfork} -- czas wykonania w~skali logarytmicznej}{.65} 
-\par
-\end{comment}
-\indent
-  Wynik tego testu jest jednoznaczny: 
+Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na postawione wyżej pytania: 
   \begin{itemize}
     \item zarówno dla wątków i~włókien, czas ich wytworzenia oraz uruchomienia rośnie liniowo;
     \item czas obsługi wątków jest kilkakrotnie dłuższy od czasu obsługi włókien.
@@ -960,75 +956,74 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
 \par
 %
 \newpage
-\subsubsection{Wyniki dla testu \code{yield}}
+\subsubsection{Wyniki testu YT}
 \indent
-  Test \code{yield} posiada dwa parametry: \code{s}~--~liczbę bytów do uruchomienia oraz \code{y}~--~liczbę wykonanych operacji 
-  \function{yield}.
-  W~celu uzyskania wyników będących podstawą do analizy biblioteki, wybrałem trzy serie testów dla następujących wartości
-  \code{s}~i~\code{y}:
-  \begin{itemize}
-    \item \code{s}=1, \code{y}~$\in \mathbb{A}$,
-    \item \code{s}~$\in \mathbb{A}$, \code{y}=10,
-    \item \code{s}~$\in \mathbb{A}$, \code{y}=100,
-  \end{itemize}
-  gdzie $\mathbb{A}$=\{1, 101, 201, \ldots , 9901\}.
+  YT posiada dwa parametry: \code{s}~--~liczbę jednostek wykonalnych do uruchomienia oraz \code{y}~--~liczbę wykonanych operacji 
+  \function{yield} w~każdej z~jednostek.
 \par
 \indent
-\myownfigure{yield}{yield1n.pdf}{Wykres porównawczy testu \code{yield} dla \code{s}=1 i~\code{y}~$\in \mathbb{A}$}{1.16} 
+  \newcounter{yf1} \setcounter{yf1}{\value{figmain}}
+  \newcounter{yf2} \setcounter{yf2}{\value{yf1}} \addtocounter{yf2}{1}
+  \newcounter{yf3} \setcounter{yf3}{\value{yf2}} \addtocounter{yf3}{1}
+  W~celu uzyskania wyników pozwalających na rzetelne porównanie \code{libmixed} i~\code{Pthreads}, wybrałem trzy serie testów dla następujących wartości
+  \code{s}~i~\code{y} oraz $\mathbb{A}$=\{1, 101, 201, \ldots , 9901\}:
+  \begin{enumerate}
+    \item \code{s}=1, \code{y}~$\in \mathbb{A}$ (rys. \arabic{yf1}).
+    \item \code{s}~$\in \mathbb{A}$, \code{y}=10 (rys. \arabic{yf2}).
+    \item \code{s}~$\in \mathbb{A}$, \code{y}=100 (rys. \arabic{yf3}).
+  \end{enumerate}
+  
+\par
+\indent
+\myownfigure{yield}{yield1n.pdf}{YT: \code{s}=1 i~\code{y}~$\in \mathbb{A}$}{1.16} 
   Pierwsza seria testów daje następujące informacje:
   \begin{itemize}
     \item operacja \function{yield} dla wątków jest zaimplementowana kilkakrotnie wydajniej niż funkcja \function{swapcontext}, wywoływana 
       przez implementację \function{yield} dla włókien;
     \item czas wykonania \function{yield} da wątków jest ograniczony od dołu jak i~od góry, w~odróżnieniu od ograniczenia czasu wykonania
-      \function{swapcontext}.
+      \function{swapcontext} (rysunki nr~\arabic{yf2} oraz \arabic{yf3} potwierdają tę tezę).
   \end{itemize}
 \par
-\begin{comment}
-\indent
-\myownfigure{yieldLog}{yield1nLog.png}{Wykres porównawczy testu \code{yield} -- czas wykonania w~skali logarytmicznej}{1.16} 
-\par
-\end{comment}
 %
 \indent
-\myownfigure{yieldn10}{yieldn10.pdf}{Wykres porównawczy dla testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=10}{1.16} 
-  Druga seria testów pokazuje taki scenariusz użycia włókien, który pozwala na wykonanie zadań w~wielu oddzielnych włóknach lub wątkach,
+\myownfigure{yieldn10}{yieldn10.pdf}{YT: \code{s}~$\in \mathbb{A}$ i~\code{y}=10}{1.16} 
+  Druga seria testów (rys. \arabic{yf2}) pokazuje taki scenariusz użycia włókien, który pozwala na wykonanie zadań w~wielu oddzielnych włóknach lub wątkach,
   przy rzadkim wywoływaniu operacji \function{yield}. Okazuje się, że w~takim scenariuszu wydajność biblioteki \code{libmixed}
   jest wyższa od wydajności Pthreads.
 \par
-\begin{comment}
-\indent
-\myownfigure{yieldn10Log}{yieldn10Log.png}{Wykres porównawczy testu \code{yield} -- czas wykonania w~skali logarytmicznej}{1.16} 
-\par
-\end{comment}
 %
 \indent
-\myownfigure{yieldn100}{yieldn100.pdf}{Wykres porównawczy testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=100}{1.16} 
+\myownfigure{yieldn100}{yieldn100.pdf}{YT: \code{s}~$\in \mathbb{A}$ i~\code{y}=100}{1.16} 
+  Ostatnia seria testów (rys. \arabic{yf3}) pokazuje, że w~ogólnym przypadku, tj. dla dużej liczby wywołań \function{yield} oraz dużej liczby wątków lub włókien,
+  mechanizmy zaimplementowane w~\code{Pthreads} pozwalają kilkakrotnie szybciej wykonać zadane obliczenia, niż ma to miejsce w~wypadku \code{libmixed}.
 \par
-\indent
-\myownfigure{yieldn100Log}{yieldn100Log.pdf}{Wykres porównawczy testu \code{yield} dla \code{s}~$\in \mathbb{A}$ i~\code{y}=100 -- czas wykonania w~skali logarytmicznej}{1.16} 
-  Ostatnia seria pokazuje, że w~ogólnym przypadku, tj. dla dużej liczby wywołań \function{yield} oraz dużej liczby wątków lub włókien,
-  mechanizmy zaimplementowane w~Pthreads pozwalają kilkakrotnie szybciej wykonać zadane obliczenia, niż ma to miejsce w~wypadku \code{libmixed}.
-\par
-%
 \newpage
-\subsubsection{Wyniki dla testu zapisu do standardowego wyjścia}
+\subsubsection{Wyniki testu WT}
 \indent
-  Test zapisu posiada dwa parametry: \code{n} -- liczba powtórzonych operacji zapisu oraz
+  WT posiada dwa parametry: \code{n} -- liczba powtórzonych operacji zapisu oraz
   \code{s} -- długość napisów złożonych ze znaku \code{'.'}.
 \par
 \indent
-  Poniżej przedstawiam wyniki testów dla następujących wartości \code{n} oraz \code{s}:
-  \begin{itemize}
-    \item \code{n} $\in \mathbb{B}$, \code{s}=1000;
-    \item \code{n}=1, \code{s}$\in \mathbb{C}$;
-    \item \code{n}=100, \code{s}$\in \mathbb{C}$;
-  \end{itemize}
-  gdzie $\mathbb{B} = \{1,11,21,\ldots ,991\}$, 
-  $\mathbb{C} = \{1,1001,2001,3001,\ldots ,99001\}$.
-  Czas wykonania testu na poniższych wykresach jest podany w~mikrosekundach.
+  Poniżej przedstawiam wyniki testów dla następujących wartości \code{n}, \code{s} oraz zbiorów $\mathbb{B} = \{1,11,21,\ldots ,991\}$ i~$\mathbb{C} = \{1,1001,2001,3001,\ldots ,99001\}$:
+  \newcounter{wf11} \setcounter{wf11}{\value{figmain}}
+  \newcounter{wf12} \setcounter{wf12}{\value{wf11}} \addtocounter{wf12}{1}
+  \newcounter{wf13} \setcounter{wf13}{\value{wf12}} \addtocounter{wf13}{1}
+%
+  \newcounter{wf21} \setcounter{wf21}{\value{wf13}} \addtocounter{wf21}{1}
+  \newcounter{wf22} \setcounter{wf22}{\value{wf21}} \addtocounter{wf22}{1}
+  \newcounter{wf23} \setcounter{wf23}{\value{wf22}} \addtocounter{wf23}{1}
+%
+  \newcounter{wf31} \setcounter{wf31}{\value{wf23}} \addtocounter{wf31}{1}
+  \newcounter{wf32} \setcounter{wf32}{\value{wf31}} \addtocounter{wf32}{1}
+  \newcounter{wf33} \setcounter{wf33}{\value{wf32}} \addtocounter{wf33}{1}
+  \begin{enumerate}
+    \item \code{n} $\in \mathbb{B}$, \code{s}=1000 (rys. \arabic{wf11}, \arabic{wf12}, \arabic{wf13}).
+    \item \code{n}=1, \code{s}$\in \mathbb{C}$ (rys. \arabic{wf21}, \arabic{wf22}, \arabic{wf23}).
+    \item \code{n}=100, \code{s}$\in \mathbb{C}$ (rys. \arabic{wf31}, \arabic{wf32}, \arabic{wf33}).
+  \end{enumerate}
 \par
 \indent
-  Pierwsza seria testów dała odpowiedź na pytanie o~wydajność operacji \function{do\_write} w~porównaniu z~blokującą operacją \function{write}.
+  Pierwsza seria testów (rys. \arabic{wf11}, \arabic{wf12}, \arabic{wf13}) dała odpowiedź na pytanie o~wydajność operacji \function{do\_write} w~porównaniu z~blokującą operacją \function{write}.
 \myownfigure{writen1000min}{writen1000min.pdf}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie minimalnych czasów wykonania}{1.16} 
 \myownfigure{writen1000max}{writen1000max.pdf}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie maksymalnych czasów wykonania}{1.16} 
 \myownfigure{writen1000avg}{writen1000avg.pdf}{Wykres porównawczy dla \code{n}$\in \mathbb{B}$ i~\code{s}=1000 -- porównanie uśrednionych czasów wykonania}{1.16} 
@@ -1036,11 +1031,12 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
   \code{libmixed} równie wydajny, co odpowiadający mu ciąg blokujących operacji zapisu przy użyciu Pthreads.
 \par
 \indent 
-  Kolejna seria testów miała na celu sprawdzenie zapisu dla zbiorów danych o~różnej wielkości.
+  Kolejna seria testów (rys. \arabic{wf21}, \arabic{wf22}, \arabic{wf23}) miała na celu sprawdzenie zapisu dla zbiorów danych o~różnej wielkości.
 \myownfigure{write1nmin}{write1nmin.pdf}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie minimalnych czasów wykonania}{1.16} 
 \myownfigure{write1nmax}{write1nmax.pdf}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie maksymalnych czasów wykonania}{1.16} 
 \myownfigure{write1navg}{write1navg.pdf}{Wykres porównawczy dla \code{n}=1 i~\code{s}$ \in \mathbb{C}$ -- porównanie uśrednionych czasów wykonania}{1.16} 
-  Okazuje się, że implementacja zapisu do I/O w~\code{libmixed} jest równie efektywna jak blokujący zapis w~Pthreads. Co więcej, następna seria testów pokazuje, że
+  Okazuje się, że implementacja zapisu do zasobów systemowych w~\code{libmixed} jest równie efektywna jak blokujący zapis w~Pthreads. Co więcej, następna seria testów 
+  (rys. \arabic{wf31}, \arabic{wf32}, \arabic{wf33}) pokazuje, że
   w~przypadku większej ilości operacji zapisu potwierdza to spostrzeżenie.
 \par
 \indent
@@ -1059,10 +1055,8 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
       \begin{itemize}
         \item Wytworzenie włókna, a~więc wykonanie operacji \function{getcontext}, tj. wytworzenie niewielkiej (w~testowanym systemie jest to dokładnie 348 bajtów) struktury, 
           jest operacją szybszą niż wytworzenie nowego PCB za pomocą \function{pthread\_create}.
-        \item Przełączanie kontekstu pomiędzy wątkami zaimplementowane \linebreak w~jądrze systemu Linux jest kilkakrotnie szybsze od przełączania pomiędzy kontekstami użytkownika,
-          zaimplementowanymi w~operacjach \function{swapcontext}.
-        \item Operacja \function{pthread\_yield} działa w~czasie kilkakrotnie krótszym niż \linebreak peracja \function{swapcontext}.
-        \item Zaimplementowana w~\code{libmixed} obsługa I/O nie ustępuje efektywnością blokującemu dostępowi do tych urządzeń z~poziomu wątków.
+        \item Operacja \function{pthread\_yield} działa w~czasie kilkakrotnie krótszym niż operacja \function{swapcontext}.
+        \item Zaimplementowana w~\code{libmixed} obsługa zasobów systemowych nie ustępuje efektywnością blokującemu dostępowi do tych urządzeń z~poziomu wątków.
       \end{itemize}
   \end{enumerate}
 \par
