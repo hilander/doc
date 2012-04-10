@@ -93,10 +93,18 @@
 \par
 %
 \indent
-	Obydwa rodzaje wątków posiadają zarówno swoje zalety, jak i~wady. Istnieje rozwiązanie pośrednie: wątki mieszane, zwane również
-	\emph{hybrydowymi}. Użytkownik jest odpowiedzialny za zarządzanie wątkami miesznymi, zaś system operacyjny może udostępniać mu pewne mechanizmy
-  dedykowane dla zarządcy wątków hybrydowych (np. opisany w~rozdziale \ref{sec:system} mechanizm wywłaszczania lub obsługa
-  urządzeń wejścia-wyjścia).
+	Obydwa rodzaje wątków posiadają zarówno zalety jak i~wady. Rozwiązaniem pośrednim są wątki zarządzane przez użytkownika:
+  system operacyjny nie jest świadomy ich istnienia, jedynie reaguje na żądania zarządcy tych wątków (który, jak wspomniano wcześniej,
+  działa po stronie użytkownika). Wątki te zwane są \emph{mieszanymi} lub \emph{hybrydowymi}. 
+  System operacyjny może udostępniać podsystemowi dostarczanemu przez użytkownika pewne mechanizmy,
+  które wspomagają wykonanie wątków hybrydowych, jednak nie zajmuje się ich nadzorowaniem w~takim stopniu, jak ma to miejsce w~wypadku
+  wątków przestrzeni jądra. To, co odróżnia wątki hybrydowe od wątków przestrzeni użytkownika, to wsparcie ze strony systemu operacyjnego.
+  Są to m. in.:
+  \begin{itemize}
+    \item wykorzystanie więcej niż jednego rdzenia w~maszynach wielordzeniowych przez system zarządzający wątkami hybrydowymi;
+    \item wywłaszczenie działającego wątku mieszanego;
+    \item ułatwienie systemowi zarządzania wątkami mieszanymi obsługi zasobów systemowych w~taki sposób, aby nie blokował on jego działania.
+  \end{itemize}
 \par
 %
 \indent
@@ -124,7 +132,7 @@
 			\item tworzenie i~destrukcja;
 			\item przydział kontekstu wykonania (stosu);
 			\item przydział włókna do procesora;
-			\item uruchomienie i~wstrzymanie(tzn. w~momencie wywołania operacji \function{yield});
+			\item uruchomienie i~wstrzymanie (tzn. w~momencie wywołania operacji \function{yield});
 			\item prawidłowa reakcja na wystąpienie wyjątku w~trakcie działania.
 		\end{itemize}
 		\item Komunikację: wysyłanie i~obsługa komunikatów (po stronie zarządcy i~włókna).
@@ -212,7 +220,7 @@
   (ang. \emph{process}). Stan każdego procesu jest reprezentowany w~systemie przez \emph{blok kontrolny procesu} (ang. \emph{Process Control Block}, PCB).
   Zawiera on wszystkie informacje o~stanie odpowiadającego mu procesu, m. in.:
   \begin{itemize}
-    \item unikalny identyfikator procesu;
+    \item unikatowy identyfikator procesu;
     \item kontekst wykonania procesu, tj. stan rejestrów procesora, licznik rozkazów, wskaźnik stosu;
     \item informacje o~pamięci przydzielonej dla procesu (jego przestrzeni adresowej);
     \item statystyki procesu: ilość zużytego czasu procesora, ilość wykonanych operacji wywłaszczenia, \ldots
@@ -320,7 +328,7 @@
   Implementacja włókien w~tych systemach była oparta na \emph{aktywacjach planisty} (ang. \emph{scheduler activations}) opisanych
   w~\cite{hennessy}, jednak
   w~związku ze znacznym spadkiem wydajności tych systemów, zrezygnowano z~udostępniania w~nich włókien.
-  Co ciekawe, pomysł na udostępnienie włókien dla użytkownika został zrealizowany w~systemie Windows 7 (\emph{User Mode Scheduling}, UMS). Był on dostępny
+  Co ciekawe, pomysł na udostępnienie włókien użytkownikowi został zrealizowany w~systemie Windows 7 (\emph{User Mode Scheduling}, UMS). Był on dostępny
   jedynie w~32-bitowym wydaniu tego systemu. Obecnie producent odradza jego użycie, zaś prace rozwojowe nad UMS zostały wstrzymane.
   Istnieją jednak systemy, w~których włókna są wspierane, a~nawet rekomendowane jako domyślne rozwiązanie dla użytkownika. Przykładem takiego systemu jest
   AIX, produkt firmy IBM.
@@ -333,8 +341,8 @@
 %
 \subsection{Procesy i~wątki a~Linux}
 \indent
-  Linux traktuje procesy i~wątki w~jednakowy sposób, innymi słowy -- w~tym systemie nie istnieje pojęcie wątku, jedynie istnieją procesy, które
-  współdzielą przestrzeń adresową oraz dostęp do urządzeń systemowych.
+  Linux traktuje procesy i~wątki w~jednakowy sposób, innymi słowy -- w~tym systemie nie istnieje pojęcie wątku: za wątek można uznać proces, który
+  współdzieli przestrzeń adresową oraz dostęp do urządzeń systemowych.
   Takie podejście do wątków i~procesów jest możliwe dzięki dwóm mechanizmom:
   \begin{enumerate}
     \item Rozdzielenie wytworzenia procesu potomnego (operacja \function{fork}) od wczytania programu do pamięci i~jego uruchomienia (operacja \function{exec}).
@@ -784,7 +792,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
 \subsection{Kryteria oceny}
 \label{sec:criterions}
 \indent
-	Użyteczność implementacji opisanej w~poprzednim rozdziale można określić na podstawie:
+	Do oceny użyteczności przyjąłem następujące kryteria:
 	\begin{enumerate}
 		\item Wygody jej używania w~porównaniu z~dostępnymi implementacjami wątków. Ponieważ powszechnie używaną implementacją wątków jest \code{Pthreads},
       porównanie podstawowych scenariuszy użycia tej biblioteki z~analogicznymi scenariuszami użycia biblioteki \code{libmixed} powinno dać jasny pogląd
