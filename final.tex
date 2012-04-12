@@ -339,7 +339,7 @@
   Rozdział \ref{sec:solution} zawiera dokładny opis pomysłu oraz implementacji takiej biblioteki.
 \par
 %
-\subsection{Procesy i~wątki a~Linux}
+\subsection{Linux}
 \indent
   Linux traktuje procesy i~wątki w~jednakowy sposób, innymi słowy -- w~tym systemie nie istnieje pojęcie wątku: za wątek można uznać proces, który
   współdzieli przestrzeń adresową oraz dostęp do urządzeń systemowych.
@@ -357,6 +357,30 @@
   rozumiana jako własność procesu lub wątku.
 \par
 %
+\indent
+  Wszystkie systemy zgodne ze specyfikacją POSIX (\cite{POSIX}) udostępniają mechanizm przełączania kontekstu wykonania w~przestrzeni użytkownika (ang. \emph{user\dywiz space context switching}).
+  Mechanizm ten umożliwia zapisanie bieżącego kontekstu wykonania, a~następnie przekazanie sterowania do wcześniej przygotowanego kontekstu. W~odróżnieniu od mechanizmu wywłaszczania,
+  wykonywany kontekst nie może być wstrzymany -- program wykonywany w~bieżącym kontekście wykonania musi \emph{dobrowolnie} wywołać procedurę przełączającą kontekst.
+\par
+%
+\indent
+  Funkcja \function{getcontext} dostarcza użytkownikowi bieżący kontekst wykonania, zaś dzięki funkcji \function{makecontext} można wytworzyć nowy kontekst wykonania, który będzie uruchamiany wraz z~funkcją podaną
+  jako jeden z~parametrów \function{makecontext}.
+  Do przełączania pomiędzy kontekstami można użyć funkcji \function{setcontext}. Funkcja \function{swapcontext} dostarcza użytkownikowi spore udogodnienie: zapisuje bieżący kontekst oraz przekazuje sterowanie
+  do docelowego kontekstu. Dzięki temu, łatwo jest przełączyć sterowanie do poprzedniego kontekstu.
+  W~dalszej części tego dokumentu wystąpienie odwołania do \function{getcontext}/\function{swapcontext} będzie odnosić się do POSIX\dywiz owego mechanizmu przełączania kontekstu wykonania, czyli 
+  czterech wymienionych wcześniej funkcji.
+\par
+%
+\indent
+  W Linuksie zaimplementowano mechanizm \code{epoll}: jest to mechanizm podobny do
+  zawartego w~specyfikacji POSIX mechanizmu \code{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu w~nieblokujący sposób.
+  \code{Epoll} jest szybszy od \code{poll}: dla zbioru obserwowanych zasobów wytwarzany jest identyfikator systemowy 
+  (\emph{deskryptor}, ang. \emph{descriptor}) -- liczba całkowita, a~następnie każde zapytanie o~ten zbiór sprowadza się do zapytania
+  o~konkretny deskryptor (kopiowana jest jedna liczba). W~przypadku mechanizmu \code{poll}, każde zapytanie o~stan zasobów to przesłanie zbioru obiektów (struktur),
+  co pociąga za sobą kopiowanie tych obiektów z~przestrzeni użytkownika do przestrzeni jądra (przesłanie zapytania). Kiedy program obserwuje dużą liczbę
+  zasobów systemowych, ich kopiowanie może wiązać się ze znaczącym narzutem czasowym na operację \code{poll}.
+\par
 \subsection{Synchronizacja zadań}
 \indent
 \newcounter{notact} \setcounter{notact}{\value{tabmain}}
@@ -423,16 +447,7 @@
   Biblioteka jest napisana w~języku C++. Jej kod źródłowy jest zgodny ze standardem C++2003, zostały wykorzystane w~nim udogodnienia z~biblioteki standardowej (STL)
   oraz ,,sprytne'' wskaźniki (dokładniej -- \code{shared\_ptr}), jak również mechanizm wiązania leniwego (\code{bind}) z~rozszerzenia TR1, które stały się częścią
   biblioteki standardowej specyfikacji C++11.
-\par
-\indent
-  Wykorzystuje mechanizm \code{epoll} zaimplementowany jedynie w Linuksie: jest to mechanizm podobny do
-  zawartego w~specyfikacji POSIX (\cite{POSIX}) mechanizmu \code{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu w~nieblokujący sposób.
-  \code{Epoll} jest szybszy od \code{poll}: dla zbioru obserwowanych zasobów wytwarzany jest identyfikator systemowy 
-  (\emph{deskryptor}, ang. \emph{descriptor}) -- liczba całkowita, a~następnie każde zapytanie o~ten zbiór sprowadza się do zapytania
-  o~konkretny deskryptor (kopiowana jest jedna liczba). W~przypadku mechanizmu \code{poll}, każde zapytanie o~stan zasobów to przesłanie zbioru obiektów (struktur),
-  co pociąga za sobą kopiowanie tych obiektów z~przestrzeni użytkownika do przestrzeni jądra (przesłanie zapytania). Kiedy program obserwuje dużą liczbę
-  zasobów systemowych, ich kopiowanie może wiązać się ze znaczącym narzutem czasowym na operację \code{poll}. Dlatego użycie mechanizmu \code{epoll} jest
-  oczywistym wyborem dla \code{libmixed}.
+  Do obsługi zasobów systemowych wykorzystywany jest mechanizm \code{epoll}.
 \par
 \indent
   \code{Libmixed} można rozpatrywać jako \emph{środowisko ramowe} (ang. \emph{framework}), które odpowiada za zarządzanie jednostkami wykonywalnymi.
