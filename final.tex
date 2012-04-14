@@ -75,10 +75,12 @@
 %
 \subsection{Motywacja}
 \indent
-  W~większości współczesnych systemów operacyjnych zrealizowano paradygmat \emph{programowania współbieżnego}.\\
-  W~związku z~wykorzystaniem tego paradygmatu, powstały dwa podstawowe pojęcia: \emph{proces} oraz \emph{wątek}.
-  Proces jest samodzielnym bytem, któremu system operacyjny udostępnia zasoby (lub część tych zasobów, zgodnie z~polityką udzielania zasobów
-  danego systemu), zaś wątek jest bytem zależnym od procesu.
+  W większości współczesnych systemów operacyjnych możliwe jest jednoczesne uruchomienie wielu
+  programów użytkowych. W~komputerach posiadających dokładnie jeden procesor są one wykonywane \emph{współbieżnie}, tj. są używane mechanizmy do
+  wykonywania każdego programu \emph{po kawałku} (np. opisany w~rozdziale \ref{sec:system} mechanizm \emph{wywłaszczania}). W~połączeniu
+  z~szybkością działania współczesnych procesorów, użytkownik systemu ma wrażenie, że uruchomione przez niego programy wykonują się równocześnie.
+  Obecnie większość dostępnych komputerów to maszyny wieloprocesorowe (\emph{wielordzeniowe}, ang. \emph{multi\ppauza core}),
+  zaś systemy operacyjne wy
 \par
 %
 \indent
