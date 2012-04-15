@@ -75,8 +75,8 @@
 %
 \subsection{Motywacja}
 \indent
-  W większości współczesnych systemów operacyjnych możliwe jest jednoczesne uruchomienie wielu
-  programów użytkowych. W~komputerach posiadających dokładnie jeden procesor są one wykonywane \emph{współbieżnie}, tj. są używane mechanizmy do
+  W większości współczesnych \emph{systemów operacyjnych} możliwe jest jednoczesne uruchomienie wielu
+  programów użytkowych. W~komputerach posiadających dokładnie jeden procesor są one wykonywane \emph{współbieżnie}, tj. w~\emph{jądrze} systemu są używane mechanizmy do
   wykonywania każdego programu \emph{po kawałku} (np. opisany w~rozdziale \ref{sec:system} mechanizm \emph{wywłaszczania}). W~połączeniu
   z~szybkością działania współczesnych procesorów, użytkownik systemu ma wrażenie, że uruchomione przez niego programy wykonują się równocześnie.
   Umożliwia to bardziej efektywne wykorzystanie czasu procesora, co pokazują poniższe przykłady:
@@ -91,21 +91,31 @@
   bez zaimplementowanej współbieżności: komputer oraz jego zasoby mogą być wykorzystane wydajniej, zaś współbieżny system operacyjny działa o~wiele stabilniej.
 \par
 \indent
-  Obecnie większość dostępnych komputerów to maszyny wieloprocesorowe (\emph{wielordzeniowe}, ang. \emph{multicore}), a~więc umożliwiają
-  \emph{równoległe} (ang. \emph{parallel}) wykonanie programów. Obecne systemy operacyjne łączą współbieżność z~równoległością, co może dać korzyść w~postaci
-  efektywnego wykorzystania wszystkich rdzeni dostępnych w~komputerze: współbieżność W związku z wykorzystaniem tego paradygmatu, powstały dwa podstawowe pojęcia:
-  \emph{proces} oraz \emph{wątek}. Proces jest samodzielnym bytem, któremu system operacyjny udostępnia swoje zasoby zasoby zaś wątek jest bytem zależnym od procesu.
+  Obecnie większość dostępnych komputerów to maszyny wieloprocesorowe (\emph{wielordzeniowe}, ang. \emph{multi-core}), a~więc umożliwiają
+  \emph{równoległe} (ang. \emph{parallel}) wykonanie programów. Systemy operacyjne łączą współbieżność z~równoległością, co może dać korzyść w~postaci
+  efektywnego wykorzystania wszystkich rdzeni dostępnych w~komputerze:
+  \begin{itemize}
+    \item współbieżność pozwala wykorzystać efektywnie czas każdego procesora z~osobna;
+    \item równoległe wykonanie wielu programów zwiększa wydajność całego systemu operacyjnego -- może on obsłużyć więcej żądań użytkownika w~porównaniu do
+      systemu działającego na komputerze posiadającym tylko jeden procesor.
+  \end{itemize}
 \par
-%
 \indent
-	Dostępne obecnie architektury systemów operacyjnych są z~założenia przystosowane do równoległego
-	wykonywania programów. Co więcej, architektury te obejmują wiele rodzajów urządzeń, które są obsługiwane przez system operacyjny.
-	Współczesne systemy operacyjne udostępniają użytkownikowi możliwość równoległego wykonania aplikacji (przy użyciu procesów),
-	zaś poszczególne aplikacje mogą być wykonane w~sposób równoległy (podział na podprocesy lub wątki). Wątki zarządzane przez system operacyjny
-	zwane są wątkami przestrzeni jądra.
-	Drugi rodzaj wątków to wątki przestrzeni użytkownika, które są najczęściej udostępniane jako biblioteki funkcji; co więcej, system operacyjny
-	nie jest świadomy ich istnienia. Z~tych powodów zarządzanie nimi jest odpowiedzialnością użytkownika lub funkcji udostępnianych przez
-	bibliotekę takich wątków.
+  Pojęciem związanym zarówno ze współbieżnością, jak i~równoległym wykonaniem programów jest \emph{proces}: jest to wydzielony fragment programu (\emph{jednostka wykonalna})
+  oraz powiązane z~nim zasoby systemu operacyjnego (bardziej szczegółowy opis procesu znajduje się w~rozdziale \ref{sec:system}),
+  a~więc program użytkownika to co najmniej jeden proces.
+\par
+\indent
+  Pojęciem, które niejako ,,wyrasta'' z~pojęcia procesu, jest \emph{wątek}. Wątek jest jednostką wykonalną, która jest wytwarzana przez jej \emph{proces macierzysty}.
+  Jeden proces może wytworzyć wiele wątków, a~każdy z~nich może wykorzystywać te zasoby systemu operacyjnego, które są przydzielone ich procesowi macierzystemu.
+
+  \emph{Tutaj się jeszcze wymyśla o~wątkach przestrzeni jądra i~użytkownika ;-)}
+\begin{comment}
+  Każdy wątek potrzebuje przede wszystkim czasu do wykonania. Zadanie przydziału czasu może być wykonywane przez:
+  \begin{enumerate}
+    \item Jądro systemu operacyjnego: 
+  \end{enumerate}
+\end{comment}
 \par
 %
 \indent
