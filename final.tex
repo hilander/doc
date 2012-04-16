@@ -466,7 +466,8 @@
 \label{sec:solution}
 \subsection{Wstęp}
 \indent 
-  Biblioteka \code{libmixed} powstała w~ramach niniejszej pracy magisterskiej. Spełnia wymagania wymienione w~rozdziale \ref{sec:target}, za wyjątkiem warunku \ref{enm:timesch}:
+  Biblioteka \code{libmixed}, powstała w~ramach niniejszej pracy magisterskiej, udostępnia użytkownikowi wątki hybrydowe (jednostki wykonalne zarządzane z~przestrzeni użytkownika,
+  i~wykorzystujące wsparcie jądra). Spełnia wymagania wymienione w~rozdziale \ref{sec:target}, za wyjątkiem warunku \ref{enm:timesch}:
   istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
 \par
 \indent
@@ -514,15 +515,17 @@
 \par
 %
 \indent
-  Kolejne rozdziały podają szczegółowy opis każdego elementu \code{libmixed}.
+  \myownfigure{libmixeddeployment}{Deployment.png}{Wykorzystanie wątków przestrzeni jądra przez \code{libmixed}}{.7}
+  Rysunek \arabic{libmixeddeployment} przedstawia wykorzystanie wątków przez libmixed: każdy wątek ma odpowiadać jednemu rdzeniowi w~komputerze, dlatego nawet wątek główny
+  posiada swojego robotnika. Każde włókno, po przypisaniu do robotnika, jest wykonywane w~ramach wątku robotnika.
 \par
 \newpage
 \subsection{Koprocedury -- klasa \code{coroutine}}
 \label{sec:coroutine}
 %
 \indent
-Pomysł oraz nazwa \emph{koprocedura} (ang. \emph{coroutine}) pojawiły się po raz pierwszy w~\cite{conway}.
-Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{tabmain}.
+  Pomysł oraz nazwa \emph{koprocedura} (ang. \emph{coroutine}) pojawiły się po raz pierwszy w~\cite{conway}.
+  Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{tabmain}.
     \begin{center}
     \centering
     \begin{tabular}{|l|l|} \hline
@@ -536,8 +539,7 @@ Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{ta
     \end{tabular}
     	\mytabcaption{Porównanie procedury i~koprocedury}
     \end{center}
-  Klasa \code{coroutine} jest implementacją koprocedury. Jest ona klasą bazową dla klasy \code{fiber},
-  a~więc każde włókno jest koprocedurą.
+    Klasa \code{coroutine} jest implementacją koprocedury i~udostępnia .
   \myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
 	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu funkcji
 	\code{getcontext()}/\code{swapcontext()} (dostępnych w~każdym systemie zgodnym ze specyfikacją POSIX).
