@@ -516,7 +516,7 @@
 %
 \indent
   \myownfigure{libmixeddeployment}{Deployment.png}{Wykorzystanie wątków przestrzeni jądra przez \code{libmixed}}{.7}
-  Rysunek \arabic{libmixeddeployment} przedstawia wykorzystanie wątków przez libmixed: każdy wątek ma odpowiadać jednemu rdzeniowi w~komputerze, dlatego nawet wątek główny
+  Rysunek \arabic{libmixeddeployment} przedstawia wykorzystanie wątków przez libmixed: każdy wątek odpowiada jednemu rdzeniowi w~komputerze, dlatego nawet wątek główny
   posiada swojego robotnika. Każde włókno, po przypisaniu do robotnika, jest wykonywane w~ramach wątku robotnika.
 \par
 \newpage
@@ -524,6 +524,7 @@
 \label{sec:coroutine}
 %
 \indent
+\newcounter{corotab} \setcounter{corotab}{\value{tabmain}}
   Pomysł oraz nazwa \emph{koprocedura} (ang. \emph{coroutine}) pojawiły się po raz pierwszy w~\cite{conway}.
   Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{tabmain}.
     \begin{center}
@@ -531,7 +532,7 @@
     \begin{tabular}{|l|l|} \hline
       \multicolumn{1}{|c|}{Procedura} & \multicolumn{1}{c|}{Koprocedura} \\ \hline
       jeden punkt wejścia & jeden punkt wejścia \\ \hline
-      \parbox[t]{6cm}{ brak możliwości kontynuacji działania po wyjściu z~procedury } & \parbox[t]{6cm}{możliwość kontynuacji działania po wyjściu z~koprocedury } \\ \hline
+      \parbox[t]{6cm}{brak możliwości kontynuacji działania po wyjściu z~procedury} & \parbox[t]{6cm}{możliwość kontynuacji działania po wyjściu z~koprocedury } \\ \hline
       \parbox[t]{6cm}{jednorazowe przekazanie wyniku obliczeń} & \parbox[t]{6cm}{przekazanie częściowego wyniku obliczeń} \\ \hline
       współdzielony stos wywołań & własny stos wywołań \\ \hline
       współdzielony kontekst wykonania & własny kontekst wykonania \\ \hline
@@ -539,7 +540,7 @@
     \end{tabular}
     	\mytabcaption{Porównanie procedury i~koprocedury}
     \end{center}
-    Klasa \code{coroutine} jest implementacją koprocedury i~udostępnia .
+    Klasa \code{coroutine} jest implementacją koprocedury, a~więc udostępnia mechanizmy, dzięki którym możliwe jest osiągnięcie opisanych w~Tabeli \arabic{corotab} efektów.
   \myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
 	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu funkcji
 	\code{getcontext()}/\code{swapcontext()} (dostępnych w~każdym systemie zgodnym ze specyfikacją POSIX).
