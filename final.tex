@@ -109,14 +109,28 @@
   Pojęciem, które niejako ,,wyrasta'' z~pojęcia procesu, jest \emph{wątek}. Wątek jest jednostką wykonalną, która jest wytwarzana przez jej \emph{proces macierzysty}.
   Jeden proces może wytworzyć wiele wątków, a~każdy z~nich może wykorzystywać te zasoby systemu operacyjnego, które są przydzielone ich procesowi macierzystemu.
 
-  \emph{Tutaj się jeszcze wymyśla o~wątkach przestrzeni jądra i~użytkownika ;-)}
-\begin{comment}
-  Każdy wątek potrzebuje przede wszystkim czasu do wykonania. Zadanie przydziału czasu może być wykonywane przez:
-  \begin{enumerate}
-    \item Jądro systemu operacyjnego: 
-  \end{enumerate}
-\end{comment}
+\indent
+  Wątki bywają również nazywane \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}, LWP), ponieważ umożliwiają szybsze przełączanie
+  pomiędzy nimi. Główną przyczyną tego przyspieszenia jest brak przełączania pomiędzy 
+  przestrzeniami adresowymi wątków pracujących w~ramach tego samego procesu -- wszystkie wątki korzystają z~tej samej wirtualnej przestrzeni adresowej.
+  Wątki pracujące w~tym samym procesie posiadają również dostęp do wszystkich urządzeń systemowych dostępnych dla odpowiadającego im procesu.
+  Dzięki tym oraz wielu pomniejszym cechom, program podzielony na wątki może działać o~wiele szybciej, niż ten sam program podzielony na procesy.
 \par
+%
+\indent
+  Wiele systemów operacyjnych traktuje wątki w~specjalny sposób, przykładem może być obsługa wątków w~systemach z~rodziny Windows:
+  wytworzenie i~uruchomienie nowego procesu zajmuje o~wiele więcej czasu niż wytworzenie nowego wątku. Wiele systemów
+  udostępnia funkcje do wyłącznej obsługi wątków.
+\par
+%
+\indent
+  Oprócz LWP istnieją również implementacje wątków przestrzeni użytkownika. Można je scharakteryzować w~następujący sposób:
+  \begin{itemize}
+    \item posiadają własny stos wywołań;
+    \item współdzielą czas wykonania LWP, w~którym są wykonywane;
+    \item są wykonywane w~dokładnie jednym wątku w~danym procesie.
+  \end{itemize}
+  Pouczającym przykładem implementacji takich wątków jest biblioteka GNU Pth. Jej rozwój zatrzymał się w~roku 2006.
 %
 \indent
 	Obydwa rodzaje wątków posiadają zarówno zalety jak i~wady. Rozwiązaniem pośrednim są wątki zarządzane przez użytkownika:
@@ -138,9 +152,11 @@
   do wątku mieszanego.
 \par
 %
+\begin{comment}
 \indent
   \myownfigure{mixedintro}{mixedscheme.png}{Włókna w~implementacji nie wymagającej zmian w~systemie~operacyjnym -- cel niniejszej pracy}{.23}
 \par
+\end{comment}
 \indent
   Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu,
   można jednak zaimplementować je przy użyciu mechanizmów ofreowanych przez system operacyjny.
@@ -321,30 +337,6 @@
   (uaktualnić odpowiednie wartości PCB). Wykonanie tych czynności jest również znaczącym narzutem czasowym dla operacji przełączania procesów.
 \par
 %
-\subsection{Wątki}
-\indent
-  Wątki bywają również nazywane \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}, LWP), ponieważ umożliwiają szybsze przełączanie
-  pomiędzy nimi. Główną przyczyną tego przyspieszenia jest brak przełączania pomiędzy 
-  przestrzeniami adresowymi wątków pracujących w~ramach tego samego procesu -- wszystkie wątki korzystają z~tej samej wirtualnej przestrzeni adresowej.
-  Wątki pracujące w~tym samym procesie posiadają również dostęp do wszystkich urządzeń systemowych dostępnych dla odpowiadającego im procesu.
-  Dzięki tym oraz wielu pomniejszym cechom, program podzielony na wątki może działać o~wiele szybciej, niż ten sam program podzielony na procesy.
-\par
-%
-\indent
-  Wiele systemów operacyjnych traktuje wątki w~specjalny sposób, przykładem może być obsługa wątków w~systemach z~rodziny Windows:
-  wytworzenie i~uruchomienie nowego procesu zajmuje o~wiele więcej czasu niż wytworzenie nowego wątku. Wiele systemów
-  udostępnia funkcje do wyłącznej obsługi wątków.
-\par
-%
-\indent
-  Oprócz LWP istnieją również implementacje wątków przestrzeni użytkownika. Można je scharakteryzować w~następujący sposób:
-  \begin{itemize}
-    \item posiadają własny stos wywołań;
-    \item współdzielą czas wykonania LWP, w~którym są wykonywane;
-    \item są wykonywane w~dokładnie jednym wątku w~danym procesie.
-  \end{itemize}
-  Pouczającym przykładem implementacji takich wątków jest biblioteka GNU Pth. Jej rozwój zatrzymał się w~roku 2006.
-\par
 \subsection{Włókna}
 \label{sec:fibers}
 %
