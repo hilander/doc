@@ -74,6 +74,7 @@
 \section{Wstęp}
 %
 \subsection{Motywacja}
+\label{sec:motivation}
 \indent
   W większości współczesnych \emph{systemów operacyjnych} możliwe jest jednoczesne uruchomienie wielu
   programów użytkowych. W~komputerach posiadających dokładnie jeden procesor są one wykonywane \emph{współbieżnie}, tj. w~\emph{jądrze} systemu są używane mechanizmy do
@@ -110,14 +111,16 @@
   Jeden proces może wytworzyć wiele wątków, a~każdy z~nich może wykorzystywać te zasoby systemu operacyjnego, które są przydzielone ich procesowi macierzystemu.
 
 \indent
-  Wątki bywają również nazywane \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}, LWP), ponieważ umożliwiają szybsze przełączanie
-  pomiędzy nimi. Główną przyczyną tego przyspieszenia jest brak przełączania pomiędzy 
-  przestrzeniami adresowymi wątków pracujących w~ramach tego samego procesu -- wszystkie wątki korzystają z~tej samej wirtualnej przestrzeni adresowej.
-  Wątki pracujące w~tym samym procesie posiadają również dostęp do wszystkich urządzeń systemowych dostępnych dla odpowiadającego im procesu.
-  Dzięki tym oraz wielu pomniejszym cechom, program podzielony na wątki może działać o~wiele szybciej, niż ten sam program podzielony na procesy.
-\par
+  Wątki bywają również nazywane \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}, LWP) -- z~punktu widzenia jądra systemu operacyjnego
+  ich obsługa jest o~wiele \emph{lżejsza}.
+  %, ponieważ umożliwiają szybsze przełączanie
+  %pomiędzy nimi. Główną przyczyną tego przyspieszenia jest brak przełączania pomiędzy 
+  %przestrzeniami adresowymi wątków pracujących w~ramach tego samego procesu -- wszystkie wątki korzystają z~tej samej wirtualnej przestrzeni adresowej.
+  %Wątki pracujące w~tym samym procesie posiadają również dostęp do wszystkich urządzeń systemowych dostępnych dla odpowiadającego im procesu.
+  %Dzięki tym oraz wielu pomniejszym cechom, program podzielony na wątki może działać o~wiele szybciej, niż ten sam program podzielony na procesy.
+%\par
 %
-\indent
+%\indent
   Wiele systemów operacyjnych traktuje wątki w~specjalny sposób, przykładem może być obsługa wątków w~systemach z~rodziny Windows:
   wytworzenie i~uruchomienie nowego procesu zajmuje o~wiele więcej czasu niż wytworzenie nowego wątku. Wiele systemów
   udostępnia funkcje do wyłącznej obsługi wątków.
@@ -131,6 +134,7 @@
     \item są wykonywane w~dokładnie jednym wątku w~danym procesie.
   \end{itemize}
   Pouczającym przykładem implementacji takich wątków jest biblioteka GNU Pth. Jej rozwój zatrzymał się w~roku 2006.
+\par
 %
 \indent
 	Obydwa rodzaje wątków posiadają zarówno zalety jak i~wady. Rozwiązaniem pośrednim są wątki zarządzane przez użytkownika:
@@ -335,6 +339,7 @@
 \indent
   Ponieważ każdy proces posiada dostęp do innych zasobów komputera, system musi sprawdzić ich stan oraz udostępnić informacje o~stanie procesowi
   (uaktualnić odpowiednie wartości PCB). Wykonanie tych czynności jest również znaczącym narzutem czasowym dla operacji przełączania procesów.
+  Wątki, opisane w~rozdziale \ref{sec:motivation}, są naturalną konsekwencją ,,odchudzania'' procesów.
 \par
 %
 \subsection{Włókna}
@@ -353,7 +358,8 @@
 \par
 %
 \indent
-  Pomysł na implementację włókien bez dokonywania zmian, a~co za tym idzie, biblioteka będąca jego implementacją nie jest oferowany w~żadnym systemie operacyjnym.
+  Pomysł na implementację włókien bez dokonywania zmian w~systemie operacyjnym, a~co za tym idzie,
+  biblioteka będąca implementacją włókien nie wymagających ingerencji w~jądro, nie jest oferowany w~żadnym systemie operacyjnym.
   Rozdział \ref{sec:solution} zawiera dokładny opis pomysłu oraz implementacji takiej biblioteki.
 \par
 %
