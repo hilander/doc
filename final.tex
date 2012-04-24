@@ -578,8 +578,9 @@
   \begin{enumerate}
     \item Komunikacja: wymiana wiadomości z~innymi włóknami przy wykorzystaniu mechanizmów robotnika. 
       Po wytworzeniu wiadomości, można ją przesłać do odbiorcy za pomocą nieblokującej funkcji \function{send\_message}.
-      Do odbioru wiadomości służą funkcje \linebreak \function{receive\_message} (blokująca włókno) oraz \function{receive\_message\_nonblock} (nieblokująca).
-    \item Wytworzenie włókna (wykorzystując mechanizmy robotnika): funkcja \function{spawn} umożliwia uruchomienie włókna przez zarządcę (obiekt klasy \code{master}).
+      Do odbioru wiadomości służą funkcje \function{receive\_message} (blokująca włókno) oraz \function{receive\_message\_nonblock} (nieblokująca).
+    \item Wytworzenie włókna (wykorzystując mechanizmy robotnika): 
+    \linebreak funkcja \function{spawn} umożliwia uruchomienie włókna przez zarządcę (obiekt klasy \code{master}).
       Funkcja ta może być wywołana jedynie przez działające włókno.
     \item Obsługa wejścia-wyjścia (wykorzystując mechanizmy robotnika):
       \begin{enumerate}
@@ -622,7 +623,7 @@
 \newpage
 \subsection{Moduł \code{message\_queues}}
 \indent
-  
+  Wszystkie 
 \par
 \label{sec:messagequeues}
     \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
