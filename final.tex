@@ -516,6 +516,9 @@
   Rysunek \arabic{libmixeddeployment} przedstawia wykorzystanie wątków przez libmixed: każdy wątek odpowiada jednemu rdzeniowi w~komputerze, dlatego nawet wątek główny
   posiada swojego robotnika. Każde włókno, po przypisaniu do robotnika, jest wykonywane w~ramach wątku robotnika.
 \par
+\indent
+  Należy pamiętać, że każda operacja wykonywana przez libmixed nie blokuje pracy robotników.
+\par
 \newpage
 \subsection{Koprocedury -- klasa \code{coroutine}}
 \label{sec:coroutine}
@@ -537,27 +540,30 @@
     \end{tabular}
     	\mytabcaption{Porównanie procedury i~koprocedury}
     \end{center}
-    Klasa \code{coroutine} jest implementacją koprocedury, a~więc udostępnia mechanizmy, dzięki którym możliwe jest osiągnięcie opisanych w~Tabeli \arabic{corotab} efektów.
+  Klasa \code{coroutine} jest implementacją koprocedury, a~więc udostępnia mechanizmy, dzięki którym możliwe jest osiągnięcie opisanych w~Tabeli \arabic{corotab} efektów.
+  Należy mieć na uwadze, że \code{coroutine} wykorzystuje mechanizm \linebreak \code{getcontext()}/\code{swapcontext()}, dzięki czemu przełączanie pomiędzy koprocedurami jest wykonywane
+  wyłącznie w~przestrzeni użytkownika.
   \myownfigure{Coroutine}{Coroutine.png}{Klasa coroutine - implementacja koprocedury}{.7}
-	Obsługa kontekstu wykonania koprocedury realizowana jest przy użyciu funkcji
-	\code{getcontext()}/\code{swapcontext()} (dostępnych w~każdym systemie zgodnym ze specyfikacją POSIX).
 \par
 %
 \indent
   Klasa \code{coroutine} udostępnia użytkownikowi m. in. następujące funkcje:
   \begin{enumerate}
     \item \function{init}: funkcja inicjalizująca koprocedurę. Każdy obiekt klasy \code{coroutine} musi być zainicjalizowany za pomocą tej funkcji,
-      gdyż w~przeciwnym wypadku nie zostanie utworzony stos wywołań dla koprocedury, a~co za tym idzie -- działanie programu będzie przerwane.
-    \item Funkcja \function{run} odpowiada za przełączenie bieżącego kontekstu wykonania na kontekst koprocedury. 
-      Po przełączeniu kontekstu wykonywana jest funkcja \function{start} -- już w~nowym kontekście i~ze stosem wywołań koprocedury. Funkcja \function{go}
-      \emph{powinna} być wywołana z~funkcji \function{start}. Funkcja \function{start} ma służyć użytkownikowi do przygotowania przed uruchomieniem koprocedury,
-      zaś funkcja~\function{go} jest jej \emph{ciałem}. Celem funkcji \function{start} jest także wykrycie zakończenia działania koprocedury.
-      Dodatkowo, w~ciele tej funkcji można umieścić mechanizm detekcji oraz propagacji wyjątków.
+      gdyż w~przeciwnym wypadku nie zostanie utworzony stos wywołań dla koprocedury, a~co za tym idzie -- działanie programu będzie przerwane, gdyż
+      \function{init} wytwarza stos koprocedury, a~następnie jej kontekst (wywołuje \function{makecontext}.
+    \item Funkcja \function{run} odpowiada za przełączenie bieżącego kontekstu wykonania na kontekst koprocedury: przełącza sterowanie na kontekst danej koprocedury oraz zapisuje kontekst,
+      który ma być uruchomiony przy następnym przełączeniu sterowania (wywołanie \function{yield} lub wyjście z~funkcji \function{start}). \function{run} opakowuje 
+      wywołanie \function{swapcontext}.
+    \item Funkcje \function{start} oraz \function{go} są funkcjami abstrakcyjnymi, a~więc to użytkownik jest odpowiedzialny za ich implementację.
+      Sugerowana implementacja tych funkcji jest następująca:
+      \begin{itemize}
+        \item \function{start} jest wywoływana \emph{po} przełączeniu sterowania do kontekstu koprocedury, \emph{powinna} wypełniać zadania
+          związane z~działaniem koprocedury, tj. wywołać funkcję \function{go}, przechwytywać wyjątki, podjąć działania związane z~zakończeniem koprocedury;
+        \item \function{go} \emph{powinna} być właściwym programem koprocedury.
+      \end{itemize}
     \item Funkcja \function{yield} odpowiada za przekazanie sterowania z~bieżącej koprocedury do jednostki wykonalnej, która uprzednio przekazała sterowanie 
-      tej koprocedurze. W~obecnej implementacji klasy \code{coroutine}, \function{yield} przekazuje sterowanie za pomocą \function{swapcontext}: zachowuje kontekst
-      wykonania strony przekazującej sterowanie, jak również umożliwia ponowne wejście do tak ,,zamrożonej'' jednostki wykonalnej.
-      Do użytkownika należy sposób, w~jaki wynik jest przekazywany, gdyż \function{yield} jest odpowiedzialna za przekazanie sterowania.
-      gdyż \function{yield} jedynie przełącza kontekst koprocedury na kontekst wywołujący koprocedurę.
+      tej koprocedurze. W~obecnej implementacji klasy \code{coroutine}, \function{yield} opakowuje \function{swapcontext}: przełącza sterowanie do uprzednio zachowanego kontekstu.
   \end{enumerate}
 \par
 %
@@ -566,14 +572,16 @@
     \myownfigure{Fiber}{Fiber.png}{Klasa fiber - implementacja włókna}{.7}
 %
 \indent
-  \code{Fiber} jest klasą bazową dla włókien, które użytkownik zgłasza zarządcy (obiektowi klasy \code{master}) do uruchomienia.
-  Posiada ona następujące udogodnienia:
+  \code{Fiber} jest klasą bazową dla włókien, które użytkownik zgłasza zarządcy (obiektowi klasy \code{master}) do uruchomienia. Dziedziczy po klasie \code{coroutine},
+  dzięki czemu każde włókno posiada swój kontekst wykonania. Korzysta z~mechanizmów udostępnianych przez zarządzający nim obiekt klasy \code{worker}.
+  Dzięki temu, \code{fiber} oferuje następujące udogodnienia:
   \begin{enumerate}
-    \item Komunikacja: wymiana wiadomości z~innymi włóknami. Po wytworzeniu wiadomości, można ją przesłać do odbiorcy za pomocą nieblokującej funkcji \function{send\_message}.
-    Do odbioru wiadomości służą funkcje \linebreak \function{receive\_message} (blokująca) oraz \function{receive\_message\_nonblock} (nieblokująca).
-    \item Wytworzenie włókna: funkcja \function{spawn} umożliwia uruchomienie włókna przez zarządcę (obiekt klasy \code{master}). Funkcja ta może być wywołana jedynie
-      przez działające włókno.
-    \item Obsługa wejścia-wyjścia:
+    \item Komunikacja: wymiana wiadomości z~innymi włóknami przy wykorzystaniu mechanizmów robotnika. 
+      Po wytworzeniu wiadomości, można ją przesłać do odbiorcy za pomocą nieblokującej funkcji \function{send\_message}.
+      Do odbioru wiadomości służą funkcje \linebreak \function{receive\_message} (blokująca włókno) oraz \function{receive\_message\_nonblock} (nieblokująca).
+    \item Wytworzenie włókna (wykorzystując mechanizmy robotnika): funkcja \function{spawn} umożliwia uruchomienie włókna przez zarządcę (obiekt klasy \code{master}).
+      Funkcja ta może być wywołana jedynie przez działające włókno.
+    \item Obsługa wejścia-wyjścia (wykorzystując mechanizmy robotnika):
       \begin{enumerate}
         \item blokujące operacje odczytu (\function{do\_read}) oraz zapisu (\function{do\_write});
         \item podstawowa obsługa gniazd sieciowych: funkcja \function{do\_connect} odpowiada systemowej operacji \function{connect}, a~funkcje \function{do\_accept} 
@@ -582,8 +590,8 @@
       \end{enumerate}
     \item Przekazanie sterowania z~włókna do zarządcy -- funkcja \function{yield}, dziedziczona z~klasy \code{coroutine}.
   \end{enumerate}
-  Należy mieć na uwadze, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika (obiektu klasy \code{worker}, 
-  który jest bezpośrednio odpowiedzialny za uruchomienie, jak również wstrzymanie działania powierzonych mu włókien) nie jest wstrzymywana.
+  Należy pamiętać, że wymienione funkcje są blokujące jedynie dla wywołującego je włókna, praca robotnika (obiektu klasy \code{worker}, 
+  który jest bezpośrednio odpowiedzialny za uruchomienie i~wstrzymanie działania powierzonych mu włókien) nie jest wstrzymywana.
 \par
 \indent
   Każde włókno posiada bufor używany podczas zapisu/odczytu do i~z~zasobów systemowych. 
@@ -613,6 +621,9 @@
 \par
 \newpage
 \subsection{Moduł \code{message\_queues}}
+\indent
+  
+\par
 \label{sec:messagequeues}
     \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
 \indent
