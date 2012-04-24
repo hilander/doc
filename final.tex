@@ -622,26 +622,56 @@
 \par
 \newpage
 \subsection{Moduł \code{message\_queues}}
-\indent
-  Wszystkie 
-\par
 \label{sec:messagequeues}
-    \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
+%
 \indent
-  Moduł \code{message\_queues} udostępnia użytkownikowi podstawową klasę \code{message} oraz dwie klasy pochodne: \code{service\_message} oraz
-  \code{fiber\_message}, które służą do wymiany wiadomości odpowiednio pomiędzy zarządcami oraz włóknami. Dwa pola klasy \code{message}:
+  W~trakcie tworzenia składowych biblioteki \code{libmixed} chciałem, aby działanie programu używającego tego frameworka nie było przerywane:
+  w~dowolnym momencie działania każdego wątku zarządzanego przez \code{libmixed} powinno być wykonywane włókno albo funkcja wywołana przez robotnika. 
+\par
+\indent
+  Każdy robotnik zarządzany przez obiekt klasy \code{master} może komunikować się z~innymi robotnikami, a~także z~zarządcą. Każde włókno może komunikować
+  się z~innymi włóknami, również tymi zarządzanymi przez robotników działających z~innymi wątkami.
+\par
+\indent
+  Linux udostępnia mechanizmy do komunikacji międzywątkowej, jednakże posiadają one następujące wady:
+  \begin{itemize}
+    \item jądro systemu pośredniczy w~komunikacji, co wiąże się z~kopiowaniem przesyłanych danych (nadawca-jądro i~jądro\dywiz odbiorca);
+    \item wykorzystanie tych mechanizmów jest proste w~wypadku, gdy są one używane w~sposób blokujący, zaś wykorzystanie ich w~nieblokujący
+      sposób jest zadaniem skomplikowanym.
+  \end{itemize}
+  Biblioteka standardowa dostarcza kolekcje, które mogły by być użyte w~\code{libmixed}, jednakże nie gwarantują one bezpieczeństwa wątków
+  (ang. \emph{thread safety}), co dyskwalifikuje je jako potencjalnych kandydatów do wykorzystania przez framework.
+\par
+\indent
+  Rozwiązaniem tych problemów jest zaimplementowanie:
+  \begin{enumerate}
+    \item Kolekcji, która będzie bezpieczna w~warunkach wielowątkowego dostępu do jej elementów. Maksymalnie dwa wątki będą mieć dostęp
+      do jednej kolekcji.
+    \item Dwukierunkowego kanału komunikacyjnego, używanego przez maksymalnie dwa wątki. Dane przesyłane przez ten kanał nie muszą być kopiowane,
+      ponieważ każda jednostka wykonalna w~ramach \code{libmixed} ma dostęp do tej samej przestrzeni adresowej.
+  \end{enumerate}
+  Zarówno kolekcja, jak i~kanał komunikacyjny, spełniające powyższe warunki zostały zaimplementowane od podstaw w~module \code{message\_queues}.
+\par
+\indent
+    \myownfigure{MessageQueuesOverview}{MessageQueuesOverview.png}{Moduł \code{message\_queues} -- klasy i~zależności pomiędzy nimi}{.7}
+\par
+\indent
+  Moduł \code{message\_queues} udostępnia użytkownikowi podstawową klasę wiadomości -- \code{message} oraz dwie klasy pochodne: \code{service\_message} oraz
+  \linebreak \code{fiber\_message}, które służą do wymiany wiadomości odpowiednio pomiędzy zarządcami oraz włóknami. Dwa pola klasy \code{message}:
   \code{prev} oraz \code{next}, są wykorzystywane przez obiekt klasy \code{private\_list}.
 \par
+\indent
     \myownfigure{MessageQueue}{MessageQueue.png}{Klasa \code{message\_queue}}{.7}
+\par
 \indent
   Obiekt klasy \code{message\_queue} zawiera dwie nieblokujące listy komunikatów, które służą do wymiany wiadomości
   pomiędzy dwoma wątkami. Dla łatwej identyfikacji wątków, jeden z~nich został nazwany \code{master}, zaś drugi -- \code{slave},
   jednak są one traktowane jako dwie równorzędne jednostki wykonalne. Lista \code{master\_queue} służy do komunikacji \code{slave}$\to$\code{master},
   a~lista \code{slave\_queue} do \code{master}$\to$\code{slave}.
-  Tak więc \code{message\_queue} implementuje mechanizm \emph{half\dywiz duplex}, znany z~potoków,
-  udostępnianych przez systemy uniksowe.
 \par
+\indent
     \myownfigure{PrivateList}{PrivateList.png}{Klasa \code{private\_list} -- nieblokująca lista dwukierunkowa, używana jako jednokierunkowy kanał do przesyłania wiadomości}{.7}
+\par
 \indent
   Obiekt klasy \code{private\_list} jest listą dwukierunkową. Wiadomości dodawane do niej nie są buforowane,
   jej rozmiar jest zależny jedynie od ilości dostępnej pamięci. Podczas dołączania lub pobierania wiadomości z~listy nie są stosowane żadne mechanizmy
@@ -669,7 +699,9 @@
     \item \code{guard} $\gets$ \code{m}.
   \end{enumerate}
 \par
+\indent
   \myownfigure{PrivateListPush}{PrivateListPush.png}{Operacja \function{push}}{.7}
+\par
 \indent
   Implementacja funkcji \code{pop( out m )} jest bardziej skomplikowana:\\
   Czy można użyć \code{head}?
@@ -688,8 +720,10 @@
     \end{enumerate}
   \end{enumerate}
 \par
+\indent
   \myownfigure{PrivateListPop1}{PrivateListPop1.png}{Operacja \function{pop} -- pierwsza gałąź algorytmu}{.7}
   \myownfigure{PrivateListPop2}{PrivateListPop2.png}{Operacja \function{pop} -- druga gałąź algorytmu}{.7}
+\par
 \indent
   Czy powyższa implementacja jest poprawna?
 \par
@@ -726,11 +760,6 @@
     \end{enumerate}
   \end{enumerate}
 \par
-\indent
-  Czy jeszcze jedna implementacja listy dwukierunkowej jest potrzebna, skoro biblioteka standardowa
-  oferuje gotową implementację list dwukierunkowych? Tak, ponieważ listy
-  udostępnione przez bibliotekę standardową mogą być używane przez co najwyżej jeden wątek w~danej chwili.
-\par
 %
 \newpage
 \subsection{Klasa \code{scheduler}}
@@ -754,6 +783,10 @@
 \myownfigure{Epoller}{Epoller.png}{\code{Epoller} -- nakładka na mechanizm systemowy \code{epoll}}{.7}
 \indent
   Rysunek \arabic{Epoller} przedstawia klasę opakowującą podstawowe operacje mechanizmu \code{epoll}.
+  \code{Epoller} jest jedyną klasą w~\code{libmixed}, która bezpośrednio korzysta z~zasobów systemowych, zaś jej funkcje
+  wywołują funkcje systemowe z~rodziny \code{epoll} (\function{epoll\_create}, \function{epoll\_wait}, \function{epoll\_ctl}).
+\par
+\indent
   Jak wspomniano wyżej, mechanizm ten umożliwia detekcję:
   \begin{itemize}
     \item zdarzeń dla zasobów systemowych (gotowość do wykonania operacji odczytu/zapisu, zakończenie lub wystąpienie błędu podczas operacji);
