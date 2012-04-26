@@ -763,19 +763,18 @@
 %
 \newpage
 \subsection{Klasa \code{scheduler}}
+\indent
 \myownfigure{Scheduler}{Scheduler.png}{\code{scheduler} -- planista włókien}{.7}
-\indent
-  Rysunek \arabic{Scheduler} przedstawia klasę planisty włókien.
-  Planista zarządza wykonaniem włókien, które otrzymał od swojego właściciela.
-  Posiada swój własny kontekst oraz stos wywołań. Jest uprawniony do zmian następujących właściwości włókna:
-  \begin{itemize}
-    \item może zmienić jego stan na \code{FINISHED}, po zakończeniu pracy włókna;
-    \item może zmienić obecnego właściciela włókna.
-  \end{itemize}
 \par
-%
 \indent
-  W~bieżącej implementacji \code{libmixed}, planista szereguje wykonanie włókien przy użyciu algorytmu \emph{round--robin}.
+  Każdy robotnik posiada dokładnie jeden obiekt klasy \code{scheduler}. Planista jest odpowiedzialny za:
+  \begin{enumerate}
+    \item Szeregowanie włókien: odpowiedzialna za to jest funkcja \function{run}. Do szeregowania włókien użyty jest algorytm \emph{round--robin}.
+    \item Aktualizację włókna: może zmienić jego stan na \code{FINISHED}, po zakończeniu pracy włókna, może także zmienić obecnego właściciela włókna.
+    \item Wykonanie włókien, które ma miejsce w~funkcji \function{run}. Planista posiada swój własny kontekst wykonania, który jest przekazywany do włókna
+      podczas wywoływania \function{fiber\dcolon run}.
+  \end{enumerate}
+  Należy podkreślić, że funkcje składowe planisty wykonują wszystkie zadania związane z~szeregowaniem każdego włókna oraz uruchomieniem go we własnym kontekście wywołania.
 \par
 %
 \newpage
