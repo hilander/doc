@@ -770,7 +770,7 @@
   Każdy robotnik posiada dokładnie jeden obiekt klasy \code{scheduler}. Planista jest odpowiedzialny za:
   \begin{enumerate}
     \item Szeregowanie włókien: odpowiedzialna za to jest funkcja \function{run}. Do szeregowania włókien użyty jest algorytm \emph{round--robin}.
-    \item Aktualizację włókna: może zmienić jego stan na \code{FINISHED}, po zakończeniu pracy włókna, może także zmienić obecnego właściciela włókna.
+    \item Aktualizację włókna: może zmienić jego stan na \code{FINISHED} (po zakończeniu pracy włókna), może także zmienić obecnego właściciela włókna.
     \item Wykonanie włókien, które ma miejsce w~funkcji \function{run}. Planista posiada swój własny kontekst wykonania, który jest przekazywany do włókna
       podczas wywoływania \function{fiber\dcolon run}.
   \end{enumerate}
@@ -814,13 +814,14 @@
   \begin{itemize}
     \item wykonanie -- robotnik zleca to zadanie swojemu planiście (pole \code{sched});
     \item dostęp do zasobów systemowych -- odpowiedzialny za tę funkcję jest posiadany przez robotnika obiekt klasy \code{epoller} (pole \code{io\_facility});
-    \item komunikację z~innymi włóknami -- realizowaną przez obiekt klasy \code{message\_queues} (pole \code{pipe}).
+    \item komunikację z~innymi włóknami -- realizowaną przez obiekt klasy \linebreak \code{message\_queues} (pole \code{pipe}).
   \end{itemize}
 \par
 \indent
-  Dostęp do zasobów systemowych  jest realizowany w~sposób przezroczysty dla włókna. 
-  Funkcje \function{block\_on\_io} oraz \function{do\_connect} blokują wykonanie wywołującego włókna, do momentu, w~którym 
-  żądane zasoby systemowe będą dostępne. Włókno jest blokowane, a~jego stan odpowiada wykonywanej operacji:
+  Dostęp do zasobów systemowych  jest realizowany w~sposób przezroczysty dla włókna, zaś robotnik zleca obsługę zasobów obiektowi klasy \code{epoller}.
+  \code{Worker} nie wykonuje więc żadnego wywołania funkcji systemowych.
+  Funkcje \function{block\_on\_io} oraz \function{do\_connect} są wywoływane w~kontekście danego włókna i~blokują jego wykonanie (za pomocą wywołania funkcji \function{yield}) do momentu, w~którym 
+  żądane zasoby systemowe będą dostępne. Stan włókna jest zmieniany i~odpowiada wykonywanej operacji:
   \begin{itemize}
     \item \code{BLOCKED\_FOR\_ACCEPT} odpowiada wywołaniu funkcji \function{accept};
     \item \code{BLOCKED\_FOR\_CONNECT} odpowiada wywołaniu funkcji \function{connect};
@@ -829,22 +830,23 @@
   \end{itemize}
 \par
 \indent
-  Dowolne dwa włókna mogą wymieniać między sobą wiadomości. Ze względu na przynależność włókien do zarządzających nimi robotników, możliwe są dwie możliwości:
-  przesyłania wiadomości pomiędzy włóknami:
+  Dowolne dwa włókna mogą wymieniać między sobą wiadomości. Ze względu na przynależność włókien do zarządzających nimi robotników, możliwe są dwie sytuacje:
   \begin{enumerate}
-    \item Obydwa włókna są zarządzane przez tego samego robotnika. Robotnik przesyła wiadomość do wewnętrznej kolejki włókna.
+    \item Obydwa włókna są zarządzane przez tego samego robotnika. Robotnik przesyła wiadomość do kolejki wiadomości włókna--odbiorcy.
     \item Każde włókno jest zarządzane przez innego robotnika. W~tej sytuacji robotnik wysyła wiadomość do nadzorcy (obiekt klasy \code{master}), żądając
-      przesłania jej do wszystkich robotników w~systemie, nie oczekując na odpowiedź.
+      przesłania jej do wszystkich robotników w~systemie, nie oczekując na odpowiedź. Jeśli któryś z~robotników posiada włókno--odbiorcę wiadomości, zostanie ona
+      przesłana do tego włókna. W~przeciwnym wypadku, wiadomość zostanie \emph{zignorowana}.
   \end{enumerate}
 \par
 \indent
-  Robotnik, po wstępnej inicjalizacji, jest gotów do wejścia w~pętlę główną, w~której wykonuje następujące czynności:
+  Robotnik, po wstępnej inicjalizacji, jest gotów do wejścia w~pętlę główną. Na każdy krok tej pętli (zawarty w~funkcji \function{iteration}), składają się następujące czynności:
   \begin{itemize}
     \item przegląda swoją kolejkę wiadomości, a~następnie podejmuje akcje odpowiednie do otrzymanych komunikatów (czynności zlecone przez zarządcę 
       lub przesłanie wiadomości do włókien);
     \item zleca planiście wykonanie wszystkich niezablokowanych włókien;
-    \item zleca obiektowi klasy \code{epoller} sprawdzenie stanu (oraz dostępności) zasobów I/O.
+    \item zleca obiektowi klasy \code{epoller} sprawdzenie stanu (oraz dostępności) zasobów systemowych.
   \end{itemize}
+  Możliwe jest również wykonywanie pojedynczego kroku pętli głównej robotnika (poprzez wywołanie \function{worker\dcolon iteration}).
 \par
 %
 \newpage
@@ -863,10 +865,12 @@
         \item \code{master} nie posiada żadnego włókna do uruchomienia.
       \end{itemize}
   \end{itemize}
+\par
+\indent
   Po wytworzeniu robotników, \code{master} pośredniczy w~komunikacji pomiędzy nimi, jak również sprawdza warunek stopu.
   Wytworzenie zarządcy jest realizowane za pomocą funkcji \code{create()}: 
-  jest ona odpowiedzialna za inicjalizację robotników.
-  \code{Master} komunikuje się z~nimi za pomocą kolejek wiadomości.
+  jest ona odpowiedzialna za inicjalizację robotników oraz uruchomienie ich w~odpowiadających im wątkach.
+  Do komunikacji z~robotnikami \code{master} wytwarza kolejki wiadomości (dla każdego robotnika jest to obiekt klasy \code{message\_queue}.
   Funkcja \code{run\procbr} jest implementacją pętli głównej zarządcy. Dopóki nie zostanie spełniony warunek stopu,
   wykonywane są dwie czynności: odczyt i~reakcja na wiadomości przesłanych przez robotników oraz wykonanie jednej iteracji pętli głównej
   robotnika pracującego w~bieżącym wątku.
