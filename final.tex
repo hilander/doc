@@ -233,7 +233,7 @@
 	System operacyjny (ang. \emph{operating system, OS}, zwany dalej \emph{systemem}) jest programem, 
 	który kontroluje wykonanie aplikacji użytkownika (programów),
 	może być postrzegany jako pośrednik (interfejs) pomiędzy programem a~sprzętem (systemem komputerowym), na którym jest wykonywany.
-	Najważniejszą zyskiem z~używania systemu jest możliwość uruchomienia programu napisanego dla jednego OS, który będzie działać na różnych systemach komputerowych.
+	Najważniejszym zyskiem z~używania systemu jest możliwość uruchomienia programu napisanego dla jednego OS, który będzie działać na różnych systemach komputerowych.
 \par
 %
 \indent
@@ -387,17 +387,17 @@
 \par
 %
 \indent
-  Funkcja \function{getcontext} dostarcza użytkownikowi bieżący kontekst wykonania, zaś dzięki funkcji \function{makecontext} można wytworzyć nowy kontekst wykonania, który będzie uruchamiany wraz z~funkcją podaną
+  Funkcja \function{getcontext} \cite{setcontext} dostarcza użytkownikowi bieżący kontekst wykonania, zaś dzięki funkcji \function{makecontext} \cite{swapcontext} można wytworzyć nowy kontekst wykonania, który będzie uruchamiany wraz z~funkcją podaną
   jako jeden z~parametrów \function{makecontext}.
-  Do przełączania pomiędzy kontekstami można użyć funkcji \function{setcontext}. Funkcja \function{swapcontext} dostarcza użytkownikowi spore udogodnienie: zapisuje bieżący kontekst oraz przekazuje sterowanie
+  Do przełączania pomiędzy kontekstami można użyć funkcji \function{setcontext} (\cite{setcontext}). Funkcja \function{swapcontext} \cite{swapcontext} dostarcza użytkownikowi spore udogodnienie: zapisuje bieżący kontekst oraz przekazuje sterowanie
   do docelowego kontekstu. Dzięki temu, łatwo jest przełączyć sterowanie do poprzedniego kontekstu.
   W~dalszej części tego dokumentu wystąpienie odwołania do \function{getcontext}/\function{swapcontext} będzie odnosić się do POSIX\dywiz owego mechanizmu przełączania kontekstu wykonania, czyli 
   czterech wymienionych wcześniej funkcji.
 \par
 %
 \indent
-  W Linuksie zaimplementowano mechanizm \code{epoll}: jest to mechanizm podobny do
-  zawartego w~specyfikacji POSIX mechanizmu \code{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu w~nieblokujący sposób.
+  W Linuksie zaimplementowano \cite{epoll} mechanizm \code{epoll}: jest to mechanizm podobny do
+  zawartego w~specyfikacji POSIX mechanizmu \code{poll} \cite{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu w~nieblokujący sposób.
   \code{Epoll} jest szybszy od \code{poll}: dla zbioru obserwowanych zasobów wytwarzany jest identyfikator systemowy 
   (\emph{deskryptor}, ang. \emph{descriptor}) -- liczba całkowita, a~następnie każde zapytanie o~ten zbiór sprowadza się do zapytania
   o~konkretny deskryptor (kopiowana jest jedna liczba). W~przypadku mechanizmu \code{poll}, każde zapytanie o~stan zasobów to przesłanie zbioru obiektów (struktur),
@@ -468,15 +468,18 @@
   istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
 \par
 \indent
-  Biblioteka jest napisana w~języku C++. Jej kod źródłowy jest zgodny ze standardem C++2003, zostały wykorzystane w~nim udogodnienia z~biblioteki standardowej (STL)
-  oraz ,,sprytne'' wskaźniki (dokładniej -- \code{shared\_ptr}), jak również mechanizm wiązania leniwego (\code{bind}) z~rozszerzenia TR1, które stały się częścią
-  biblioteki standardowej specyfikacji C++11.
+  Biblioteka jest napisana w~języku C++. Jej kod źródłowy jest zgodny ze standardem C++2003 \cite{cpp2003}, 
+  zostały wykorzystane w~nim udogodnienia z~biblioteki standardowej
+  (STL -- \emph{STandard Library}, szczegółowo opisana w~\cite{stroustrup})
+  oraz ,,sprytne'' wskaźniki (dokładniej -- \code{shared\_ptr}), 
+  jak również mechanizm wiązania leniwego (\code{bind}) z~rozszerzenia TR1 \cite{cpptr1}, które stały się częścią
+  biblioteki standardowej specyfikacji C++11 \cite{cpp11}.
   Do obsługi zasobów systemowych wykorzystywany jest mechanizm \code{epoll}.
 \par
 \indent
-  \code{Libmixed} można rozpatrywać jako \emph{środowisko ramowe} (ang. \emph{framework}), które odpowiada za zarządzanie jednostkami wykonywalnymi.
+  \code{Libmixed} można rozpatrywać jako \emph{środowisko ramowe} (ang. \emph{framework}), które odpowiada za zarządzanie jednostkami wykonalnymi.
   Użytkownik biblioteki wytwarza i~uruchamia obiekt klasy \code{master}, która jest \emph{punktem wejścia} (ang. \emph{entry point}) ramy.
-  Następnie wytwarza własne jednostki wykonywalne: każda z~nich to obiekt klasy dziedziczącej po klasie \code{fiber}, która jest implementacją włókna.
+  Następnie wytwarza własne jednostki wykonalne: każda z~nich to obiekt klasy dziedziczącej po klasie \code{fiber}, która jest implementacją włókna.
   Kolejnym krokiem jest zgłoszenie żądania wykonania takiego obiektu, czym zajmuje się obiekt klasy \code{master}.
   Użytkownik musi mieć świadomość, że kolejność wykonania włókien nie musi zależeć od kolejności zgłoszenia żądań ich wykonania, co jest zgodne z~zasadą działania
   większości środowisk ramowych.
@@ -883,7 +886,7 @@
 \indent
 	Do oceny użyteczności przyjąłem następujące kryteria:
 	\begin{enumerate}
-		\item Wygody jej używania w~porównaniu z~dostępnymi implementacjami wątków. Ponieważ powszechnie używaną implementacją wątków jest \code{Pthreads},
+		\item Wygody jej używania w~porównaniu z~dostępnymi implementacjami wątków. Ponieważ powszechnie używaną implementacją wątków jest \code{Pthreads} \cite{pthread},
       porównanie podstawowych scenariuszy użycia tej biblioteki z~analogicznymi scenariuszami użycia biblioteki \code{libmixed} powinno dać jasny pogląd
       na użyteczność \code{libmixed}.
     \item Poprawności działania poszczególnych elementów biblioteki na podstawie testów jednostkowych.
@@ -1161,8 +1164,10 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
 \section{Podsumowanie}
 \label{sec:summary}
 \indent
-  Użycie biblioteki \code{libmixed} nie powoduje spadku wydajności systemu operacyjnego. Co więcej, jak podkreślono kilkakrotnie w~poprzednim rozdziale, jej użycie nie powoduje
-  znaczącego spadku wydajności programu, który z~niej korzysta. Zatem brak ingerencji w~działanie jądra nie przekreśla szans na wytworzenie wydajnej biblioteki włókien.
+  Użycie biblioteki \code{libmixed} nie powoduje spadku wydajności systemu operacyjnego. 
+  Co więcej, jak podkreślono kilkakrotnie w~poprzednim rozdziale, jej użycie nie powoduje
+  znaczącego spadku wydajności programu, który z~niej korzysta. 
+  Zatem brak ingerencji w~działanie jądra nie przekreśla szans na wytworzenie wydajnej biblioteki włókien.
 \par
 %
 \indent
