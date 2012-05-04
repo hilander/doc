@@ -1178,6 +1178,13 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
   \end{enumerate}
 \par
 \indent
+  Biblioteka \code{libmixed} udostępnia użytkownikowi \emph{interfejs programowania aplikacji} (ang. \emph{Application Programming Interface, API}),
+  który jest na tyle zbliżony do API oferowanego przez \code{Pthreads}, że ,,oswojenie'' z~nim dotychczasowego użytkownika \code{Pthreads}
+  jest możliwe do zrealizowania w~krótkim czasie. Dodatkowym atutem \code{libmixed} jest fakt, iż został ona zaimplementowana przy użyciu języka C++.
+  \code{Pthreads} (jak wszystkie elementy specyfikacji POSIX) udostępnia interfejs dla języka C, co wiąże się z~wytworzeniem interfejsu pośredniego w~C++,
+  który pozwoli na wykorzystanie \code{Pthreads} wraz z~udogodnieniami oferowanymi przez język C++ oraz jego bibliotekę standardową.
+\par
+\indent
   Użycie biblioteki \code{libmixed} nie powoduje spadku wydajności systemu operacyjnego. 
   Co więcej, jak podkreślono kilkakrotnie w~poprzednim rozdziale, jej użycie nie powoduje
   znaczącego spadku wydajności programu, który z~niej korzysta. 
