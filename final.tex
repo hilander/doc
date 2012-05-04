@@ -1164,6 +1164,20 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
 \section{Podsumowanie}
 \label{sec:summary}
 \indent
+  Włókna spełniające postulaty wymienione w~rozdziale \ref{sec:target} oraz implementacja włókien opisana w~rozdziałach
+  \ref{sec:solution} oraz \ref{sec:analysis}, są niebanalną alternatywą dla wątków przestrzeni jądra:
+  \begin{enumerate}
+    \item Każde włókno, podobnie jak wątek, jest jednostką wykonalną posiadającą własny kontekst wykonania;
+    \item Jądro systemu operacyjnego nie jest odpowiedzialne za zarządzanie włóknami, tj. szeregowanie oraz przekazywanie sterowania
+      do włókna jest wykonywane w~przestrzeni użytkownika. Dzięki temu, system operacyjny może sprawniej wykonywać inne zadania,
+      które nie mogą być wykonane w~przestrzeni użytkownika. Nawet drobna granulacja włókien 
+      nie wpływa na spadek wydajności jądra systemu operacyjnego.
+    \item System operacyjny jest odpowiedzialny jedynie za dostarczenie podstawowego mechanizmu nieblokującej obsługi
+      zasobów systemowych, a~zadania związane z~obsługą włókien korzystających z~tych zasobów nie są jego zadaniem.
+    \item Komunikacja pomiędzy włóknami jest realizowana również bez pośrednictwa systemu operacyjnego.
+  \end{enumerate}
+\par
+\indent
   Użycie biblioteki \code{libmixed} nie powoduje spadku wydajności systemu operacyjnego. 
   Co więcej, jak podkreślono kilkakrotnie w~poprzednim rozdziale, jej użycie nie powoduje
   znaczącego spadku wydajności programu, który z~niej korzysta. 
