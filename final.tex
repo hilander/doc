@@ -1163,6 +1163,7 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
 \newpage
 \section{Podsumowanie}
 \label{sec:summary}
+\subsection{Przydatność włókien}
 \indent
   Włókna spełniające postulaty wymienione w~rozdziale \ref{sec:target} oraz implementacja włókien opisana w~rozdziałach
   \ref{sec:solution} oraz \ref{sec:analysis}, są niebanalną alternatywą dla wątków przestrzeni jądra:
@@ -1183,7 +1184,14 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
   jest możliwe do zrealizowania w~krótkim czasie. Dodatkowym atutem \code{libmixed} jest fakt, iż został ona zaimplementowana przy użyciu języka C++.
   \code{Pthreads} (jak wszystkie elementy specyfikacji POSIX) udostępnia interfejs dla języka C, co wiąże się z~wytworzeniem interfejsu pośredniego w~C++,
   który pozwoli na wykorzystanie \code{Pthreads} wraz z~udogodnieniami oferowanymi przez język C++ oraz jego bibliotekę standardową.
+  Wobec tych faktów:
+  \begin{itemize}
+    \item przejście z~\code{Pthreads} na \code{libmixed} jest zadaniem \emph{tanim} (ze względu na podobny interfejs);
+    \item \code{libmixed} pozwala na użycie wszystkich udogodnień oferowanych przez język C++, zaś do podobnego użycia \code{Pthreads}
+      należy wytworzyć warstwę pośrednią (zbiór tzw. \emph{wrapperów}).
+  \end{itemize}
 \par
+\subsection{Podsumowanie implementacji}
 \indent
   Użycie biblioteki \code{libmixed} nie powoduje spadku wydajności systemu operacyjnego. 
   Co więcej, jak podkreślono kilkakrotnie w~poprzednim rozdziale, jej użycie nie powoduje
@@ -1194,17 +1202,39 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
 \indent
   Opisana w~rozdziale \ref{sec:solution} implementacja jest wynikiem wielu prób stworzenia wydajnej biblioteki włókien. W~jednej z~nich (której zakończenie zostało zarzucone
   po wytworzeniu ok. 80\% kodu źródłowego oraz testów jednostkowych i~wydajnościowych) wykorzystałem inne niż round--robin metody szeregowania włókien.
-  Okazało się, że metody szeregowania używające priorytetów zwiększały narzut czasowy na wykonanie programu. Round--robin, dzięki swej prostocie, jest szybkim i~pewnym algorytmem
-  szeregowania włókien.
+  Okazało się, że metody szeregowania używające priorytetów zwiększały narzut czasowy na wykonanie programu. Round--robin, dzięki swej prostocie, jest szybkim 
+  i~wydajnym algorytmem szeregowania włókien.
 \par
 %
 \indent
   Z~punktu widzenia użytkownika \code{libmixed}, obsługa zasobów systemu operacyjnego jest synchroniczna (włókno jest blokowane do momentu zakończenia operacji odczytu/zapisu),
-  jednak faktycznie nie jest blokowany wątek, w~którym wykonywane dane włókno. Dzięki tej właściwości, użytkownik może wytworzyć wiele włókien, które będą wydajnie zarządzane przez
-  bibliotekę.
+  jednak faktycznie nie jest blokowany wątek, w~którym wykonywane jest dane włókno.
+  Dzięki tej właściwości, użytkownik może wytworzyć wiele włókien, które będą wydajnie zarządzane przez bibliotekę.
 \par
-%
-%\subsection{Możliwe kierunki rozwoju}
+\subsection{Kierunki rozwoju}
+\indent
+  \code{Libmixed} udostępnia podstawowe udogodnienia, dzięki którym możliwe jest korzystanie z~frameworka zaimplementowanego w~tej bibliotece,
+  a~więc możliwe jest:
+  \begin{itemize}
+    \item wskazanie punktu wejścia włókna;
+    \item korzystanie z~zasobów systemowych;
+    \item komunikacja pomiędzy włóknami: jedynie wymiana komunikatów;
+    \item przekazanie sterowania (wyniku częściowego);
+    \item zakończenie działania włókna.
+  \end{itemize}
+  Udogodnienia te dają \emph{bazę} frameworka; na jej \emph{nadbudowę} powinny składać się mechanizmy znane z~\code{Pthreads}:
+  \begin{itemize}
+    \item mechanizmy synchronizacji: muteks, bariera, warunek;
+    \item rozszerzone przekazywanie sterowania: implementacja przejmowania sterowania po upływie określonego plasterka czasu;
+    \item wytworzenie innych kanałów komunikacji pomiędzy włóknami, analogicznych do tych udostępnianych przez system (np kolejek FIFO, potoków, sygnałów, itp.).
+  \end{itemize}
+  Należy pamiętać, że wymienione wyżej elementy nadbudowy \code{libmixed} należy zaimplementować zgodnie z~\emph{filozofią} biblioteki, to jest nie ingerując
+  w~jądro systemu operacyjnego oraz nie \emph{pogarszać} wydajności elementów w~porównaniu do ich systemowych odpowiedników.
+\par
+\indent
+  Celem opisanej nadbudowy biblioteki \code{libmixed} jest zbliżenie jej API w~jak największym stopniu do API oferowanego przez \code{Pthreads},
+  co jeszcze bardziej poprawi jej atrakcyjność w~oczach dotychczasowych użytkowników \code{Pthreads}.
+\par
 %
 \newpage
 \rhead{\empty}
