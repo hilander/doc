@@ -80,7 +80,7 @@
   programów użytkowych. W~komputerach posiadających dokładnie jeden procesor są one wykonywane \emph{współbieżnie}, tj. w~\emph{jądrze} systemu są używane mechanizmy do
   wykonywania każdego programu \emph{po kawałku} (np. opisany w~rozdziale \ref{sec:system} mechanizm \emph{wywłaszczania}). W~połączeniu
   z~szybkością działania współczesnych procesorów, użytkownik systemu ma wrażenie, że uruchomione przez niego programy wykonują się równocześnie.
-  Umożliwia to bardziej efektywne wykorzystanie czasu procesora, co pokazują poniższe przykłady:
+  Umożliwia to efektywne wykorzystanie procesora, co pokazują poniższe przykłady:
   \begin{itemize}
     \item może on być wykorzystany do wykonania części pewnego programu,
       podczas gdy inny program oczekuje na wykonanie przez system operacyjny pewnego zadania (często związanego z~obsługą któregoś z~\emph{zasobów systemowych}) --
@@ -109,17 +109,8 @@
 \indent
   Pojęciem, które niejako ,,wyrasta'' z~pojęcia procesu, jest \emph{wątek}. Wątek jest jednostką wykonalną, która jest wytwarzana przez jej \emph{proces macierzysty}.
   Jeden proces może wytworzyć wiele wątków, a~każdy z~nich może wykorzystywać te zasoby systemu operacyjnego, które są przydzielone ich procesowi macierzystemu.
-\indent
   Wątki bywają również nazywane \emph{procesami wagi lekkiej} (ang. \emph{lightweight processes}, LWP) -- z~punktu widzenia jądra systemu operacyjnego
   ich obsługa jest o~wiele \emph{lżejsza}.
-  %, ponieważ umożliwiają szybsze przełączanie
-  %pomiędzy nimi. Główną przyczyną tego przyspieszenia jest brak przełączania pomiędzy 
-  %przestrzeniami adresowymi wątków pracujących w~ramach tego samego procesu -- wszystkie wątki korzystają z~tej samej wirtualnej przestrzeni adresowej.
-  %Wątki pracujące w~tym samym procesie posiadają również dostęp do wszystkich urządzeń systemowych dostępnych dla odpowiadającego im procesu.
-  %Dzięki tym oraz wielu pomniejszym cechom, program podzielony na wątki może działać o~wiele szybciej, niż ten sam program podzielony na procesy.
-%\par
-%
-%\indent
   Wiele systemów operacyjnych traktuje wątki w~specjalny sposób, przykładem może być obsługa wątków w~systemach z~rodziny Windows:
   wytworzenie i~uruchomienie nowego procesu zajmuje o~wiele więcej czasu niż wytworzenie nowego wątku. Wiele systemów
   udostępnia funkcje do wyłącznej obsługi wątków.
@@ -132,7 +123,7 @@
     \item współdzielą czas wykonania LWP, w~którym są wykonywane;
     \item są wykonywane w~dokładnie jednym wątku w~danym procesie.
   \end{itemize}
-  Pouczającym przykładem implementacji takich wątków jest biblioteka GNU Pth. Jej rozwój zatrzymał się w~roku 2006.
+  Pouczającym przykładem implementacji takich wątków jest biblioteka GNU Pth \cite{pth}. Jej rozwój zatrzymał się w~roku 2006.
 \par
 %
 \indent
@@ -286,7 +277,7 @@
 \indent
 	Jądro systemu to jego podstawa, która jest odpowiedzialna za zarządzanie jego usługami, jak również zasobami, m. in. pamięcią, I/O,
 	przydzielaniem czasu procesora poszczególnym procesom. Instrukcje procesu jądra wykonywane są w~\emph{przestrzeni jądra}
-  (ang. \emph{kernel space}). Podobnie jak dla przestrzeni użytkownika, Dzięki temu,
+  (ang. \emph{kernel space}). Dzięki temu
 	mają one dostęp do wszystkich zasobów systemu komputera i~mogą je dowolnie zmieniać. Dlatego też procesy uruchamiane w~przestrzeni
 	jądra muszą być zaprojektowane zgodnie ze wszystkimi wymaganiami stawianymi danemu systemowi operacyjnemu, wraz z~podstawowym wymaganiem:
 	muszą one być \emph{niezawodne}, gdyż w~razie wystąpienia poważnego błędu w~trakcie wykonywania programu uruchomionego w~przestrzeni jądra,
@@ -351,9 +342,9 @@
   w~\cite{hennessy}, jednak
   w~związku ze znacznym spadkiem wydajności tych systemów, zrezygnowano z~udostępniania w~nich włókien.
   Co ciekawe, pomysł na udostępnienie włókien użytkownikowi został zrealizowany w~systemie Windows 7 (\emph{User Mode Scheduling}, UMS). Był on dostępny
-  jedynie w~32-bitowym wydaniu tego systemu. Obecnie producent odradza jego użycie, zaś prace rozwojowe nad UMS zostały wstrzymane.
+  jedynie w~64-bitowym wydaniu tego systemu \cite{umshome}. Obecnie producent odradza jego użycie, zaś prace rozwojowe nad UMS zostały wstrzymane \cite{umscancel}.
   Istnieją jednak systemy, w~których włókna są wspierane, a~nawet rekomendowane jako domyślne rozwiązanie dla użytkownika. Przykładem takiego systemu jest
-  AIX, produkt firmy IBM.
+  AIX, produkt firmy IBM: Domyślny model wątków to M:N (M wątków użytkownika -- włókien jest wykonywanych w~N wątkach przestrzeni jądra) \cite{aixnote}.
 \par
 %
 \indent
@@ -364,7 +355,7 @@
 %
 \subsection{Linux}
 \indent
-  Linux traktuje procesy i~wątki w~jednakowy sposób, innymi słowy -- w~tym systemie nie istnieje pojęcie wątku: za wątek można uznać proces, który
+  Linux traktuje procesy i~wątki w~jednakowy sposób; innymi słowy -- w~tym systemie nie istnieje pojęcie wątku: za wątek można uznać proces, który
   współdzieli przestrzeń adresową oraz dostęp do urządzeń systemowych.
   Takie podejście do wątków i~procesów jest możliwe dzięki dwóm mechanizmom:
   \begin{enumerate}
@@ -381,7 +372,7 @@
 \par
 %
 \indent
-  Wszystkie systemy zgodne ze specyfikacją POSIX (\cite{POSIX}) udostępniają mechanizm przełączania kontekstu wykonania w~przestrzeni użytkownika (ang. \emph{user\dywiz space context switching}).
+  Wszystkie systemy zgodne ze specyfikacją POSIX \cite{POSIX} udostępniają mechanizm przełączania kontekstu wykonania w~przestrzeni użytkownika (ang. \emph{user\dywiz space context switching}).
   Mechanizm ten umożliwia zapisanie bieżącego kontekstu wykonania, a~następnie przekazanie sterowania do wcześniej przygotowanego kontekstu. W~odróżnieniu od mechanizmu wywłaszczania,
   wykonywany kontekst nie może być wstrzymany -- program wykonywany w~bieżącym kontekście wykonania musi \emph{dobrowolnie} wywołać procedurę przełączającą kontekst.
 \par
@@ -396,7 +387,7 @@
 \par
 %
 \indent
-  W Linuksie zaimplementowano \cite{epoll} mechanizm \code{epoll}: jest to mechanizm podobny do
+  W Linuksie zaimplementowano mechanizm \code{epoll} \cite{epoll}: jest to mechanizm podobny do
   zawartego w~specyfikacji POSIX mechanizmu \code{poll} \cite{poll}, służy do cyklicznego sprawdzania stanu zasobów systemu w~nieblokujący sposób.
   \code{Epoll} jest szybszy od \code{poll}: dla zbioru obserwowanych zasobów wytwarzany jest identyfikator systemowy 
   (\emph{deskryptor}, ang. \emph{descriptor}) -- liczba całkowita, a~następnie każde zapytanie o~ten zbiór sprowadza się do zapytania
@@ -412,16 +403,15 @@
   Jeśli do jednej przestrzeni adresowej przypisane są co najmniej dwa procesy, wówczas wynik operacji odczytu może się zdezaktualizować. Najprostszy scenariusz, w~którym następuje
   dezaktualizacja wyniku operacji odczytu, przedstawia tabela \arabic{notact}.
   \begin{center}
-    \begin{tabular}{|c|l|l|l|}\hline
-      \multicolumn{1}{|l|}{\parbox[t]{2cm}{Numer\\instrukcji}} & Zadanie 1 & Zadanie 2 & uwagi \\ \hline
+    \begin{tabular}{|c|l|l|p{4cm}|}\hline
+      \multicolumn{1}{|l|}{\parbox[t]{2cm}{Numer\\instrukcji}} & Zadanie 1 & Zadanie 2 & Uwagi \\ \hline
       1 & {\tt i~:= X } & & \\ \hline
-      3 &  & {\tt j~:= X } & \parbox[t]{4cm}{Następuje przeplot: Zadanie 1 jest zatrzymane, następuje rozpoczęcie wykonania Zadania 2.}\\ \hline
+      3 &  & {\tt j~:= X } & {Następuje przeplot: Zadanie 1 jest zatrzymane, następuje rozpoczęcie wykonania Zadania 2.} \\ \hline
       4 & & {\tt X~:= j + 1 } & \\ \hline
       5 & {\tt k~:= i } & & \\ \hline
     \end{tabular}
     \mytabcaption{Przykład zdezaktualizowanej operacji odczytu: począwszy od instrukcji 5 wartość {\tt i}~nie odpowiada faktycznej wartości komórki {\tt X}}
   \end{center}
-  %Patrz \cite{schmidt}.
   Problem ten może prowadzić do przekłamań, zaś w~większości wypadków jego wystąpienie może powodować niepoprawne działanie programu użytkownika.
   Podobne problemy występują w~sytuacji, gdy dostęp do danego zasobu posiada więcej niż jedno zadanie, np. gdy do jednego pliku może zapisywać kilka procesów.
 \par
@@ -532,11 +522,11 @@
   Koprocedura jest uogólnieniem pojęcia procedury, co pokazuje Tabela \arabic{tabmain}.
     \begin{center}
     \centering
-    \begin{tabular}{|l|l|} \hline
+    \begin{tabular}{|p{6cm}|p{6cm}|} \hline
       \multicolumn{1}{|c|}{Procedura} & \multicolumn{1}{c|}{Koprocedura} \\ \hline
       jeden punkt wejścia & jeden punkt wejścia \\ \hline
-      \parbox[t]{6cm}{brak możliwości kontynuacji działania po wyjściu z~procedury} & \parbox[t]{6cm}{możliwość kontynuacji działania po wyjściu z~koprocedury } \\ \hline
-      \parbox[t]{6cm}{jednorazowe przekazanie wyniku obliczeń} & \parbox[t]{6cm}{przekazanie częściowego wyniku obliczeń} \\ \hline
+      {brak możliwości kontynuacji działania po wyjściu z~procedury} & {możliwość kontynuacji działania po wyjściu z~koprocedury } \\ \hline
+      {jednorazowe przekazanie wyniku obliczeń} & {przekazanie częściowego wyniku obliczeń} \\ \hline
       współdzielony stos wywołań & własny stos wywołań \\ \hline
       współdzielony kontekst wykonania & własny kontekst wykonania \\ \hline
       współdzielony czas działania & współdzielony czas działania \\ \hline
