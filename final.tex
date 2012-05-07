@@ -120,14 +120,21 @@
   Oprócz LWP istnieją również implementacje wątków przestrzeni użytkownika. Można je scharakteryzować w~następujący sposób:
   \begin{itemize}
     \item posiadają własny stos wywołań;
-    \item współdzielą czas wykonania LWP, w~którym są wykonywane;
-    \item są wykonywane w~dokładnie jednym wątku w~danym procesie.
+    \item są wykonywane w~dokładnie jednym wątku przestrzeni jądra w~danym procesie.
   \end{itemize}
   Pouczającym przykładem implementacji takich wątków jest biblioteka GNU Pth \cite{pth}. Jej rozwój zatrzymał się w~roku 2006.
 \par
 %
 \indent
-	Obydwa rodzaje wątków posiadają zarówno zalety jak i~wady. Rozwiązaniem pośrednim są wątki zarządzane przez użytkownika:
+	Wątki przestrzeni jądra i~wątki przestrzeni użytkownika posiadają zarówno zalety jak i~wady:
+  \begin{center}
+  \begin{tabular}{|c|p{4cm}|p{4cm}|} \hline
+                & Wątki przestrzeni jądra & wątki przestrzeni użytkownika \\ \hline
+      Zalety    & & \\ \hline
+      Wady      & & \\ \hline
+  \end{tabular}
+  \end{center}
+  Rozwiązaniem pośrednim są wątki zarządzane przez użytkownika:
   system operacyjny nie jest świadomy ich istnienia, jedynie reaguje na żądania zarządcy tych wątków (który, jak wspomniano wcześniej,
   działa po stronie użytkownika). Wątki te zwane są \emph{mieszanymi} lub \emph{hybrydowymi}. 
   System operacyjny może udostępniać podsystemowi dostarczanemu przez użytkownika pewne mechanizmy,
@@ -135,7 +142,8 @@
   wątków przestrzeni jądra. To, co odróżnia wątki hybrydowe od wątków przestrzeni użytkownika, to wsparcie ze strony systemu operacyjnego.
   Są to m. in.:
   \begin{itemize}
-    \item wykorzystanie więcej niż jednego rdzenia w~maszynach wielordzeniowych przez system zarządzający wątkami hybrydowymi;
+    \item wykorzystanie więcej niż jednego rdzenia w~maszynach wielordzeniowych przez system zarządzający wątkami hybrydowymi: w~praktyce sprowadza się to do
+      pogrupowania ;
     \item wywłaszczenie działającego wątku mieszanego;
     \item ułatwienie systemowi zarządzania wątkami mieszanymi obsługi zasobów systemowych w~taki sposób, aby nie blokował on jego działania.
   \end{itemize}
@@ -270,7 +278,7 @@
 \indent
   Procesy, jakie może uruchomić użytkownik, działać będą w~przestrzeni adresowej, która nazywana jest \emph{przestrzenią użytkownika} (ang. \emph{user space}), zaś
   system działa w~\emph{trybie użytkownika} (ang. \emph{user mode}). W~dokumencie, jeżeli nie jest zaznaczone inaczej,
-  jeśli wystąpi pojęcie przestrzeni użytkownika, będzie ona utożsamiana z~procesorem pracującym w~trybie użytkownika.
+  jeśli wystąpi pojęcie przestrzeni użytkownika, będzie ona utożsamiana z~procesem pracującym w~trybie użytkownika.
   Każdy program działający w~systemie operacyjnym składa się z~co najmniej jednego procesu.
 \par
 %
