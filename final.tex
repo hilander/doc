@@ -149,35 +149,25 @@
   \end{center}
 \par
 \indent
-  Rozwiązaniem pośrednim są wątki zarządzane przez użytkownika:
-  system operacyjny nie jest świadomy ich istnienia, jedynie reaguje na żądania zarządcy tych wątków (który, jak wspomniano wcześniej,
-  działa po stronie użytkownika). Wątki te zwane są \emph{mieszanymi} lub \emph{hybrydowymi}. 
-  System operacyjny może udostępniać podsystemowi dostarczanemu przez użytkownika pewne mechanizmy,
-  które wspomagają wykonanie wątków hybrydowych, jednak nie zajmuje się ich nadzorowaniem w~takim stopniu, jak ma to miejsce w~wypadku
-  wątków przestrzeni jądra. To, co odróżnia wątki hybrydowe od wątków przestrzeni użytkownika, to wsparcie ze strony systemu operacyjnego.
-  Są to m. in.:
-  \begin{itemize}
-    \item wykorzystanie więcej niż jednego rdzenia w~maszynach wielordzeniowych przez system zarządzający wątkami hybrydowymi: w~praktyce sprowadza się to do
-      pogrupowania ;
-    \item wywłaszczenie działającego wątku mieszanego;
-    \item ułatwienie systemowi zarządzania wątkami mieszanymi obsługi zasobów systemowych w~taki sposób, aby nie blokował on jego działania.
-  \end{itemize}
+  Rozwiązaniem pośrednim pomiędzy wątkami przestrzeni jądra a~użytkownika są wątki \emph{mieszane} (\emph{hybrydowe}), zwane na potrzeby tej pracy \emph{włóknami}:
+  \begin{enumerate}
+    \item Mogą wykorzystać wszystkie rdzenie dostępne dla danego procesu: wytwarzane jest dokładnie tyle wątków przestrzeni jądra, ile jest dostępnych rdzeni.
+      Następnie każdy taki wątek otrzymuje odpowiednią liczbę włókien, które będą wykonywane w~czasie przydzielonym dla tego wątku. Ta własność odróżnia włókna od
+      wątków przestrzeni użytkownika. \label{hybridthread}
+    \item Każde włókno posiada jedynie swój stos wywołań oraz własny licznik rozkazów (informację o~aktualnie wykonywanym rozkazie). Dzięki temu możliwe jest
+      ,,zamrożenie'' włókna, a~następnie uruchomienie go od tego miejsca. Ta własność odróżnia włókna od wątków przestrzeni jądra.
+    \item System operacyjny nie jest świadomy istnienia włókien: zarządza on jedynie wątkami, opisanych w~punkcie \ref{hybridthread}. Dzięki temu
+      zadanie zarządzania włóknami nie wpływa na działanie systemu operacyjnego, a~co za tym idzie, na jego wydajność.
+      Z~tego powodu po stronie programu użytkownika musi istnieć odpowiednia implementacja zarządcy włókien, która może z~kolei mieć wpływ na wydajność programu.
+    \item Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu, 
+      jednak każda taka zmiana jest potencjalnym zagrożeniem dla wydajności systemu operacyjnego.
+      Włókna można jednak zaimplementować przy użyciu istniejących mechanizmów oferowanych przez system operacyjny.
+  \end{enumerate}
 \par
 %
 \indent
   W~niniejszej pracy użycie słowa ,,wątek'' oznacza odwołanie do wątku przestrzeni jądra, zaś użycie słowa ,,włókno'' oznacza odwołanie
   do wątku mieszanego.
-\par
-%
-\begin{comment}
-\indent
-  \myownfigure{mixedintro}{mixedscheme.png}{Włókna w~implementacji nie wymagającej zmian w~systemie~operacyjnym -- cel niniejszej pracy}{.23}
-\par
-\end{comment}
-\indent
-  Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu,
-  można jednak zaimplementować je przy użyciu mechanizmów oferowanych przez system operacyjny.
-  Taka implementacja może być biblioteką dołączaną przez użytkownika.
 \par
 %
 \subsection{Cel pracy}
@@ -355,11 +345,9 @@
   Wątki, opisane w~rozdziale \ref{sec:motivation}, są naturalną konsekwencją ,,odchudzania'' procesów.
 \par
 \indent
-  Książka \cite{silberschatz} opisuje:
-  \begin{itemize}
-    \item koncepcję oraz obsługę procesu w~rozdziałach 4.1, 4.2 i~4.3;
-    \item wątki w~rozdziale 4.5.
-  \end{itemize}
+  Koncepcja procesu oraz jego obsługa jest opisana wyczerpująco w~\cite{silberschatz} (rozdziały 4.1--4.3);
+  w rozdziale 4.5 tej samej książki jest wiele szczegółów dotyczących realizacji wątków przestrzeni jądra; wspomniane są tam również wątki przestrzeni użytkownika,
+  jak również obsługa włókien w~systemie Solaris 2.
 \par
 %
 \subsection{Włókna}
@@ -1212,6 +1200,9 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
       należy wytworzyć warstwę pośrednią (zbiór tzw. \emph{wrapperów}).
   \end{itemize}
 \par
+\indent
+  Należy pamiętać, że \code{libmixed} nie jest nową wersją wątków przestrzeni jądra, ani tym bardziej konkurencją dla \code{Pthreads} czy wątków opisanych w~specyfikacji C++11.
+\par
 \subsection{Podsumowanie implementacji}
 \indent
   Użycie biblioteki \code{libmixed} nie powoduje spadku wydajności systemu operacyjnego. 
@@ -1257,9 +1248,9 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
   co jeszcze bardziej poprawi jej atrakcyjność w~oczach dotychczasowych użytkowników \code{Pthreads}.
 \par
 \indent
-  Warto zauważyć, że \code{libmixed} wraz z~jej nadbudową może być wykorzystana jako element biblioteki
-  standardowej C++11 (\code{<thread>}). Dzięki temu, możliwe będzie porównanie wydajności wątków biblioteki standardowej z~implementacją włókien.
-  Program użytkownika nie będzie zaś musiał być zmieniany, gdyż API pozostanie niezmienione.
+  Innym kierunkiem rozwoju \code{libmixed} jest wytworzenie na jej bazie API identycznego z~nagłówkiem \code{<thread>}, przedstawionym
+  w~standardzie C++11. Dzięki temu możliwe będzie wytworzenie frameworka alternatywnego do standardu, przyjętego przez cały świat.
+  Dodatkową korzyścią, którą będzie można uzyskać, będzie możliwość idealnego dopasowania działania \code{libmixed} do wymagań standardu.
 \par
 %
 \newpage
