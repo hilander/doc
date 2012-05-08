@@ -126,14 +126,29 @@
 \par
 %
 \indent
-	Wątki przestrzeni jądra i~wątki przestrzeni użytkownika posiadają zarówno zalety jak i~wady:
+\newcounter{userversuskernel} \setcounter{userversuskernel}{\value{tabmain}}
+	Wątki przestrzeni jądra i~wątki przestrzeni użytkownika posiadają zarówno zalety jak i~wady. Są one wymienione w~Tabeli \arabic{userversuskernel}.
   \begin{center}
-  \begin{tabular}{|c|p{4cm}|p{4cm}|} \hline
-                & Wątki przestrzeni jądra & wątki przestrzeni użytkownika \\ \hline
-      Zalety    & & \\ \hline
-      Wady      & & \\ \hline
+  \begin{tabular}{|c|p{5cm}|p{5cm}|} \hline
+                & \multicolumn{1}{c|}{Wątki przestrzeni jądra} & \multicolumn{1}{c|}{Wątki przestrzeni użytkownika} \\ \hline
+      Zalety    & -- zarządzanie wątkami (szeregowanie, uruchamianie i~destrukcja) są zadaniem jądra systemu operacyjnego; \par 
+                  -- wykorzystanie wszystkich dostępnych rdzeni komputera; \par 
+                  -- wszystkie udogodnienia systemowe dostępne bezpośrednio z~wątku; 
+                & -- jądro systemu operacyjnego nie odpowiada za obsługę wątków: nawet duża granulacja wątków nie wpływa na spadek jego wydajności; \par
+                  -- wątki nie są wywłaszczane, co pozwala na łatwe uniknięcie problemów z~synchronizacją;
+                \\ \hline
+      Wady      & -- wysoka granulacja wątków powoduje spadek wydajności systemu operacyjnego; \par
+                  -- dostęp do współdzielonych zasobów może powodować problemy opisane w~rozdziale \ref{sec:synchro};
+                & -- zarządzanie wątkami może spowodować spadek wydajności programu; \par
+                  -- bezpośrednie wykorzystanie blokujących funkcji systemowych prowadzi do zablokowania pracy wszystkich wątków; dlatego
+                     należy stworzyć warstwę pośrednią do korzystania z~zasobów systemu bez blokowania pracy innych wątków; \par
+                  -- wątki mogą być uruchomione w~dokładnie jednym wątku bieżącego procesu: niemożliwe jest więc wykorzystanie wszystkich rdzeni dostępnych w~komputerze;
+                \\ \hline
   \end{tabular}
+  \mytabcaption{Porównanie zalet i~wad wątków przestrzeni jądra oraz użytkownika}
   \end{center}
+\par
+\indent
   Rozwiązaniem pośrednim są wątki zarządzane przez użytkownika:
   system operacyjny nie jest świadomy ich istnienia, jedynie reaguje na żądania zarządcy tych wątków (który, jak wspomniano wcześniej,
   działa po stronie użytkownika). Wątki te zwane są \emph{mieszanymi} lub \emph{hybrydowymi}. 
@@ -161,7 +176,7 @@
 \end{comment}
 \indent
   Implementacja włókien w~systemie operacyjnym może wymagać zmian w~jądrze systemu,
-  można jednak zaimplementować je przy użyciu mechanizmów ofreowanych przez system operacyjny.
+  można jednak zaimplementować je przy użyciu mechanizmów oferowanych przez system operacyjny.
   Taka implementacja może być biblioteką dołączaną przez użytkownika.
 \par
 %
@@ -411,6 +426,7 @@
   zasobów systemowych, ich kopiowanie może wiązać się ze znaczącym narzutem czasowym na operację \code{poll}.
 \par
 \subsection{Synchronizacja zadań}
+\label{sec:synchro}
 \indent
 \newcounter{notact} \setcounter{notact}{\value{tabmain}}
   System operacyjny udostępnia zadaniom ich własną przestrzeń adresową, na której mogą wykonywać operacje odczytu i~zapisu. Jeśli tej przestrzeni używa dokładnie jedno zadanie,
@@ -1239,6 +1255,11 @@ Wyniki, widoczne na rysunku \arabic{nullfork}, dają jednoznaczną odpowiedź na
 \indent
   Celem opisanej nadbudowy biblioteki \code{libmixed} jest zbliżenie jej API w~jak największym stopniu do API oferowanego przez \code{Pthreads},
   co jeszcze bardziej poprawi jej atrakcyjność w~oczach dotychczasowych użytkowników \code{Pthreads}.
+\par
+\indent
+  Warto zauważyć, że \code{libmixed} wraz z~jej nadbudową może być wykorzystana jako element biblioteki
+  standardowej C++11 (\code{<thread>}). Dzięki temu, możliwe będzie porównanie wydajności wątków biblioteki standardowej z~implementacją włókien.
+  Program użytkownika nie będzie zaś musiał być zmieniany, gdyż API pozostanie niezmienione.
 \par
 %
 \newpage
