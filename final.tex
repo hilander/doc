@@ -472,7 +472,8 @@
 \label{sec:solution}
 \subsection{Wstęp}
 \indent 
-  Biblioteka \code{libmixed}, powstała w~ramach niniejszej pracy magisterskiej, udostępnia użytkownikowi wątki hybrydowe (jednostki wykonalne zarządzane z~przestrzeni użytkownika,
+  Biblioteka \code{libmixed}\footnote{Repozytorium zawierające kod źródłowy biblioteki \code{libmixed} jest dostępne pod adresem \url{https://www.github.com/hilander/mixed}.},
+  powstała w~ramach niniejszej pracy magisterskiej, udostępnia użytkownikowi wątki hybrydowe (jednostki wykonalne zarządzane z~przestrzeni użytkownika,
   i~wykorzystujące wsparcie jądra). Spełnia wymagania wymienione w~rozdziale \ref{sec:target}, za wyjątkiem warunku \ref{enm:timesch}:
   istnieje komponent biblioteki odpowiedzialny za szeregowanie włókien, jednak \code{libmixed} nie kontroluje czasu wykonania pojedynczego włókna.
 \par
@@ -715,7 +716,7 @@
   \myownfigure{PrivateListPush}{PrivateListPush.png}{Operacja \function{push}}{.7}
 \par
 \indent
-  Implementacja funkcji \code{pop( out m )} jest bardziej skomplikowana:\\
+  Implementacja funkcji \code{top( out m )} jest bardziej skomplikowana:\\
   Czy można użyć \code{head}?
   \begin{enumerate}
     \item TAK -- \code{m}$\gets$\code{head}
@@ -733,8 +734,8 @@
   \end{enumerate}
 \par
 \indent
-  \myownfigure{PrivateListPop1}{PrivateListPop1.png}{Operacja \function{pop} -- pierwsza gałąź algorytmu}{.7}
-  \myownfigure{PrivateListPop2}{PrivateListPop2.png}{Operacja \function{pop} -- druga gałąź algorytmu}{.7}
+  \myownfigure{PrivateListPop1}{PrivateListPop1.png}{Operacja \function{top} -- pierwsza gałąź algorytmu}{.7}
+  \myownfigure{PrivateListPop2}{PrivateListPop2.png}{Operacja \function{top} -- druga gałąź algorytmu}{.7}
 \par
 \indent
   Czy powyższa implementacja jest poprawna?
@@ -743,8 +744,8 @@
   Aby pokazać poprawność tej implementacji, rozważmy sytuacje, w~których występuje przeplot operacji listowych wykonywanych przez
   wątki \code{master} oraz \code{slave}:
   \begin{enumerate}
-    \item Gdy lista jest używana sekwencyjnie, każdy ciąg operacji \function{push} i~\function{pop} nie zaburza wzajemnego położenia głowy i~wartownika (stan \emph{stabilny} listy).
-    \item Podczas operacji \function{push} może wystąpić przeplot z~wątkiem wykonującym na tej samej liście operację \function{pop}. 
+    \item Gdy lista jest używana sekwencyjnie, każdy ciąg operacji \function{push} i~\function{top} nie zaburza wzajemnego położenia głowy i~wartownika (stan \emph{stabilny} listy).
+    \item Podczas operacji \function{push} może wystąpić przeplot z~wątkiem wykonującym na tej samej liście operację \function{top}. 
     Gdy nowa wiadomość nie jest widoczna (rys. \arabic{PrivateListPush}),
     dowolny przeplot obydwu funkcji nie zaburza stanu stabilnego listy. Jedyna możliwość zaburzenia stanu stabilnego może wystąpić w~następującym scenariuszu:
       \begin{center}
@@ -752,7 +753,7 @@
       \begin{tabular}{|c|c|c|c|} \hline
         Wątek               & Operacja                         & \code{head} & \code{guard} \\ \hline
         \code{master} (\function{push}) & \code{guard->next} $\gets$ \code{b} & \code{a} & \code{a} \\ \hline
-        \code{slave} (\function{pop})  & \code{head}$\gets$\code{b}          & \code{b} & \code{a} \\
+        \code{slave} (\function{top})  & \code{head}$\gets$\code{b}          & \code{b} & \code{a} \\
                             & \code{b->prev->next}$\gets$\code{0} & \code{b} & \code{a} \\
                             & \code{b->prev}$\gets$\code{0}       & \code{b} & \code{a} \\ \hline
         \code{master}      & \code{guard}$\gets$\code{b}         & \code{b} & \code{b} \\ \hline
@@ -761,13 +762,13 @@
       \label{tab:stableestate}
       \end{center}
     Jak łatwo zauważyć, zaburzenie to jest chwilowe, a~po zakończeniu wywołań funkcji w~przeplatających się wątkach lista wraca do stanu stabilnego. 
-    Każde kolejne wywołanie funkcji \function{pop} przy zablokowanym wywołaniu \function{push}
+    Każde kolejne wywołanie funkcji \function{top} przy zablokowanym wywołaniu \function{push}
     nie zmieni żadnego dowiązania w~liście, gdyż element \code{b}~nie ma następnika.
-    \item Jeśli wykonanie operacji \function{pop} zostanie przerwane i~nastąpi przeplot z~funkcją \function{push}, która działa na tej samej liście,
+    \item Jeśli wykonanie operacji \function{top} zostanie przerwane i~nastąpi przeplot z~funkcją \function{push}, która działa na tej samej liście,
     to każdy taki przeplot jest bezpieczny:
     \begin{enumerate}
       \item każdy przeplot operacji obu funkcji zachowuje stan stabilny listy;
-      \item każda operacja wykonywana w~\function{pop} dotyczy \emph{lewej strony} elementu listy (informacje dotyczące poprzednika), zaś
+      \item każda operacja wykonywana w~\function{top} dotyczy \emph{lewej strony} elementu listy (informacje dotyczące poprzednika), zaś
       operacje funkcji \function{push} dotyczą \emph{prawej strony} elementu.
     \end{enumerate}
   \end{enumerate}
