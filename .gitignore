@@ -20,6 +20,8 @@
 *.out
 *.html
 *.~ml
+*.nav
+*.snm
 *.bak
 cscope.out
 mktemp.sh

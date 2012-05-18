@@ -1,0 +1,103 @@
+\documentclass[10pt]{beamer}
+\usetheme{Warsaw}
+\setbeamertemplate{navigation symbols}{}
+\usepackage[OT1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+\author[Mariusz Barycz]{Mariusz Barycz\\Praca magisterska}
+\date{Wrocław, 14 czerwca 2012}
+\title{Analiza metod zarządzania wątkami mieszanymi}
+
+\begin{document}
+\begin{frame}
+\titlepage
+\end{frame}
+
+\frame{
+\frametitle{Plan prezentacji}
+\tableofcontents
+}
+\section{Wstęp}
+\subsection{Motywacja}
+\frame
+{
+\begin{block}{Rodzaje wątków}
+  \begin{center}
+  \begin{tabular}{p{3cm}|p{3cm}|p{3cm}}
+    \multicolumn{1}{c|}{\bf jądra} & \multicolumn{1}{c|}{\bf użytkownika} & \multicolumn{1}{c}{\bf mieszane} \\ \hline
+    {zarządzane przez system operacyjny} & {zarządzane przez użytkownika} & {zarządzane przez użytkownika} \\ \hline
+    obciążają system operacyjny & obciążają program użytkownika & obciążają program użytkownika \\ \hline
+    intensywnie rozwijane & nie rozwijane & brak dostępnej implementacji \\
+  \end{tabular}
+\end{center}
+
+\end{block}
+}
+
+\frame{
+\begin{block}{Wątki mieszane -- oczekiwane korzyści}
+\end{block}
+}
+
+\subsection{Cel pracy}
+\frame{
+\begin{block}{Docelowa biblioteka włókien}
+\end{block}
+}
+
+\section{System operacyjny}
+\subsection{Procesy i~wątki}
+\frame{
+\begin{block}{Procesy}
+\end{block}
+
+\begin{block}{Linux}
+\end{block}
+}
+
+\frame{
+\begin{block}{Wątki przestrzeni jądra}
+\end{block}
+
+\begin{block}{Włókna}
+\end{block}
+}
+\subsection{Synchronizacja}
+\frame
+{
+\begin{block}{Problemy związane ze współbieżnością}
+\end{block}
+\begin{block}{Mechanizmy synchronizacji}
+\end{block}
+}
+
+\section{Rozwiązanie}
+\subsection{Opis biblioteki}
+\frame{
+\begin{block}{Podstawowe klasy biblioteki}
+\end{block}
+\begin{block}{Wykorzystanie wątków przestrzeni jądra}
+\end{block}
+}
+
+\section{Podsumowanie}
+\subsection{Testy}
+\frame
+{
+\begin{block}{Wyniki testów}
+\end{block}
+}
+
+\frame
+{
+
+}
+
+\frame{
+\center{Dziękuję za uwagę.}
+}
+
+%\begin{block}{Title of the block}
+%\begin{exampleblock}{Title  of the block}
+%\begin{alertblock}{Title  of the block}
+\end{document}
